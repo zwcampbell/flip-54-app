@@ -8,6 +8,7 @@ struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var settingsQuery: [UserSettings]
     @Query(sort: \WorkoutHistory.completedAt, order: .reverse) private var historyQuery: [WorkoutHistory]
+    @Query private var onboardingQuery: [OnboardingState]
 
     @State private var coordinator = WorkoutCoordinator()
     @State private var completedData: CompletedWorkoutData?
@@ -22,6 +23,18 @@ struct ContentView: View {
         return s
     }
 
+    // Convenience: always-valid onboarding state
+    private var onboardingState: OnboardingState {
+        if let o = onboardingQuery.first { return o }
+        let o = OnboardingState()
+        modelContext.insert(o)
+        return o
+    }
+
+    private var showOnboarding: Bool {
+        onboardingQuery.isEmpty || !onboardingQuery[0].hasSeenWelcome
+    }
+
     private var showCompletion: Bool { completedData != nil }
 
     private var isActiveWorkout: Bool {
@@ -33,7 +46,15 @@ struct ContentView: View {
 
     var body: some View {
         ZStack {
-            if let data = completedData {
+            if showOnboarding {
+                OnboardingView(
+                    state: onboardingState,
+                    settings: settings,
+                    onComplete: handleOnboardingComplete
+                )
+                .transition(.opacity)
+                .zIndex(3)
+            } else if let data = completedData {
                 CompletionView(data: data) {
                     completedData = nil
                     coordinator = WorkoutCoordinator()
@@ -52,9 +73,19 @@ struct ContentView: View {
                     .zIndex(0)
             }
         }
+        .animation(.easeInOut(duration: 0.35), value: showOnboarding)
         .animation(.easeInOut(duration: 0.22), value: showCompletion)
         .animation(.easeInOut(duration: 0.22), value: isActiveWorkout)
         .onAppear { checkForResume() }
+    }
+
+    // MARK: - Onboarding completion
+
+    private func handleOnboardingComplete(startTutorial: Bool) {
+        onboardingState.hasSeenWelcome = true
+        try? modelContext.save()
+        // Tutorial mode will be wired in Commit 22; for now just proceed to main app
+        _ = startTutorial  // suppress unused warning until tutorial is implemented
     }
 
     // MARK: - Tab view

@@ -1,0 +1,525 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		09079A13155A5EF7E320E05A /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3187C0598BD56969203B2016 /* OnboardingView.swift */; };
+		13C8374D14C68238A9884023 /* Flip54App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C293BCC81644491CB0BD3F5 /* Flip54App.swift */; };
+		2134B6F99390180A3883DAA4 /* DS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 055BD321D3DEC4795309186E /* DS.swift */; };
+		2860261768396674F4C586EF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C091E7583B5A73C429CADA03 /* Assets.xcassets */; };
+		30C7674ECC7B0BC4F40270C6 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B928E34F93C13CA23F613011 /* HistoryView.swift */; };
+		32AECE4A2A64CAEF5516DB64 /* ActiveWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA90C35153A1139687DE3849 /* ActiveWorkoutView.swift */; };
+		462EB8EE5E5F6C960752E793 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D8D079C4FAD5217145A2CF2B /* PrivacyInfo.xcprivacy */; };
+		7E3FDDD6F934762A428B88EC /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A24DD0F3DDE3CD532E4F7B /* ProfileView.swift */; };
+		86786B8D37B71797D0525F8B /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B95F95B2A017F274DA35B4A2 /* SettingsView.swift */; };
+		9C973F526285EC2405E8DB23 /* Flip54Core in Frameworks */ = {isa = PBXBuildFile; productRef = B2272B8D6AB1191879B2C915 /* Flip54Core */; };
+		A42E668F4DAA7EB48B233764 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76D5BCF1A3AA119192222201 /* ContentView.swift */; };
+		A54A77351D527C0E5C6D7EE6 /* CompletionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 778F6D7BDE8134694108A176 /* CompletionView.swift */; };
+		C6AF881D1F7AC594EBAF8951 /* PreWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41BB8F655ECC069322AD2C5E /* PreWorkoutView.swift */; };
+		C99A14834AE517189B6DBE24 /* Flip54WorkoutEngine in Frameworks */ = {isa = PBXBuildFile; productRef = A4DBC8CCD63AA23E33EE78FE /* Flip54WorkoutEngine */; };
+		D3AFF4176855C0C48FE71951 /* CardPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34349F3E0E7F44A9A584119C /* CardPlaceholderView.swift */; };
+		E8D56DE252E2A0AEFDBF952E /* Flip54Storage in Frameworks */ = {isa = PBXBuildFile; productRef = 5525B307D9C2B8A0070837FB /* Flip54Storage */; };
+		F131DC7A16A5B25DFA7BF43C /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 28F0CE3652748EEEE3EC94AC /* Preview Assets.xcassets */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		055BD321D3DEC4795309186E /* DS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DS.swift; sourceTree = "<group>"; };
+		28F0CE3652748EEEE3EC94AC /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		29940533C1D4EF8AF42FE6A1 /* Flip54Storage */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Flip54Storage; path = Packages/Flip54Storage; sourceTree = SOURCE_ROOT; };
+		3187C0598BD56969203B2016 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		34349F3E0E7F44A9A584119C /* CardPlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardPlaceholderView.swift; sourceTree = "<group>"; };
+		345972F69B717C9372D7627E /* Flip54.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Flip54.entitlements; sourceTree = "<group>"; };
+		41BB8F655ECC069322AD2C5E /* PreWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreWorkoutView.swift; sourceTree = "<group>"; };
+		47A24DD0F3DDE3CD532E4F7B /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		4C293BCC81644491CB0BD3F5 /* Flip54App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Flip54App.swift; sourceTree = "<group>"; };
+		7555D96771AC4BF11EF0B262 /* Flip54.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Flip54.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		76D5BCF1A3AA119192222201 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		778F6D7BDE8134694108A176 /* CompletionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionView.swift; sourceTree = "<group>"; };
+		7D098F0AF7D594520638A834 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		910BD7AC775D141B643FC071 /* Flip54Core */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Flip54Core; path = Packages/Flip54Core; sourceTree = SOURCE_ROOT; };
+		B928E34F93C13CA23F613011 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
+		B95F95B2A017F274DA35B4A2 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		C091E7583B5A73C429CADA03 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		D8D079C4FAD5217145A2CF2B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		DA90C35153A1139687DE3849 /* ActiveWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveWorkoutView.swift; sourceTree = "<group>"; };
+		E8886DF6139B370297873E60 /* Flip54WorkoutEngine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Flip54WorkoutEngine; path = Packages/Flip54WorkoutEngine; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		441CEAB5BE8D0B8C270ABEDE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9C973F526285EC2405E8DB23 /* Flip54Core in Frameworks */,
+				E8D56DE252E2A0AEFDBF952E /* Flip54Storage in Frameworks */,
+				C99A14834AE517189B6DBE24 /* Flip54WorkoutEngine in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0B703EE650A39F9995745FAA = {
+			isa = PBXGroup;
+			children = (
+				22B7417889187BFFE5C495E6 /* Flip54 */,
+				2CAB8EA9F97FDF332B962EAB /* Packages */,
+				D2C6DDFD854BC85B45460CA7 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		10D7D836C3C67132EB468F29 /* Design */ = {
+			isa = PBXGroup;
+			children = (
+				055BD321D3DEC4795309186E /* DS.swift */,
+			);
+			path = Design;
+			sourceTree = "<group>";
+		};
+		1DF9BF6E36D2F96BAD6CF0D5 /* Completion */ = {
+			isa = PBXGroup;
+			children = (
+				778F6D7BDE8134694108A176 /* CompletionView.swift */,
+			);
+			path = Completion;
+			sourceTree = "<group>";
+		};
+		22B7417889187BFFE5C495E6 /* Flip54 */ = {
+			isa = PBXGroup;
+			children = (
+				7E0013DDE70BF83468B1ED15 /* App */,
+				D8A5D0C1E5E1D5FE85665229 /* Components */,
+				10D7D836C3C67132EB468F29 /* Design */,
+				6B42C4207A87FFA26E370DFC /* Features */,
+				34A15BBA07116FF7D9AA6A3F /* Preview Content */,
+				C091E7583B5A73C429CADA03 /* Assets.xcassets */,
+				345972F69B717C9372D7627E /* Flip54.entitlements */,
+				7D098F0AF7D594520638A834 /* Info.plist */,
+				D8D079C4FAD5217145A2CF2B /* PrivacyInfo.xcprivacy */,
+			);
+			path = Flip54;
+			sourceTree = "<group>";
+		};
+		2CAB8EA9F97FDF332B962EAB /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				910BD7AC775D141B643FC071 /* Flip54Core */,
+				29940533C1D4EF8AF42FE6A1 /* Flip54Storage */,
+				E8886DF6139B370297873E60 /* Flip54WorkoutEngine */,
+			);
+			path = Packages;
+			sourceTree = "<group>";
+		};
+		34A15BBA07116FF7D9AA6A3F /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				28F0CE3652748EEEE3EC94AC /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		4ED177D361A289E7FA68718A /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				B95F95B2A017F274DA35B4A2 /* SettingsView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		6B42C4207A87FFA26E370DFC /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				92A7786261F71DA90F6FC206 /* ActiveWorkout */,
+				1DF9BF6E36D2F96BAD6CF0D5 /* Completion */,
+				92E1B9864C6E4E68C0A93364 /* History */,
+				B1192D8FB2D50F545FD60C43 /* Onboarding */,
+				B1C1B94010C0661BF7BB4C3C /* PreWorkout */,
+				F08FB32584689172DFFFCF31 /* Profile */,
+				4ED177D361A289E7FA68718A /* Settings */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		7E0013DDE70BF83468B1ED15 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				76D5BCF1A3AA119192222201 /* ContentView.swift */,
+				4C293BCC81644491CB0BD3F5 /* Flip54App.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		92A7786261F71DA90F6FC206 /* ActiveWorkout */ = {
+			isa = PBXGroup;
+			children = (
+				DA90C35153A1139687DE3849 /* ActiveWorkoutView.swift */,
+			);
+			path = ActiveWorkout;
+			sourceTree = "<group>";
+		};
+		92E1B9864C6E4E68C0A93364 /* History */ = {
+			isa = PBXGroup;
+			children = (
+				B928E34F93C13CA23F613011 /* HistoryView.swift */,
+			);
+			path = History;
+			sourceTree = "<group>";
+		};
+		B1192D8FB2D50F545FD60C43 /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				3187C0598BD56969203B2016 /* OnboardingView.swift */,
+			);
+			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		B1C1B94010C0661BF7BB4C3C /* PreWorkout */ = {
+			isa = PBXGroup;
+			children = (
+				41BB8F655ECC069322AD2C5E /* PreWorkoutView.swift */,
+			);
+			path = PreWorkout;
+			sourceTree = "<group>";
+		};
+		D2C6DDFD854BC85B45460CA7 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				7555D96771AC4BF11EF0B262 /* Flip54.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D8A5D0C1E5E1D5FE85665229 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				34349F3E0E7F44A9A584119C /* CardPlaceholderView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		F08FB32584689172DFFFCF31 /* Profile */ = {
+			isa = PBXGroup;
+			children = (
+				47A24DD0F3DDE3CD532E4F7B /* ProfileView.swift */,
+			);
+			path = Profile;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		DD01DA23E26FA85D204512DA /* Flip54 */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0F1657A15236AF838D35B71D /* Build configuration list for PBXNativeTarget "Flip54" */;
+			buildPhases = (
+				63F1072EE7D530273F33078D /* Sources */,
+				0F3C202CFB9F9F9CACB6DF66 /* Resources */,
+				441CEAB5BE8D0B8C270ABEDE /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Flip54;
+			packageProductDependencies = (
+				B2272B8D6AB1191879B2C915 /* Flip54Core */,
+				5525B307D9C2B8A0070837FB /* Flip54Storage */,
+				A4DBC8CCD63AA23E33EE78FE /* Flip54WorkoutEngine */,
+			);
+			productName = Flip54;
+			productReference = 7555D96771AC4BF11EF0B262 /* Flip54.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		4EAE826EA2305368FF046B33 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					DD01DA23E26FA85D204512DA = {
+						DevelopmentTeam = LP5448PXCB;
+					};
+				};
+			};
+			buildConfigurationList = EEF5B2AB94B76F00412C2FF8 /* Build configuration list for PBXProject "Flip54" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 0B703EE650A39F9995745FAA;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				58887A0723BCC17A210D9E31 /* XCLocalSwiftPackageReference "Packages/Flip54Core" */,
+				ECCFD53E439DEE38DBDF6DC7 /* XCLocalSwiftPackageReference "Packages/Flip54Storage" */,
+				649DAD746210D4EA00AC5FF8 /* XCLocalSwiftPackageReference "Packages/Flip54WorkoutEngine" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = D2C6DDFD854BC85B45460CA7 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				DD01DA23E26FA85D204512DA /* Flip54 */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		0F3C202CFB9F9F9CACB6DF66 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2860261768396674F4C586EF /* Assets.xcassets in Resources */,
+				F131DC7A16A5B25DFA7BF43C /* Preview Assets.xcassets in Resources */,
+				462EB8EE5E5F6C960752E793 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		63F1072EE7D530273F33078D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				32AECE4A2A64CAEF5516DB64 /* ActiveWorkoutView.swift in Sources */,
+				D3AFF4176855C0C48FE71951 /* CardPlaceholderView.swift in Sources */,
+				A54A77351D527C0E5C6D7EE6 /* CompletionView.swift in Sources */,
+				A42E668F4DAA7EB48B233764 /* ContentView.swift in Sources */,
+				2134B6F99390180A3883DAA4 /* DS.swift in Sources */,
+				13C8374D14C68238A9884023 /* Flip54App.swift in Sources */,
+				30C7674ECC7B0BC4F40270C6 /* HistoryView.swift in Sources */,
+				09079A13155A5EF7E320E05A /* OnboardingView.swift in Sources */,
+				C6AF881D1F7AC594EBAF8951 /* PreWorkoutView.swift in Sources */,
+				7E3FDDD6F934762A428B88EC /* ProfileView.swift in Sources */,
+				86786B8D37B71797D0525F8B /* SettingsView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1DF1A256304B83B5B0AE84C8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Flip54/Flip54.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = LP5448PXCB;
+				INFOPLIST_FILE = Flip54/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.flip54.app;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		61087AD5A2EE7A9E1327FBF3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		77F99DEADDE4A44FD619BA8A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Flip54/Flip54.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = LP5448PXCB;
+				INFOPLIST_FILE = Flip54/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.flip54.app;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		EC76269BAF5A9ACC0FEE62A3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0F1657A15236AF838D35B71D /* Build configuration list for PBXNativeTarget "Flip54" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				77F99DEADDE4A44FD619BA8A /* Debug */,
+				1DF1A256304B83B5B0AE84C8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		EEF5B2AB94B76F00412C2FF8 /* Build configuration list for PBXProject "Flip54" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				61087AD5A2EE7A9E1327FBF3 /* Debug */,
+				EC76269BAF5A9ACC0FEE62A3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		58887A0723BCC17A210D9E31 /* XCLocalSwiftPackageReference "Packages/Flip54Core" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/Flip54Core;
+		};
+		649DAD746210D4EA00AC5FF8 /* XCLocalSwiftPackageReference "Packages/Flip54WorkoutEngine" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/Flip54WorkoutEngine;
+		};
+		ECCFD53E439DEE38DBDF6DC7 /* XCLocalSwiftPackageReference "Packages/Flip54Storage" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/Flip54Storage;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		5525B307D9C2B8A0070837FB /* Flip54Storage */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Flip54Storage;
+		};
+		A4DBC8CCD63AA23E33EE78FE /* Flip54WorkoutEngine */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Flip54WorkoutEngine;
+		};
+		B2272B8D6AB1191879B2C915 /* Flip54Core */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Flip54Core;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 4EAE826EA2305368FF046B33 /* Project object */;
+}
