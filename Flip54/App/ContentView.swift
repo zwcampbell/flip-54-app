@@ -84,8 +84,13 @@ struct ContentView: View {
     private func handleOnboardingComplete(startTutorial: Bool) {
         onboardingState.hasSeenWelcome = true
         try? modelContext.save()
-        // Tutorial mode will be wired in Commit 22; for now just proceed to main app
-        _ = startTutorial  // suppress unused warning until tutorial is implemented
+        if startTutorial {
+            coordinator.configureTutorial(
+                equipment: settings.equipment,
+                difficulty: settings.difficulty
+            )
+            coordinator.send(.shuffle)
+        }
     }
 
     // MARK: - Tab view
@@ -144,7 +149,13 @@ struct ContentView: View {
         guard let session = coordinator.session else { return }
         let data = CompletedWorkoutData(session: session, completedAt: Date())
         completedData = data
-        saveHistory(data)
+        if coordinator.isTutorial {
+            // Mark tutorial complete; don't save to history
+            onboardingState.hasCompletedTutorialFlip = true
+            try? modelContext.save()
+        } else {
+            saveHistory(data)
+        }
     }
 
     private func saveHistory(_ data: CompletedWorkoutData) {
