@@ -22,7 +22,6 @@ struct PreWorkoutView: View {
     @State private var tutorialBannerDismissed = false
 
     private enum ShufflePhase { case idle, spread, riffle, collapse }
-    private let shuffleHaptic = UINotificationFeedbackGenerator()
 
     private var isShufflingState: Bool {
         if case .shuffling = coordinator.state { return true }
@@ -54,7 +53,6 @@ struct PreWorkoutView: View {
         .onChange(of: coordinator.state) { _, newState in
             if case .shuffling = newState {
                 isShuffling = true
-                shuffleHaptic.prepare()
                 // Phase 1: spread (0-200ms)
                 withAnimation(.spring(response: 0.32, dampingFraction: 0.68)) {
                     shufflePhase = .spread
@@ -65,7 +63,8 @@ struct PreWorkoutView: View {
                     withAnimation(.spring(response: 0.28, dampingFraction: 0.62)) {
                         shufflePhase = .riffle
                     }
-                    shuffleHaptic.notificationOccurred(.success)
+                    HapticEngine.shared.play(.shuffle)
+                    SoundPlayer.shared.play(.deckRiffle)
                     try? await Task.sleep(for: .milliseconds(300))
                     // Phase 3: collapse to stack (500-700ms)
                     withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {

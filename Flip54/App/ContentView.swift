@@ -1,8 +1,11 @@
 import SwiftUI
 import SwiftData
+import os.signpost
 import Flip54Core
 import Flip54Storage
 import Flip54WorkoutEngine
+
+private let saveLog = OSLog(subsystem: "com.flip54.app", category: "SwiftData")
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
@@ -79,13 +82,16 @@ struct ContentView: View {
         .animation(.easeInOut(duration: 0.22), value: showCompletion)
         .animation(.easeInOut(duration: 0.22), value: isActiveWorkout)
         .onAppear { checkForResume() }
+        .injectReduceMotion()
     }
 
     // MARK: - Onboarding completion
 
     private func handleOnboardingComplete(startTutorial: Bool) {
         onboardingState.hasSeenWelcome = true
+        os_signpost(.begin, log: saveLog, name: "modelContext.save", "onboarding")
         try? modelContext.save()
+        os_signpost(.end, log: saveLog, name: "modelContext.save", "onboarding")
         if startTutorial {
             coordinator.configureTutorial(
                 equipment: settings.equipment,
@@ -164,7 +170,9 @@ struct ContentView: View {
         if coordinator.isTutorial {
             // Mark tutorial complete; don't save to history
             onboardingState.hasCompletedTutorialFlip = true
+            os_signpost(.begin, log: saveLog, name: "modelContext.save", "tutorial-complete")
             try? modelContext.save()
+            os_signpost(.end, log: saveLog, name: "modelContext.save", "tutorial-complete")
         } else {
             saveHistory(data)
         }
@@ -184,7 +192,9 @@ struct ContentView: View {
             jumpingJacks: data.jumpingJacks
         )
         modelContext.insert(history)
+        os_signpost(.begin, log: saveLog, name: "modelContext.save", "workout-history")
         try? modelContext.save()
+        os_signpost(.end, log: saveLog, name: "modelContext.save", "workout-history")
     }
 
     // MARK: - Resume support

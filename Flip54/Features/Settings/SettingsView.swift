@@ -6,6 +6,11 @@ import Flip54Storage
 struct SettingsView: View {
     @Bindable var settings: UserSettings
 
+    // Sound + haptic controls backed by UserDefaults
+    @AppStorage(UserDefaultsKeys.sfxEnabled)      private var sfxEnabled: Bool  = true
+    @AppStorage(UserDefaultsKeys.hapticsEnabled)  private var hapticsEnabled: Bool = true
+    @AppStorage(UserDefaultsKeys.sfxVolume)       private var sfxVolume: Double = 1.0
+
     var body: some View {
         ZStack {
             DS.Colors.bg.ignoresSafeArea()
@@ -14,6 +19,7 @@ struct SettingsView: View {
                     header
                     equipmentSection
                     difficultySection
+                    audioSection
                     Spacer(minLength: 60)
                 }
             }
@@ -136,6 +142,52 @@ struct SettingsView: View {
             }
             .padding(.horizontal, 18)
             .padding(.vertical, 14)
+        }
+    }
+
+    // MARK: - Audio
+
+    private var audioSection: some View {
+        VStack(spacing: 0) {
+            sectionHeader("AUDIO & HAPTICS")
+            VStack(spacing: 0) {
+                equipmentRow(
+                    icon: "speaker.wave.2.fill",
+                    title: "Sound Effects",
+                    subtitle: "Card flip, hold timer, completion sounds",
+                    isOn: $sfxEnabled
+                )
+                divider
+                equipmentRow(
+                    icon: "hand.tap.fill",
+                    title: "Haptic Feedback",
+                    subtitle: "Vibration on flip, done, and skip",
+                    isOn: $hapticsEnabled
+                )
+                if sfxEnabled {
+                    divider
+                    HStack(spacing: 14) {
+                        Image(systemName: "speaker.fill")
+                            .font(.system(size: 14))
+                            .foregroundStyle(DS.Colors.gold)
+                            .frame(width: 28)
+                        Text("Volume")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(DS.Colors.textPrimary)
+                        Slider(value: $sfxVolume, in: 0...1, step: 0.1)
+                            .tint(DS.Colors.gold)
+                        Image(systemName: "speaker.wave.3.fill")
+                            .font(.system(size: 14))
+                            .foregroundStyle(DS.Colors.gold)
+                    }
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 14)
+                }
+            }
+            .background(DS.Colors.bgCard)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(DS.Colors.border, lineWidth: 1))
+            .padding(.horizontal, 20)
         }
     }
 

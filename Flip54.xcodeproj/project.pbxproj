@@ -9,14 +9,18 @@
 /* Begin PBXBuildFile section */
 		06BA75DF8FA0AF5D8311C1A7 /* CardImageProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52C6675A9690E75127037D0 /* CardImageProvider.swift */; };
 		09079A13155A5EF7E320E05A /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3187C0598BD56969203B2016 /* OnboardingView.swift */; };
+		0C83819DD8F298213C30FF6C /* HapticEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90383C127A53DA7D5D458841 /* HapticEngine.swift */; };
 		13C8374D14C68238A9884023 /* Flip54App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C293BCC81644491CB0BD3F5 /* Flip54App.swift */; };
 		2134B6F99390180A3883DAA4 /* DS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 055BD321D3DEC4795309186E /* DS.swift */; };
 		2860261768396674F4C586EF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C091E7583B5A73C429CADA03 /* Assets.xcassets */; };
 		30C7674ECC7B0BC4F40270C6 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B928E34F93C13CA23F613011 /* HistoryView.swift */; };
+		316F18EC99B3479FD2D05760 /* SoundPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F529C57C49C8623E926E6D9 /* SoundPlayer.swift */; };
 		32AECE4A2A64CAEF5516DB64 /* ActiveWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA90C35153A1139687DE3849 /* ActiveWorkoutView.swift */; };
+		4304FC6348DA78A4FC89FDA8 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = D1AF62437A47B9A3B38343F9 /* README.md */; };
 		462EB8EE5E5F6C960752E793 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D8D079C4FAD5217145A2CF2B /* PrivacyInfo.xcprivacy */; };
 		7E3FDDD6F934762A428B88EC /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A24DD0F3DDE3CD532E4F7B /* ProfileView.swift */; };
 		86786B8D37B71797D0525F8B /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B95F95B2A017F274DA35B4A2 /* SettingsView.swift */; };
+		9A06BE069CB319704BD09C35 /* AccessibilityHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20C3BAE428A6C45455C0FBC /* AccessibilityHelpers.swift */; };
 		9C973F526285EC2405E8DB23 /* Flip54Core in Frameworks */ = {isa = PBXBuildFile; productRef = B2272B8D6AB1191879B2C915 /* Flip54Core */; };
 		9F74E2E6B610D17F1B239643 /* CardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C22DB04AA5EF70E9C1363F2 /* CardView.swift */; };
 		A42E668F4DAA7EB48B233764 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76D5BCF1A3AA119192222201 /* ContentView.swift */; };
@@ -44,11 +48,15 @@
 		76D5BCF1A3AA119192222201 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		778F6D7BDE8134694108A176 /* CompletionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionView.swift; sourceTree = "<group>"; };
 		7D098F0AF7D594520638A834 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		90383C127A53DA7D5D458841 /* HapticEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticEngine.swift; sourceTree = "<group>"; };
 		910BD7AC775D141B643FC071 /* Flip54Core */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Flip54Core; path = Packages/Flip54Core; sourceTree = SOURCE_ROOT; };
+		9F529C57C49C8623E926E6D9 /* SoundPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundPlayer.swift; sourceTree = "<group>"; };
 		B52C6675A9690E75127037D0 /* CardImageProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardImageProvider.swift; sourceTree = "<group>"; };
 		B928E34F93C13CA23F613011 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
 		B95F95B2A017F274DA35B4A2 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		C091E7583B5A73C429CADA03 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		D1AF62437A47B9A3B38343F9 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		D20C3BAE428A6C45455C0FBC /* AccessibilityHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityHelpers.swift; sourceTree = "<group>"; };
 		D8D079C4FAD5217145A2CF2B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		DA90C35153A1139687DE3849 /* ActiveWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveWorkoutView.swift; sourceTree = "<group>"; };
 		E8886DF6139B370297873E60 /* Flip54WorkoutEngine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Flip54WorkoutEngine; path = Packages/Flip54WorkoutEngine; sourceTree = SOURCE_ROOT; };
@@ -102,6 +110,8 @@
 				10D7D836C3C67132EB468F29 /* Design */,
 				6B42C4207A87FFA26E370DFC /* Features */,
 				34A15BBA07116FF7D9AA6A3F /* Preview Content */,
+				4BBE98E7BB3C5B043E710500 /* Resources */,
+				D7225BF6D04D619686BD2CE7 /* Utilities */,
 				C091E7583B5A73C429CADA03 /* Assets.xcassets */,
 				345972F69B717C9372D7627E /* Flip54.entitlements */,
 				7D098F0AF7D594520638A834 /* Info.plist */,
@@ -126,6 +136,22 @@
 				28F0CE3652748EEEE3EC94AC /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		40896C2DE1ADD7B9101B4994 /* standard */ = {
+			isa = PBXGroup;
+			children = (
+				D1AF62437A47B9A3B38343F9 /* README.md */,
+			);
+			path = standard;
+			sourceTree = "<group>";
+		};
+		4BBE98E7BB3C5B043E710500 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				7E2958765B5410248D4328FC /* decks */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 		4ED177D361A289E7FA68718A /* Settings */ = {
@@ -157,6 +183,14 @@
 				4C293BCC81644491CB0BD3F5 /* Flip54App.swift */,
 			);
 			path = App;
+			sourceTree = "<group>";
+		};
+		7E2958765B5410248D4328FC /* decks */ = {
+			isa = PBXGroup;
+			children = (
+				40896C2DE1ADD7B9101B4994 /* standard */,
+			);
+			path = decks;
 			sourceTree = "<group>";
 		};
 		92A7786261F71DA90F6FC206 /* ActiveWorkout */ = {
@@ -198,6 +232,16 @@
 				7555D96771AC4BF11EF0B262 /* Flip54.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		D7225BF6D04D619686BD2CE7 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				D20C3BAE428A6C45455C0FBC /* AccessibilityHelpers.swift */,
+				90383C127A53DA7D5D458841 /* HapticEngine.swift */,
+				9F529C57C49C8623E926E6D9 /* SoundPlayer.swift */,
+			);
+			path = Utilities;
 			sourceTree = "<group>";
 		};
 		D8A5D0C1E5E1D5FE85665229 /* Components */ = {
@@ -289,6 +333,7 @@
 				2860261768396674F4C586EF /* Assets.xcassets in Resources */,
 				F131DC7A16A5B25DFA7BF43C /* Preview Assets.xcassets in Resources */,
 				462EB8EE5E5F6C960752E793 /* PrivacyInfo.xcprivacy in Resources */,
+				4304FC6348DA78A4FC89FDA8 /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -299,6 +344,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9A06BE069CB319704BD09C35 /* AccessibilityHelpers.swift in Sources */,
 				32AECE4A2A64CAEF5516DB64 /* ActiveWorkoutView.swift in Sources */,
 				06BA75DF8FA0AF5D8311C1A7 /* CardImageProvider.swift in Sources */,
 				D3AFF4176855C0C48FE71951 /* CardPlaceholderView.swift in Sources */,
@@ -307,12 +353,14 @@
 				A42E668F4DAA7EB48B233764 /* ContentView.swift in Sources */,
 				2134B6F99390180A3883DAA4 /* DS.swift in Sources */,
 				13C8374D14C68238A9884023 /* Flip54App.swift in Sources */,
+				0C83819DD8F298213C30FF6C /* HapticEngine.swift in Sources */,
 				30C7674ECC7B0BC4F40270C6 /* HistoryView.swift in Sources */,
 				09079A13155A5EF7E320E05A /* OnboardingView.swift in Sources */,
 				C6AF881D1F7AC594EBAF8951 /* PreWorkoutView.swift in Sources */,
 				7E3FDDD6F934762A428B88EC /* ProfileView.swift in Sources */,
 				C57A83174BA8A91D0C3DEAD6 /* QuickReferenceView.swift in Sources */,
 				86786B8D37B71797D0525F8B /* SettingsView.swift in Sources */,
+				316F18EC99B3479FD2D05760 /* SoundPlayer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

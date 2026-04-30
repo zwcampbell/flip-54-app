@@ -23,6 +23,7 @@ struct CardView: View {
     private var provider: CardImageProvider { CardImageProvider(deckId: deckId) }
 
     var body: some View {
+        let a11yLabel = faceUp ? card.accessibilityLabel : Card.faceDownLabel
         if let artwork = provider.image(for: card, faceUp: faceUp) {
             artwork
                 .resizable()
@@ -30,8 +31,10 @@ struct CardView: View {
                 .frame(width: Self.cardWidth, height: Self.cardHeight)
                 .clipShape(RoundedRectangle(cornerRadius: 14))
                 .shadow(color: .black.opacity(0.65), radius: 20, x: 0, y: 10)
+                .accessibilityLabel(a11yLabel)
         } else {
             CardPlaceholderView(card: card, faceUp: faceUp)
+                .accessibilityLabel(a11yLabel)
         }
     }
 }

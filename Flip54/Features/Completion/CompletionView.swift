@@ -48,9 +48,7 @@ struct CompletionView: View {
         .onAppear {
             buildParticles()
             withAnimation(.easeOut(duration: 0.4)) { show = true }
-            // Completion haptic burst
-            let haptic = UINotificationFeedbackGenerator()
-            haptic.notificationOccurred(.success)
+            HapticEngine.shared.play(.completion)
         }
     }
 

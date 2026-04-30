@@ -10,7 +10,9 @@ struct ActiveWorkoutView: View {
     /// Nil disables all tooltips.
     var onboardingState: OnboardingState? = nil
 
-    // Card flip animation — 3D Y-axis rotation
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    // Card flip animation — 3D Y-axis rotation (or cross-fade when reduceMotion=true)
     @State private var flipDegrees: Double = 0        // 0 = face-down, 180 = face-up
     @State private var flipScale: CGFloat = 1         // subtle mid-flip scale pulse
     @State private var isFlipping = false
@@ -22,10 +24,7 @@ struct ActiveWorkoutView: View {
     // Card enter animation
     @State private var showPrescription = false
 
-    // Haptic generators (allocated once)
-    private let flipHaptic   = UIImpactFeedbackGenerator(style: .medium)
-    private let doneHaptic   = UIImpactFeedbackGenerator(style: .light)
-    private let skipHaptic   = UIImpactFeedbackGenerator(style: .light)
+    private let haptic = HapticEngine.shared
 
     // First-time contextual tooltip
     @State private var activeTooltip: TooltipKind? = nil
@@ -95,10 +94,6 @@ struct ActiveWorkoutView: View {
         let total = 54
         let done = cardsCompleted
         let pct = total > 0 ? Double(done) / Double(total) : 0
-        let r: CGFloat = 20
-        let circ = 2 * Double.pi * r
-        let dash = pct * circ
-
         return HStack(spacing: 12) {
             // Ring + done count
             ZStack {
@@ -437,52 +432,71 @@ struct ActiveWorkoutView: View {
         guard !isFlipping else { return }
         isFlipping = true
         showPrescription = false
-        flipHaptic.prepare()
 
-        // Phase 1: rotate to 90° (card edge-on) — ease-in 0.2s
-        withAnimation(.easeIn(duration: 0.20)) {
-            flipDegrees = 90
-            flipScale = 0.92      // slight shrink at the edge-on moment
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.20) {
-            // Swap face at the hidden moment + fire haptic
-            coordinator.send(.flipCard)
-            flipHaptic.impactOccurred()
-
-            // Phase 2: continue to 180° — ease-out 0.22s
-            withAnimation(.easeOut(duration: 0.22)) {
-                flipDegrees = 180
-                flipScale = 1
+        if reduceMotion {
+            // Reduced motion: simple cross-fade, no rotation
+            withAnimation(.easeInOut(duration: 0.18)) { cardOpacity = 0 }
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(180))
+                coordinator.send(.flipCard)
+                haptic.play(.cardFlip)
+                SoundPlayer.shared.play(.cardFlip)
+                if let card = coordinator.session?.currentCard {
+                    UIAccessibility.post(notification: .announcement, argument: card.accessibilityLabel)
+                }
+                withAnimation(.easeInOut(duration: 0.18)) { cardOpacity = 1 }
+                try? await Task.sleep(for: .milliseconds(180))
+                withAnimation(.easeOut(duration: 0.15)) { showPrescription = true }
+                isFlipping = false
             }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.22) {
-                // Reset degrees invisibly for next flip (card is 180° so reset to 0° = same visual)
+        } else {
+            // Phase 1: rotate to 90° (card edge-on) — ease-in 0.2s
+            withAnimation(.easeIn(duration: 0.20)) {
+                flipDegrees = 90
+                flipScale = 0.92
+            }
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(200))
+                coordinator.send(.flipCard)
+                haptic.play(.cardFlip)
+                SoundPlayer.shared.play(.cardFlip)
+                // Phase 2: continue to 180° — ease-out 0.22s
+                withAnimation(.easeOut(duration: 0.22)) {
+                    flipDegrees = 180
+                    flipScale = 1
+                }
+                try? await Task.sleep(for: .milliseconds(220))
                 flipDegrees = 0
                 withAnimation(.easeOut(duration: 0.2)) { showPrescription = true }
                 isFlipping = false
+                if let card = coordinator.session?.currentCard {
+                    UIAccessibility.post(notification: .announcement, argument: card.accessibilityLabel)
+                }
             }
         }
     }
 
     private func handleDone() {
-        doneHaptic.impactOccurred()
+        haptic.play(.done)
         coordinator.send(.markDone(reps: nil, holdSeconds: nil))
         // .cardCompleting is handled in onChange
     }
 
     private func handleSkip() {
-        skipHaptic.impactOccurred()
+        haptic.play(.skip)
+        SoundPlayer.shared.play(.cardSkip, volume: 0.6)
         coordinator.send(.skip)
         // .cardSkipping is handled in onChange
     }
 
     private func handleCardAdvance() {
-        // Reset animations for next card
         showPrescription = false
         withAnimation(.easeIn(duration: 0.3)) {
             cardOffsetY = -30
             cardOpacity = 0
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(300))
             cardOffsetY = 0
             cardOpacity = 1
         }
@@ -491,6 +505,8 @@ struct ActiveWorkoutView: View {
     private func handleStateChange(_ newState: WorkoutState) {
         switch newState {
         case .holdStarting:
+            haptic.play(.holdStart)
+            SoundPlayer.shared.play(.holdStart)
             coordinator.send(.startHold)
 
         case .cardFaceUp(let card, _):
@@ -505,7 +521,8 @@ struct ActiveWorkoutView: View {
                 cardOffsetY = -40
                 cardOpacity = 0
             }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(350))
                 coordinator.send(.advanceComplete)
                 cardOffsetY = 0
                 cardOpacity = 1
@@ -520,13 +537,15 @@ struct ActiveWorkoutView: View {
                 cardOffsetY = 40
                 cardOpacity = 0
             }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.28) {
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(280))
                 coordinator.send(.advanceComplete)
                 cardOffsetY = 0
                 cardOpacity = 1
             }
 
         case .workoutComplete:
+            SoundPlayer.shared.play(.completion)
             onWorkoutComplete()
 
         default:
@@ -644,13 +663,35 @@ private struct HoldTimerView: View {
     let startTime: Date
     let durationSeconds: Int
 
+    @State private var lastAnnounced: Int = -1
+
+    private let announcementThresholds: Set<Int> = [30, 15, 10, 5, 4, 3, 2, 1]
+
     var body: some View {
         TimelineView(.periodic(from: .now, by: 1)) { context in
             let elapsed = Int(context.date.timeIntervalSince(startTime))
             let remaining = max(0, durationSeconds - elapsed)
             let pct = durationSeconds > 0 ? Double(remaining) / Double(durationSeconds) : 0
             holdRing(remaining: remaining, pct: pct)
+                .onChange(of: remaining) { _, secs in
+                    announceIfNeeded(secs)
+                }
         }
+    }
+
+    private func announceIfNeeded(_ remaining: Int) {
+        // Hold tick sound + haptic at every second during final 10
+        if remaining <= 10 && remaining > 0 {
+            SoundPlayer.shared.play(.holdTick, volume: 0.4)
+            HapticEngine.shared.play(.holdTick)
+        }
+        // VoiceOver announcement at key thresholds
+        guard UIAccessibility.isVoiceOverRunning,
+              announcementThresholds.contains(remaining),
+              remaining != lastAnnounced else { return }
+        lastAnnounced = remaining
+        let msg = remaining == 1 ? "1 second" : "\(remaining) seconds"
+        UIAccessibility.post(notification: .announcement, argument: msg)
     }
 
     private func holdRing(remaining: Int, pct: Double) -> some View {
