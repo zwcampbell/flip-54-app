@@ -150,9 +150,10 @@ struct ActiveWorkoutView: View {
             // Card
             Group {
                 if let card = currentCard {
-                    CardPlaceholderView(card: card, faceUp: isFaceUp)
+                    CardView(card: card, faceUp: isFaceUp,
+                             deckId: coordinator.session?.deckId ?? "standard")
                 } else {
-                    CardPlaceholderView(card: .standard(suit: .hearts, rank: .two), faceUp: false)
+                    CardView(card: .standard(suit: .hearts, rank: .two), faceUp: false)
                 }
             }
             .scaleEffect(x: cardScaleX, y: 1)
