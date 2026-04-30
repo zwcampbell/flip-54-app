@@ -11,8 +11,14 @@ struct PreWorkoutView: View {
     let onResume: () -> Void
     let onDismissResume: () -> Void
 
+    /// Pass to show the "Try Tutorial" banner until the user has completed a tutorial flip.
+    var onboardingState: OnboardingState? = nil
+    /// Called when the user taps "Start Tutorial" from the banner.
+    var onStartTutorial: (() -> Void)? = nil
+
     @State private var isShuffling = false
     @State private var showQuickRef = false
+    @State private var tutorialBannerDismissed = false
 
     private var isShufflingState: Bool {
         if case .shuffling = coordinator.state { return true }
@@ -28,6 +34,11 @@ struct PreWorkoutView: View {
                     resumeBanner
                         .transition(.move(edge: .top).combined(with: .opacity))
                         .animation(.easeOut(duration: 0.3), value: showResumeBanner)
+                }
+                if showTutorialBanner {
+                    tutorialBanner
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                        .animation(.easeOut(duration: 0.3), value: showTutorialBanner)
                 }
                 Spacer()
                 deckFanView
@@ -111,6 +122,47 @@ struct PreWorkoutView: View {
         .overlay(
             RoundedRectangle(cornerRadius: 10)
                 .strokeBorder(DS.Colors.gold.opacity(0.4), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .padding(.horizontal, 20)
+        .padding(.top, 8)
+    }
+
+    // MARK: - Tutorial banner
+
+    private var showTutorialBanner: Bool {
+        guard let ob = onboardingState else { return false }
+        return !ob.hasCompletedTutorialFlip && !tutorialBannerDismissed
+    }
+
+    private var tutorialBanner: some View {
+        HStack {
+            Image(systemName: "graduationcap.fill")
+                .foregroundStyle(DS.Colors.gold)
+            Text("New? Try a tutorial flip first.")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(DS.Colors.textSecondary)
+            Spacer()
+            Button("Start") {
+                withAnimation { tutorialBannerDismissed = true }
+                onStartTutorial?()
+            }
+            .font(.system(size: 13, weight: .semibold))
+            .foregroundStyle(DS.Colors.gold)
+            Button {
+                withAnimation { tutorialBannerDismissed = true }
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 12))
+                    .foregroundStyle(DS.Colors.textTertiary)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(DS.Colors.bgCard)
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .strokeBorder(DS.Colors.gold.opacity(0.3), lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .padding(.horizontal, 20)

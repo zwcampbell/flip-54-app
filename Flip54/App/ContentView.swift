@@ -129,8 +129,18 @@ struct ContentView: View {
             settings: settings,
             showResumeBanner: $showResumeBanner,
             onResume: resumeSession,
-            onDismissResume: dismissResume
+            onDismissResume: dismissResume,
+            onboardingState: onboardingState,
+            onStartTutorial: startTutorialFromBanner
         )
+    }
+
+    private func startTutorialFromBanner() {
+        coordinator.configureTutorial(
+            equipment: settings.equipment,
+            difficulty: settings.difficulty
+        )
+        coordinator.send(.shuffle)
     }
 
     // MARK: - History tab
