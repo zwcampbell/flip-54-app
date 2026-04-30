@@ -1,8 +1,15 @@
 import SwiftUI
+import Flip54Core
+import Flip54Storage
 import Flip54WorkoutEngine
 
 struct PreWorkoutView: View {
     let coordinator: WorkoutCoordinator
+    let settings: UserSettings
+
+    @Binding var showResumeBanner: Bool
+    let onResume: () -> Void
+    let onDismissResume: () -> Void
 
     @State private var isShuffling = false
 
@@ -16,9 +23,15 @@ struct PreWorkoutView: View {
             DS.Colors.bg.ignoresSafeArea()
             VStack(spacing: 0) {
                 topBar
+                if showResumeBanner {
+                    resumeBanner
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                        .animation(.easeOut(duration: 0.3), value: showResumeBanner)
+                }
                 Spacer()
                 deckFanView
                 Spacer()
+                difficultyBadge
                 bottomBar
             }
         }
@@ -62,6 +75,40 @@ struct PreWorkoutView: View {
         }
         .padding(.horizontal, 20)
         .padding(.top, 12)
+    }
+
+    // MARK: - Resume banner
+
+    private var resumeBanner: some View {
+        HStack {
+            Image(systemName: "arrow.clockwise")
+                .foregroundStyle(DS.Colors.gold)
+            Text("Resume your unfinished workout?")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(DS.Colors.textSecondary)
+            Spacer()
+            Button("Resume") { onResume() }
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(DS.Colors.gold)
+            Button {
+                withAnimation { showResumeBanner = false }
+                onDismissResume()
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 12))
+                    .foregroundStyle(DS.Colors.textTertiary)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(DS.Colors.bgCard)
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .strokeBorder(DS.Colors.gold.opacity(0.4), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .padding(.horizontal, 20)
+        .padding(.top, 8)
     }
 
     // MARK: - Deck fan
@@ -117,11 +164,43 @@ struct PreWorkoutView: View {
         .frame(height: 260)
     }
 
+    // MARK: - Difficulty badge
+
+    private var difficultyBadge: some View {
+        HStack(spacing: 6) {
+            Text(settings.difficulty.displayName.uppercased())
+                .font(.custom("Oswald-SemiBold", size: 11))
+                .foregroundStyle(DS.Colors.textTertiary)
+                .tracking(1.2)
+            Circle()
+                .fill(DS.Colors.borderSub)
+                .frame(width: 3, height: 3)
+            Text(equipmentSummary)
+                .font(.system(size: 11))
+                .foregroundStyle(DS.Colors.textTertiary)
+        }
+        .padding(.bottom, 8)
+    }
+
+    private var equipmentSummary: String {
+        var parts: [String] = []
+        if settings.hasWeights    { parts.append("Weights") }
+        if settings.hasPullUpBar  { parts.append("Pull-up bar") }
+        if parts.isEmpty          { parts.append("Bodyweight") }
+        return parts.joined(separator: " + ")
+    }
+
     // MARK: - Bottom bar
 
     private var bottomBar: some View {
         VStack(spacing: 12) {
             Button {
+                // Configure coordinator with current settings before shuffle
+                coordinator.configure(
+                    equipment: settings.equipment,
+                    difficulty: settings.difficulty,
+                    deckId: settings.equippedDeckId
+                )
                 coordinator.send(.shuffle)
             } label: {
                 Text(isShufflingState ? "SHUFFLING…" : "START")
@@ -135,7 +214,13 @@ struct PreWorkoutView: View {
             }
             .disabled(isShufflingState)
 
-            Button { } label: {
+            // Equipment for today link
+            NavigationLink {
+                // Settings is accessed via the Profile tab — this is a shortcut hint
+                Text("Use the Profile tab to adjust settings.")
+                    .foregroundStyle(DS.Colors.textSecondary)
+                    .padding()
+            } label: {
                 Text("EQUIPMENT FOR TODAY")
                     .font(.custom("Oswald-SemiBold", size: 13))
                     .foregroundStyle(DS.Colors.textTertiary)

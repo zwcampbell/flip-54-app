@@ -5,10 +5,22 @@ import Flip54Storage
 import Flip54WorkoutEngine
 
 struct ContentView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Query private var settingsQuery: [UserSettings]
+    @Query(sort: \WorkoutHistory.completedAt, order: .reverse) private var historyQuery: [WorkoutHistory]
+
     @State private var coordinator = WorkoutCoordinator()
     @State private var completedData: CompletedWorkoutData?
+    @State private var showResumeBanner = false
+    @State private var selectedTab = 0
 
-    @Environment(\.modelContext) private var modelContext
+    // Convenience: always-valid settings (creates default on first run)
+    private var settings: UserSettings {
+        if let s = settingsQuery.first { return s }
+        let s = UserSettings()
+        modelContext.insert(s)
+        return s
+    }
 
     private var showCompletion: Bool { completedData != nil }
 
@@ -21,32 +33,87 @@ struct ContentView: View {
 
     var body: some View {
         ZStack {
-            DS.Colors.bg.ignoresSafeArea()
-
             if let data = completedData {
                 CompletionView(data: data) {
                     completedData = nil
                     coordinator = WorkoutCoordinator()
                 }
                 .transition(.opacity)
+                .zIndex(2)
             } else if isActiveWorkout {
                 ActiveWorkoutView(coordinator: coordinator) {
                     captureCompletion()
                 }
-                .transition(.opacity)
+                .transition(.asymmetric(insertion: .opacity, removal: .opacity))
+                .zIndex(1)
             } else {
-                PreWorkoutView(coordinator: coordinator)
+                mainTabView
                     .transition(.opacity)
+                    .zIndex(0)
             }
         }
-        .animation(.easeInOut(duration: 0.25), value: showCompletion)
-        .animation(.easeInOut(duration: 0.25), value: isActiveWorkout)
+        .animation(.easeInOut(duration: 0.22), value: showCompletion)
+        .animation(.easeInOut(duration: 0.22), value: isActiveWorkout)
+        .onAppear { checkForResume() }
     }
+
+    // MARK: - Tab view
+
+    private var mainTabView: some View {
+        TabView(selection: $selectedTab) {
+            workoutTab
+                .tabItem {
+                    Label("Workout", systemImage: "suit.club.fill")
+                }
+                .tag(0)
+
+            historyTab
+                .tabItem {
+                    Label("History", systemImage: "calendar")
+                }
+                .tag(1)
+
+            profileTab
+                .tabItem {
+                    Label("Profile", systemImage: "person.fill")
+                }
+                .tag(2)
+        }
+        .tint(DS.Colors.gold)
+        .onAppear { applyTabBarAppearance() }
+    }
+
+    // MARK: - Workout tab
+
+    private var workoutTab: some View {
+        PreWorkoutView(
+            coordinator: coordinator,
+            settings: settings,
+            showResumeBanner: $showResumeBanner,
+            onResume: resumeSession,
+            onDismissResume: dismissResume
+        )
+    }
+
+    // MARK: - History tab
+
+    private var historyTab: some View {
+        HistoryView(history: historyQuery)
+    }
+
+    // MARK: - Profile tab
+
+    private var profileTab: some View {
+        ProfileView(history: historyQuery, settings: settings)
+    }
+
+    // MARK: - Completion
 
     private func captureCompletion() {
         guard let session = coordinator.session else { return }
-        completedData = CompletedWorkoutData(session: session, completedAt: Date())
-        saveHistory(completedData!)
+        let data = CompletedWorkoutData(session: session, completedAt: Date())
+        completedData = data
+        saveHistory(data)
     }
 
     private func saveHistory(_ data: CompletedWorkoutData) {
@@ -64,6 +131,45 @@ struct ContentView: View {
         )
         modelContext.insert(history)
         try? modelContext.save()
+    }
+
+    // MARK: - Resume support
+
+    private func checkForResume() {
+        let store = ActiveSessionStore()
+        if let saved = store.load(),
+           !saved.isComplete,
+           Date().timeIntervalSince(saved.startedAt) < 86400 {
+            showResumeBanner = true
+        }
+    }
+
+    private func resumeSession() {
+        showResumeBanner = false
+        coordinator.restoreIfNeeded(
+            equipment: settings.equipment,
+            difficulty: settings.difficulty,
+            deckId: settings.equippedDeckId
+        )
+    }
+
+    private func dismissResume() {
+        showResumeBanner = false
+        ActiveSessionStore().clear()
+    }
+
+    // MARK: - Tab bar appearance
+
+    private func applyTabBarAppearance() {
+        let appearance = UITabBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = UIColor(DS.Colors.bgRaised)
+        appearance.stackedLayoutAppearance.normal.iconColor = UIColor(DS.Colors.textTertiary)
+        appearance.stackedLayoutAppearance.normal.titleTextAttributes = [
+            .foregroundColor: UIColor(DS.Colors.textTertiary)
+        ]
+        UITabBar.appearance().standardAppearance = appearance
+        UITabBar.appearance().scrollEdgeAppearance = appearance
     }
 }
 
