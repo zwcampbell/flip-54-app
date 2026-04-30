@@ -19,6 +19,7 @@
 		9C973F526285EC2405E8DB23 /* Flip54Core in Frameworks */ = {isa = PBXBuildFile; productRef = B2272B8D6AB1191879B2C915 /* Flip54Core */; };
 		A42E668F4DAA7EB48B233764 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76D5BCF1A3AA119192222201 /* ContentView.swift */; };
 		A54A77351D527C0E5C6D7EE6 /* CompletionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 778F6D7BDE8134694108A176 /* CompletionView.swift */; };
+		C57A83174BA8A91D0C3DEAD6 /* QuickReferenceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4A4F86440DF95F55280D448 /* QuickReferenceView.swift */; };
 		C6AF881D1F7AC594EBAF8951 /* PreWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41BB8F655ECC069322AD2C5E /* PreWorkoutView.swift */; };
 		C99A14834AE517189B6DBE24 /* Flip54WorkoutEngine in Frameworks */ = {isa = PBXBuildFile; productRef = A4DBC8CCD63AA23E33EE78FE /* Flip54WorkoutEngine */; };
 		D3AFF4176855C0C48FE71951 /* CardPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34349F3E0E7F44A9A584119C /* CardPlaceholderView.swift */; };
@@ -47,6 +48,7 @@
 		D8D079C4FAD5217145A2CF2B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		DA90C35153A1139687DE3849 /* ActiveWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveWorkoutView.swift; sourceTree = "<group>"; };
 		E8886DF6139B370297873E60 /* Flip54WorkoutEngine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Flip54WorkoutEngine; path = Packages/Flip54WorkoutEngine; sourceTree = SOURCE_ROOT; };
+		F4A4F86440DF95F55280D448 /* QuickReferenceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickReferenceView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -181,6 +183,7 @@
 			isa = PBXGroup;
 			children = (
 				41BB8F655ECC069322AD2C5E /* PreWorkoutView.swift */,
+				F4A4F86440DF95F55280D448 /* QuickReferenceView.swift */,
 			);
 			path = PreWorkout;
 			sourceTree = "<group>";
@@ -300,6 +303,7 @@
 				09079A13155A5EF7E320E05A /* OnboardingView.swift in Sources */,
 				C6AF881D1F7AC594EBAF8951 /* PreWorkoutView.swift in Sources */,
 				7E3FDDD6F934762A428B88EC /* ProfileView.swift in Sources */,
+				C57A83174BA8A91D0C3DEAD6 /* QuickReferenceView.swift in Sources */,
 				86786B8D37B71797D0525F8B /* SettingsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

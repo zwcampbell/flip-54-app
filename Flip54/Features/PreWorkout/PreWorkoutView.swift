@@ -12,6 +12,7 @@ struct PreWorkoutView: View {
     let onDismissResume: () -> Void
 
     @State private var isShuffling = false
+    @State private var showQuickRef = false
 
     private var isShufflingState: Bool {
         if case .shuffling = coordinator.state { return true }
@@ -63,7 +64,7 @@ struct PreWorkoutView: View {
 
             Spacer()
 
-            Button { } label: {
+            Button { showQuickRef = true } label: {
                 Text("?")
                     .font(.system(size: 16, weight: .medium))
                     .foregroundStyle(DS.Colors.textSecondary)
@@ -71,6 +72,11 @@ struct PreWorkoutView: View {
                     .background(DS.Colors.bgCard)
                     .clipShape(Circle())
                     .overlay(Circle().strokeBorder(DS.Colors.border, lineWidth: 1))
+            }
+            .sheet(isPresented: $showQuickRef) {
+                QuickReferenceView()
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.hidden)
             }
         }
         .padding(.horizontal, 20)
