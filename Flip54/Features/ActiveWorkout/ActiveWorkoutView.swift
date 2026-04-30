@@ -153,20 +153,23 @@ struct ActiveWorkoutView: View {
 
     private var cardArea: some View {
         VStack(spacing: 20) {
-            // Card
-            Group {
-                if let card = currentCard {
-                    CardView(card: card, faceUp: isFaceUp,
-                             deckId: coordinator.session?.deckId ?? "standard")
-                } else {
-                    CardView(card: .standard(suit: .hearts, rank: .two), faceUp: false)
+            // Card + deck-stack indicator behind it
+            ZStack {
+                deckStackIndicator
+                Group {
+                    if let card = currentCard {
+                        CardView(card: card, faceUp: isFaceUp,
+                                 deckId: coordinator.session?.deckId ?? "standard")
+                    } else {
+                        CardView(card: .standard(suit: .hearts, rank: .two), faceUp: false)
+                    }
                 }
+                // 3D flip: rotate on Y axis; scaleEffect provides mid-flip size pulse
+                .rotation3DEffect(.degrees(flipDegrees), axis: (x: 0, y: 1, z: 0), perspective: 0.6)
+                .scaleEffect(flipScale)
+                .offset(y: cardOffsetY)
+                .opacity(cardOpacity)
             }
-            // 3D flip: rotate on Y axis; scaleEffect provides mid-flip size pulse
-            .rotation3DEffect(.degrees(flipDegrees), axis: (x: 0, y: 1, z: 0), perspective: 0.6)
-            .scaleEffect(flipScale)
-            .offset(y: cardOffsetY)
-            .opacity(cardOpacity)
             .onTapGesture {
                 if case .cardFaceDown = coordinator.state { handleFlipTap() }
             }
@@ -177,6 +180,48 @@ struct ActiveWorkoutView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, DS.Layout.horizontalMargin)
+    }
+
+    // MARK: - Deck stack indicator
+
+    /// Three thin card shapes stacked behind the active card, shrinking as cards are depleted.
+    private var deckStackIndicator: some View {
+        let remaining = coordinator.session?.cardsRemaining ?? 54
+        let total = 54
+        let fraction = total > 0 ? Double(remaining) / Double(total) : 0
+        // Show 0–3 shadow cards based on remaining fraction
+        let layers = fraction > 0.66 ? 3 : fraction > 0.33 ? 2 : fraction > 0 ? 1 : 0
+
+        return ZStack {
+            ForEach(0..<3, id: \.self) { idx in
+                if idx < layers {
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(
+                            LinearGradient(
+                                colors: [DS.Colors.bgCard, DS.Colors.bgRaised],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(
+                            width: CardView.cardWidth  - CGFloat(idx + 1) * 4,
+                            height: CardView.cardHeight - CGFloat(idx + 1) * 4
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 14)
+                                .strokeBorder(DS.Colors.border.opacity(0.6 - Double(idx) * 0.15), lineWidth: 1)
+                        )
+                        .offset(y: CGFloat(idx + 1) * 5)
+                        .zIndex(-Double(idx + 1))
+                        .opacity(0.6 - Double(idx) * 0.15)
+                } else {
+                    Color.clear
+                        .frame(width: CardView.cardWidth, height: CardView.cardHeight)
+                        .zIndex(-Double(idx + 1))
+                }
+            }
+        }
+        .animation(.easeOut(duration: 0.5), value: layers)
     }
 
     @ViewBuilder
