@@ -9,6 +9,8 @@ import Flip54Storage
 public final class WorkoutCoordinator {
     public private(set) var state: WorkoutState = .idle
     public private(set) var session: ActiveSession?
+    /// True when running a tutorial flip — coordinator won't persist session and caller skips history save.
+    public private(set) var isTutorial: Bool = false
 
     private let store: ActiveSessionStore
     private let holdTimer: HoldTimer
@@ -149,6 +151,7 @@ public final class WorkoutCoordinator {
     // MARK: - Helpers
 
     private func startNewSession() {
+        isTutorial = false
         var rng = SystemRandomNumberGenerator()
         let equipment = session?.equipment ?? .bodyWeightOnly
         let difficulty = session?.difficulty ?? .standard
@@ -163,7 +166,7 @@ public final class WorkoutCoordinator {
     }
 
     private func persistSession() {
-        guard let s = session else { return }
+        guard !isTutorial, let s = session else { return }
         try? store.save(s)
     }
 
@@ -194,6 +197,30 @@ public final class WorkoutCoordinator {
             difficulty: difficulty,
             rng: &rng
         )
+    }
+
+    /// Configure a 5-card tutorial deck: regular → ace → face → joker → regular (for skip demo).
+    /// Results are NOT saved to history; caller checks `isTutorial` before persisting.
+    public func configureTutorial(equipment: Equipment, difficulty: Difficulty) {
+        isTutorial = true
+        let tutorialCards: [Card] = [
+            .standard(suit: .hearts,  rank: .seven),   // page 1: basic reps
+            .standard(suit: .spades,  rank: .ace),     // page 2: hold exercise
+            .standard(suit: .clubs,   rank: .king),    // page 3: face card
+            .joker(variant: .red),                     // page 4: joker / jumping jacks
+            .standard(suit: .diamonds, rank: .five),   // page 5: regular + hint to skip
+        ]
+        var rng = SystemRandomNumberGenerator()
+        session = ActiveSession.start(
+            deck: tutorialCards,
+            deckId: "tutorial",
+            equipment: equipment,
+            difficulty: .beginner,  // reduced reps for tutorial
+            rng: &rng
+        )
+        // Tutorial deck is already in the desired order — override the shuffled pile
+        session?.drawPile = tutorialCards
+        session?.currentCard = nil
     }
 
     /// Seed a specific draw pile for testing purposes.
