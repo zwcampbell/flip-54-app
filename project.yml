@@ -1,0 +1,56 @@
+name: Flip54
+options:
+  bundleIdPrefix: com.flip54
+  deploymentTarget:
+    iOS: "17.0"
+  xcodeVersion: "16"
+  createIntermediateGroups: true
+  groupSortPosition: top
+
+settings:
+  base:
+    SWIFT_VERSION: 6.0
+    ENABLE_PREVIEWS: YES
+    SWIFT_STRICT_CONCURRENCY: complete
+
+packages:
+  Flip54Core:
+    path: Packages/Flip54Core
+  Flip54Storage:
+    path: Packages/Flip54Storage
+  Flip54WorkoutEngine:
+    path: Packages/Flip54WorkoutEngine
+
+targets:
+  Flip54:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: Flip54
+      - path: Flip54/PrivacyInfo.xcprivacy
+        buildPhase: resources
+    dependencies:
+      - package: Flip54Core
+      - package: Flip54Storage
+      - package: Flip54WorkoutEngine
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.flip54.app
+        INFOPLIST_FILE: Flip54/Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        DEVELOPMENT_TEAM: LP5448PXCB
+    info:
+      path: Flip54/Info.plist
+      properties:
+        CFBundleName: Flip 54
+        CFBundleDisplayName: Flip 54
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "1"
+        UILaunchScreen:
+          UIColorName: AppBackground
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+    entitlements:
+      path: Flip54/Flip54.entitlements
+      properties: {}
