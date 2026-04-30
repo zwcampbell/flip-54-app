@@ -10,8 +10,9 @@ struct ActiveWorkoutView: View {
     /// Nil disables all tooltips.
     var onboardingState: OnboardingState? = nil
 
-    // Card flip animation
-    @State private var cardScaleX: CGFloat = 1
+    // Card flip animation — 3D Y-axis rotation
+    @State private var flipDegrees: Double = 0        // 0 = face-down, 180 = face-up
+    @State private var flipScale: CGFloat = 1         // subtle mid-flip scale pulse
     @State private var isFlipping = false
 
     // Card exit animation
@@ -20,6 +21,11 @@ struct ActiveWorkoutView: View {
 
     // Card enter animation
     @State private var showPrescription = false
+
+    // Haptic generators (allocated once)
+    private let flipHaptic   = UIImpactFeedbackGenerator(style: .medium)
+    private let doneHaptic   = UIImpactFeedbackGenerator(style: .light)
+    private let skipHaptic   = UIImpactFeedbackGenerator(style: .light)
 
     // First-time contextual tooltip
     @State private var activeTooltip: TooltipKind? = nil
@@ -147,17 +153,23 @@ struct ActiveWorkoutView: View {
 
     private var cardArea: some View {
         VStack(spacing: 20) {
-            // Card
-            Group {
-                if let card = currentCard {
-                    CardPlaceholderView(card: card, faceUp: isFaceUp)
-                } else {
-                    CardPlaceholderView(card: .standard(suit: .hearts, rank: .two), faceUp: false)
+            // Card + deck-stack indicator behind it
+            ZStack {
+                deckStackIndicator
+                Group {
+                    if let card = currentCard {
+                        CardView(card: card, faceUp: isFaceUp,
+                                 deckId: coordinator.session?.deckId ?? "standard")
+                    } else {
+                        CardView(card: .standard(suit: .hearts, rank: .two), faceUp: false)
+                    }
                 }
+                // 3D flip: rotate on Y axis; scaleEffect provides mid-flip size pulse
+                .rotation3DEffect(.degrees(flipDegrees), axis: (x: 0, y: 1, z: 0), perspective: 0.6)
+                .scaleEffect(flipScale)
+                .offset(y: cardOffsetY)
+                .opacity(cardOpacity)
             }
-            .scaleEffect(x: cardScaleX, y: 1)
-            .offset(y: cardOffsetY)
-            .opacity(cardOpacity)
             .onTapGesture {
                 if case .cardFaceDown = coordinator.state { handleFlipTap() }
             }
@@ -168,6 +180,48 @@ struct ActiveWorkoutView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, DS.Layout.horizontalMargin)
+    }
+
+    // MARK: - Deck stack indicator
+
+    /// Three thin card shapes stacked behind the active card, shrinking as cards are depleted.
+    private var deckStackIndicator: some View {
+        let remaining = coordinator.session?.cardsRemaining ?? 54
+        let total = 54
+        let fraction = total > 0 ? Double(remaining) / Double(total) : 0
+        // Show 0–3 shadow cards based on remaining fraction
+        let layers = fraction > 0.66 ? 3 : fraction > 0.33 ? 2 : fraction > 0 ? 1 : 0
+
+        return ZStack {
+            ForEach(0..<3, id: \.self) { idx in
+                if idx < layers {
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(
+                            LinearGradient(
+                                colors: [DS.Colors.bgCard, DS.Colors.bgRaised],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(
+                            width: CardView.cardWidth  - CGFloat(idx + 1) * 4,
+                            height: CardView.cardHeight - CGFloat(idx + 1) * 4
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 14)
+                                .strokeBorder(DS.Colors.border.opacity(0.6 - Double(idx) * 0.15), lineWidth: 1)
+                        )
+                        .offset(y: CGFloat(idx + 1) * 5)
+                        .zIndex(-Double(idx + 1))
+                        .opacity(0.6 - Double(idx) * 0.15)
+                } else {
+                    Color.clear
+                        .frame(width: CardView.cardWidth, height: CardView.cardHeight)
+                        .zIndex(-Double(idx + 1))
+                }
+            }
+        }
+        .animation(.easeOut(duration: 0.5), value: layers)
     }
 
     @ViewBuilder
@@ -383,11 +437,26 @@ struct ActiveWorkoutView: View {
         guard !isFlipping else { return }
         isFlipping = true
         showPrescription = false
-        withAnimation(.easeIn(duration: 0.22)) { cardScaleX = 0.02 }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.22) {
+        flipHaptic.prepare()
+
+        // Phase 1: rotate to 90° (card edge-on) — ease-in 0.2s
+        withAnimation(.easeIn(duration: 0.20)) {
+            flipDegrees = 90
+            flipScale = 0.92      // slight shrink at the edge-on moment
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.20) {
+            // Swap face at the hidden moment + fire haptic
             coordinator.send(.flipCard)
-            withAnimation(.easeOut(duration: 0.22)) { cardScaleX = 1 }
+            flipHaptic.impactOccurred()
+
+            // Phase 2: continue to 180° — ease-out 0.22s
+            withAnimation(.easeOut(duration: 0.22)) {
+                flipDegrees = 180
+                flipScale = 1
+            }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.22) {
+                // Reset degrees invisibly for next flip (card is 180° so reset to 0° = same visual)
+                flipDegrees = 0
                 withAnimation(.easeOut(duration: 0.2)) { showPrescription = true }
                 isFlipping = false
             }
@@ -395,11 +464,13 @@ struct ActiveWorkoutView: View {
     }
 
     private func handleDone() {
+        doneHaptic.impactOccurred()
         coordinator.send(.markDone(reps: nil, holdSeconds: nil))
         // .cardCompleting is handled in onChange
     }
 
     private func handleSkip() {
+        skipHaptic.impactOccurred()
         coordinator.send(.skip)
         // .cardSkipping is handled in onChange
     }
@@ -428,6 +499,8 @@ struct ActiveWorkoutView: View {
         case .cardCompleting:
             activeTooltip = nil
             showPrescription = false
+            flipDegrees = 0
+            flipScale = 1
             withAnimation(.easeIn(duration: 0.35)) {
                 cardOffsetY = -40
                 cardOpacity = 0
@@ -441,6 +514,8 @@ struct ActiveWorkoutView: View {
         case .cardSkipping:
             activeTooltip = nil
             showPrescription = false
+            flipDegrees = 0
+            flipScale = 1
             withAnimation(.easeIn(duration: 0.28)) {
                 cardOffsetY = 40
                 cardOpacity = 0
