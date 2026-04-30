@@ -17,8 +17,12 @@ struct PreWorkoutView: View {
     var onStartTutorial: (() -> Void)? = nil
 
     @State private var isShuffling = false
+    @State private var shufflePhase: ShufflePhase = .idle
     @State private var showQuickRef = false
     @State private var tutorialBannerDismissed = false
+
+    private enum ShufflePhase { case idle, spread, riffle, collapse }
+    private let shuffleHaptic = UINotificationFeedbackGenerator()
 
     private var isShufflingState: Bool {
         if case .shuffling = coordinator.state { return true }
@@ -50,9 +54,31 @@ struct PreWorkoutView: View {
         .onChange(of: coordinator.state) { _, newState in
             if case .shuffling = newState {
                 isShuffling = true
+                shuffleHaptic.prepare()
+                // Phase 1: spread (0-200ms)
+                withAnimation(.spring(response: 0.32, dampingFraction: 0.68)) {
+                    shufflePhase = .spread
+                }
                 Task { @MainActor in
-                    try? await Task.sleep(for: .milliseconds(600))
+                    try? await Task.sleep(for: .milliseconds(200))
+                    // Phase 2: riffle interleave (200-500ms)
+                    withAnimation(.spring(response: 0.28, dampingFraction: 0.62)) {
+                        shufflePhase = .riffle
+                    }
+                    shuffleHaptic.notificationOccurred(.success)
+                    try? await Task.sleep(for: .milliseconds(300))
+                    // Phase 3: collapse to stack (500-700ms)
+                    withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                        shufflePhase = .collapse
+                    }
+                    try? await Task.sleep(for: .milliseconds(200))
                     coordinator.send(.shuffleComplete)
+                    // Reset fan after transition to active workout
+                    try? await Task.sleep(for: .milliseconds(400))
+                    withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                        shufflePhase = .idle
+                        isShuffling = false
+                    }
                 }
             }
         }
@@ -175,18 +201,49 @@ struct PreWorkoutView: View {
         let dx: CGFloat; let dy: CGFloat; let rot: Double
     }
 
-    private let cardOffsets: [CardOffset] = [
-        CardOffset(dx: -12, dy: -4, rot: -8),
-        CardOffset(dx: -6,  dy: -2, rot: -4),
-        CardOffset(dx:  0,  dy:  0, rot:  0),
-        CardOffset(dx:  6,  dy: -2, rot:  4),
-        CardOffset(dx: 12,  dy: -4, rot:  8),
+    // Rest/fan positions
+    private let fanOffsets: [CardOffset] = [
+        CardOffset(dx: -28, dy: -6,  rot: -12),
+        CardOffset(dx: -14, dy: -3,  rot:  -6),
+        CardOffset(dx:   0, dy:  0,  rot:   0),
+        CardOffset(dx:  14, dy: -3,  rot:   6),
+        CardOffset(dx:  28, dy: -6,  rot:  12),
     ]
+
+    // Spread positions (riffle phase — alternating L/R halves)
+    private let riffleOffsets: [CardOffset] = [
+        CardOffset(dx: -44, dy:  0, rot: -18),
+        CardOffset(dx: -20, dy:  4, rot:  -8),
+        CardOffset(dx:   0, dy:  8, rot:   0),
+        CardOffset(dx:  20, dy:  4, rot:   8),
+        CardOffset(dx:  44, dy:  0, rot:  18),
+    ]
+
+    private func currentOffset(for index: Int) -> CardOffset {
+        let base   = fanOffsets[index]
+        let riffle = riffleOffsets[index]
+        switch shufflePhase {
+        case .idle:     return base
+        case .spread:   return CardOffset(dx: base.dx * 2.4, dy: base.dy * 2, rot: base.rot * 1.8)
+        case .riffle:   return riffle
+        case .collapse: return CardOffset(dx: 0, dy: 0, rot: 0)
+        }
+    }
+
+    private var shuffleAnimationId: Int {
+        switch shufflePhase {
+        case .idle:     return 0
+        case .spread:   return 1
+        case .riffle:   return 2
+        case .collapse: return 3
+        }
+    }
 
     private var deckFanView: some View {
         ZStack {
-            ForEach(cardOffsets.indices, id: \.self) { i in
-                let o = cardOffsets[i]
+            ForEach(fanOffsets.indices, id: \.self) { i in
+                let o = currentOffset(for: i)
+
                 RoundedRectangle(cornerRadius: 14)
                     .fill(
                         LinearGradient(
@@ -205,16 +262,14 @@ struct PreWorkoutView: View {
                             .font(.custom("BarlowCondensed-ExtraBold", size: 40))
                             .foregroundStyle(DS.Colors.gold)
                     )
-                    .shadow(color: .black.opacity(0.6), radius: 12, x: 0, y: 6)
-                    .offset(
-                        x: isShuffling ? o.dx * 2.8 : o.dx,
-                        y: o.dy
-                    )
-                    .rotationEffect(.degrees(isShuffling ? o.rot * 1.6 : o.rot))
+                    .shadow(color: .black.opacity(shufflePhase == .collapse ? 0.9 : 0.6),
+                            radius: shufflePhase == .collapse ? 24 : 12, x: 0, y: 6)
+                    .offset(x: o.dx, y: o.dy)
+                    .rotationEffect(.degrees(o.rot))
                     .animation(
-                        .spring(response: 0.35, dampingFraction: 0.65)
+                        .spring(response: 0.32, dampingFraction: 0.68)
                         .delay(Double(i) * 0.04),
-                        value: isShuffling
+                        value: shuffleAnimationId
                     )
                     .zIndex(Double(i))
             }
