@@ -1,10 +1,14 @@
 import SwiftUI
 import Flip54Core
+import Flip54Storage
 import Flip54WorkoutEngine
 
 struct ActiveWorkoutView: View {
     let coordinator: WorkoutCoordinator
     let onWorkoutComplete: () -> Void
+    /// Pass the live OnboardingState to enable first-time contextual tooltips.
+    /// Nil disables all tooltips.
+    var onboardingState: OnboardingState? = nil
 
     // Card flip animation
     @State private var cardScaleX: CGFloat = 1
@@ -17,6 +21,9 @@ struct ActiveWorkoutView: View {
     // Card enter animation
     @State private var showPrescription = false
 
+    // First-time contextual tooltip
+    @State private var activeTooltip: TooltipKind? = nil
+
     var body: some View {
         ZStack {
             DS.Colors.bg.ignoresSafeArea()
@@ -27,6 +34,9 @@ struct ActiveWorkoutView: View {
             }
             if isPaused {
                 pauseOverlay
+            }
+            if let tip = activeTooltip {
+                tooltipOverlay(tip)
             }
         }
         .onChange(of: coordinator.state) { _, newState in
@@ -412,7 +422,11 @@ struct ActiveWorkoutView: View {
         case .holdStarting:
             coordinator.send(.startHold)
 
+        case .cardFaceUp(let card, _):
+            checkTooltip(for: card)
+
         case .cardCompleting:
+            activeTooltip = nil
             showPrescription = false
             withAnimation(.easeIn(duration: 0.35)) {
                 cardOffsetY = -40
@@ -425,6 +439,7 @@ struct ActiveWorkoutView: View {
             }
 
         case .cardSkipping:
+            activeTooltip = nil
             showPrescription = false
             withAnimation(.easeIn(duration: 0.28)) {
                 cardOffsetY = 40
@@ -441,6 +456,109 @@ struct ActiveWorkoutView: View {
 
         default:
             break
+        }
+    }
+
+    // MARK: - Contextual tooltip logic
+
+    private func checkTooltip(for card: Card) {
+        guard let ob = onboardingState else { return }
+        if card.isAce, !ob.seenAceTooltip {
+            withAnimation(.spring(response: 0.4)) { activeTooltip = .ace }
+        } else if card.isFaceCard, !ob.seenFaceCardTooltip {
+            withAnimation(.spring(response: 0.4)) { activeTooltip = .faceCard }
+        } else if card.isJoker, !ob.seenJokerTooltip {
+            withAnimation(.spring(response: 0.4)) { activeTooltip = .joker }
+        } else if !ob.seenSkipTooltip {
+            withAnimation(.spring(response: 0.4)) { activeTooltip = .skip }
+        }
+    }
+
+    private func dismissTooltip() {
+        guard let ob = onboardingState, let tip = activeTooltip else { return }
+        switch tip {
+        case .ace:      ob.seenAceTooltip      = true
+        case .faceCard: ob.seenFaceCardTooltip = true
+        case .joker:    ob.seenJokerTooltip    = true
+        case .skip:     ob.seenSkipTooltip     = true
+        }
+        withAnimation(.easeOut(duration: 0.2)) { activeTooltip = nil }
+    }
+
+    @ViewBuilder
+    private func tooltipOverlay(_ tip: TooltipKind) -> some View {
+        VStack {
+            Spacer()
+            Button(action: dismissTooltip) {
+                HStack(alignment: .top, spacing: 14) {
+                    Image(systemName: tip.icon)
+                        .font(.system(size: 20))
+                        .foregroundStyle(DS.Colors.gold)
+                        .frame(width: 28)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(tip.title)
+                            .font(.custom("BarlowCondensed-ExtraBold", size: 18))
+                            .foregroundStyle(DS.Colors.textPrimary)
+                        Text(tip.body)
+                            .font(.system(size: 13))
+                            .foregroundStyle(DS.Colors.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Text("TAP TO DISMISS")
+                            .font(.custom("Oswald-SemiBold", size: 10))
+                            .foregroundStyle(DS.Colors.textTertiary)
+                            .tracking(1.2)
+                            .padding(.top, 2)
+                    }
+                }
+                .padding(18)
+                .background(DS.Colors.bgCard)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .strokeBorder(DS.Colors.gold.opacity(0.5), lineWidth: 1)
+                )
+                .padding(.horizontal, 20)
+                .padding(.bottom, 130)
+            }
+        }
+        .transition(.scale(scale: 0.9, anchor: .bottom).combined(with: .opacity))
+        .ignoresSafeArea(edges: .bottom)
+    }
+}
+
+// MARK: - Tooltip kind
+
+private enum TooltipKind {
+    case ace, faceCard, joker, skip
+
+    var icon: String {
+        switch self {
+        case .ace:      return "timer"
+        case .faceCard: return "star.fill"
+        case .joker:    return "bolt.fill"
+        case .skip:     return "forward.fill"
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .ace:      return "Ace = Hold Exercise"
+        case .faceCard: return "Face Cards = 10 Reps"
+        case .joker:    return "Joker = Jumping Jacks"
+        case .skip:     return "Need to Skip?"
+        }
+    }
+
+    var body: String {
+        switch self {
+        case .ace:
+            return "Aces trigger a timed hold. Hit START HOLD, hold the position until the timer runs out."
+        case .faceCard:
+            return "Jacks, Queens, and Kings always count as 10 reps, regardless of difficulty."
+        case .joker:
+            return "Both Jokers give you Jumping Jacks — the number of reps matches your difficulty setting."
+        case .skip:
+            return "Tap Skip below to pass on a card. Skipped cards are counted but not in your rep total."
         }
     }
 }

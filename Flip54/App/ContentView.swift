@@ -62,9 +62,11 @@ struct ContentView: View {
                 .transition(.opacity)
                 .zIndex(2)
             } else if isActiveWorkout {
-                ActiveWorkoutView(coordinator: coordinator) {
-                    captureCompletion()
-                }
+                ActiveWorkoutView(
+                    coordinator: coordinator,
+                    onWorkoutComplete: captureCompletion,
+                    onboardingState: onboardingState
+                )
                 .transition(.asymmetric(insertion: .opacity, removal: .opacity))
                 .zIndex(1)
             } else {
