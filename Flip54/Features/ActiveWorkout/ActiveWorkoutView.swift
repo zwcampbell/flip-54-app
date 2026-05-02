@@ -603,24 +603,33 @@ struct ActiveWorkoutView: View {
             }
 
         case .cardSkipping:
-            // Slide off to the LEFT, in front of the deck (Item 7 will add
-            // the behind-the-deck arc). Keep face-up while sliding; reset
-            // orientation off-screen.
+            // Two-phase return-to-deck motion:
+            //   1) Slide left off-screen (face-up, in front of the deck).
+            //   2) Drop behind the deck and slide back from off-screen left
+            //      into the deck stack — illustrates the card returning to
+            //      the bottom of the pile.
             activeTooltip = nil
             showPrescription = false
             cardZIndex = 1
-            withAnimation(.easeIn(duration: 0.40)) {
-                cardOffset = CGSize(width: -500, height: 40)
+            withAnimation(.easeIn(duration: 0.28)) {
+                cardOffset = CGSize(width: -500, height: 30)
                 cardTilt = -14
-                cardOpacity = 0
             }
             Task { @MainActor in
-                try? await Task.sleep(for: .milliseconds(400))
+                try? await Task.sleep(for: .milliseconds(280))
+                // Tuck behind the deck and flip face-down for the return trip.
+                cardZIndex = -1
                 flipDegrees = 0
                 flipScale = 1
-                coordinator.send(.advanceComplete)
-                cardOffset = .zero
                 cardTilt = 0
+                // Phase 2: slide back from off-screen left to center, behind
+                // the deck. The deck visually swallows the card as it arrives.
+                withAnimation(.easeOut(duration: 0.32)) {
+                    cardOffset = .zero
+                }
+                try? await Task.sleep(for: .milliseconds(320))
+                coordinator.send(.advanceComplete)
+                cardZIndex = 1
                 cardOpacity = 1
             }
 
