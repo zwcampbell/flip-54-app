@@ -207,16 +207,19 @@ public final class WorkoutCoordinator {
         )
     }
 
-    /// Configure a 5-card tutorial deck: regular → ace → face → joker → regular (for skip demo).
-    /// Results are NOT saved to history; caller checks `isTutorial` before persisting.
+    /// Configure an abridged 5-card tutorial deck: one card from each suit so
+    /// the user sees every body-focus, plus a Joker. Card kinds are spread
+    /// across the suits (numbered, face, Ace) so each contextual tooltip
+    /// fires once. Beginner difficulty. Results are NOT saved to history;
+    /// caller checks `isTutorial` before persisting.
     public func configureTutorial(equipment: Equipment, difficulty: Difficulty) {
         isTutorial = true
         let tutorialCards: [Card] = [
-            .standard(suit: .hearts,  rank: .seven),   // page 1: basic reps
-            .standard(suit: .spades,  rank: .ace),     // page 2: hold exercise
-            .standard(suit: .clubs,   rank: .king),    // page 3: face card
-            .joker(variant: .red),                     // page 4: joker / jumping jacks
-            .standard(suit: .diamonds, rank: .five),   // page 5: regular + hint to skip
+            .standard(suit: .hearts,   rank: .seven),  // numbered reps + skip tooltip
+            .standard(suit: .spades,   rank: .king),   // face card tooltip
+            .standard(suit: .clubs,    rank: .ace),    // Ace hold tooltip
+            .standard(suit: .diamonds, rank: .five),   // numbered reps (4th body focus)
+            .joker(variant: .red),                     // Joker tooltip
         ]
         var rng = SystemRandomNumberGenerator()
         session = ActiveSession.start(

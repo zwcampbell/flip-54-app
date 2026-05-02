@@ -96,7 +96,7 @@ struct ActiveWorkoutView: View {
     // MARK: - Workout bar
 
     private var workoutBar: some View {
-        let total = 54
+        let total = coordinator.session?.deckSize ?? 54
         let done = cardsCompleted
         let pct = total > 0 ? Double(done) / Double(total) : 0
 
@@ -244,7 +244,7 @@ struct ActiveWorkoutView: View {
     /// Three thin card shapes stacked behind the active card, shrinking as cards are depleted.
     private var deckStackIndicator: some View {
         let remaining = coordinator.session?.cardsRemaining ?? 54
-        let total = 54
+        let total = coordinator.session?.deckSize ?? 54
         let fraction = total > 0 ? Double(remaining) / Double(total) : 0
         // Show 0–3 shadow cards based on remaining fraction
         let layers = fraction > 0.66 ? 3 : fraction > 0.33 ? 2 : fraction > 0 ? 1 : 0
