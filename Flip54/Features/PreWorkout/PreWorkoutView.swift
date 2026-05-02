@@ -20,6 +20,7 @@ struct PreWorkoutView: View {
     @State private var shufflePhase: ShufflePhase = .idle
     @State private var showQuickRef = false
     @State private var tutorialBannerDismissed = false
+    @State private var showSettings = false
 
     private enum ShufflePhase { case idle, spread, riffle, collapse }
 
@@ -49,6 +50,9 @@ struct PreWorkoutView: View {
                 difficultyBadge
                 bottomBar
             }
+        }
+        .sheet(isPresented: $showSettings) {
+            PreWorkoutSettingsSheet(settings: settings)
         }
         .onChange(of: coordinator.state) { _, newState in
             if case .shuffling = newState {
@@ -310,19 +314,46 @@ struct PreWorkoutView: View {
     // MARK: - Difficulty badge
 
     private var difficultyBadge: some View {
-        HStack(spacing: 6) {
-            Text(settings.difficulty.displayName.uppercased())
-                .font(.custom("Oswald-SemiBold", size: 11))
-                .foregroundStyle(DS.Colors.textTertiary)
-                .tracking(1.2)
-            Circle()
-                .fill(DS.Colors.borderSub)
-                .frame(width: 3, height: 3)
-            Text(equipmentSummary)
-                .font(.system(size: 11))
-                .foregroundStyle(DS.Colors.textTertiary)
+        HStack(spacing: 12) {
+            settingColumn(
+                label: "DIFFICULTY",
+                value: settings.difficulty.displayName.uppercased()
+            )
+            settingColumn(
+                label: "EQUIPMENT",
+                value: equipmentSummary.uppercased()
+            )
         }
-        .padding(.bottom, 8)
+        .padding(.horizontal, 24)
+        .padding(.bottom, 16)
+    }
+
+    private func settingColumn(label: String, value: String) -> some View {
+        VStack(spacing: 6) {
+            Text(label)
+                .font(.custom("Oswald-SemiBold", size: 10))
+                .foregroundStyle(DS.Colors.textTertiary)
+                .tracking(1.4)
+            settingPill(text: value)
+        }
+    }
+
+    private func settingPill(text: String) -> some View {
+        Button {
+            showSettings = true
+        } label: {
+            Text(text)
+                .font(.custom("BarlowCondensed-ExtraBold", size: 22))
+                .foregroundStyle(DS.Colors.textPrimary)
+                .tracking(1.4)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                .frame(maxWidth: .infinity)
+                .frame(height: 48)
+                .background(DS.Colors.bgCard)
+                .clipShape(Capsule())
+                .overlay(Capsule().strokeBorder(DS.Colors.border, lineWidth: 1))
+        }
     }
 
     private var equipmentSummary: String {
@@ -356,21 +387,33 @@ struct PreWorkoutView: View {
                     .shadow(color: DS.Colors.gold.opacity(0.25), radius: 12, x: 0, y: 0)
             }
             .disabled(isShufflingState)
-
-            // Equipment for today link
-            NavigationLink {
-                // Settings is accessed via the Profile tab — this is a shortcut hint
-                Text("Use the Profile tab to adjust settings.")
-                    .foregroundStyle(DS.Colors.textSecondary)
-                    .padding()
-            } label: {
-                Text("EQUIPMENT FOR TODAY")
-                    .font(.custom("Oswald-SemiBold", size: 13))
-                    .foregroundStyle(DS.Colors.textTertiary)
-                    .tracking(1.4)
-            }
         }
         .padding(.horizontal, 24)
         .padding(.bottom, 52)
+    }
+}
+
+// MARK: - Settings sheet wrapper
+
+private struct PreWorkoutSettingsSheet: View {
+    @Bindable var settings: UserSettings
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        ZStack {
+            DS.Colors.bg.ignoresSafeArea()
+            VStack(spacing: 0) {
+                HStack {
+                    Spacer()
+                    Button("Done") { dismiss() }
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(DS.Colors.gold)
+                        .padding(.horizontal, 24)
+                        .padding(.top, 16)
+                        .padding(.bottom, 8)
+                }
+                SettingsView(settings: settings)
+            }
+        }
     }
 }
