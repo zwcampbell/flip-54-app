@@ -60,13 +60,6 @@ struct SettingsView: View {
                     subtitle: "Adds pull-ups to upper body workouts and dead-hang holds",
                     isOn: $settings.hasPullUpBar
                 )
-                divider
-                equipmentRow(
-                    icon: "rectangle.fill",
-                    title: "Yoga Mat",
-                    subtitle: "Improves comfort for hold exercises",
-                    isOn: $settings.hasYogaMat
-                )
             }
             .background(DS.Colors.bgCard)
             .clipShape(RoundedRectangle(cornerRadius: 16))

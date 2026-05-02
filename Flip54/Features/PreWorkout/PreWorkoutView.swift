@@ -56,10 +56,6 @@ struct PreWorkoutView: View {
         .sheet(isPresented: $showSettings) {
             PreWorkoutSettingsSheet(settings: settings)
         }
-        .sheet(isPresented: $showDeckPicker) {
-            DeckPickerSheet(settings: settings)
-                .presentationDetents([.medium])
-        }
         .onChange(of: coordinator.state) { _, newState in
             if case .shuffling = newState {
                 isShuffling = true
@@ -126,6 +122,10 @@ struct PreWorkoutView: View {
                 .background(DS.Colors.bgCard)
                 .clipShape(Capsule())
                 .overlay(Capsule().strokeBorder(DS.Colors.border, lineWidth: 1))
+            }
+            .popover(isPresented: $showDeckPicker, attachmentAnchor: .point(.bottom), arrowEdge: .top) {
+                DeckPickerPopover(settings: settings, isPresented: $showDeckPicker)
+                    .presentationCompactAdaptation(.popover)
             }
 
             Spacer()
@@ -455,49 +455,27 @@ enum DeckCatalog {
     }
 }
 
-// MARK: - Deck picker sheet
+// MARK: - Deck picker popover
 
-private struct DeckPickerSheet: View {
+private struct DeckPickerPopover: View {
     @Bindable var settings: UserSettings
-    @Environment(\.dismiss) private var dismiss
+    @Binding var isPresented: Bool
 
     var body: some View {
-        ZStack {
-            DS.Colors.bg.ignoresSafeArea()
-            VStack(spacing: 0) {
-                HStack {
-                    Text("DECK STYLE")
-                        .font(.custom("BarlowCondensed-ExtraBold", size: 22))
-                        .foregroundStyle(DS.Colors.textPrimary)
-                        .tracking(1.4)
-                    Spacer()
-                    Button("Done") { dismiss() }
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(DS.Colors.gold)
+        VStack(spacing: 0) {
+            ForEach(Array(DeckCatalog.all.enumerated()), id: \.element.id) { idx, style in
+                deckRow(style)
+                if idx < DeckCatalog.all.count - 1 {
+                    Rectangle()
+                        .fill(DS.Colors.borderSub)
+                        .frame(height: 1)
+                        .padding(.leading, 60)
                 }
-                .padding(.horizontal, 24)
-                .padding(.top, 16)
-                .padding(.bottom, 16)
-
-                VStack(spacing: 0) {
-                    ForEach(Array(DeckCatalog.all.enumerated()), id: \.element.id) { idx, style in
-                        deckRow(style)
-                        if idx < DeckCatalog.all.count - 1 {
-                            Rectangle()
-                                .fill(DS.Colors.borderSub)
-                                .frame(height: 1)
-                                .padding(.leading, 56)
-                        }
-                    }
-                }
-                .background(DS.Colors.bgCard)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-                .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(DS.Colors.border, lineWidth: 1))
-                .padding(.horizontal, 20)
-
-                Spacer()
             }
         }
+        .frame(minWidth: 300)
+        .background(DS.Colors.bgCard)
+        .presentationBackground(DS.Colors.bgCard)
     }
 
     private func deckRow(_ style: DeckStyle) -> some View {
@@ -505,13 +483,10 @@ private struct DeckPickerSheet: View {
         return Button {
             guard style.isUnlocked else { return }
             settings.equippedDeckId = style.id
-            dismiss()
+            isPresented = false
         } label: {
             HStack(spacing: 14) {
-                Image(systemName: style.isUnlocked ? "rectangle.stack.fill" : "lock.fill")
-                    .font(.system(size: 16))
-                    .foregroundStyle(style.isUnlocked ? DS.Colors.gold : DS.Colors.textTertiary)
-                    .frame(width: 28)
+                aceOfSpadesIcon(unlocked: style.isUnlocked)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(style.displayName)
@@ -531,7 +506,7 @@ private struct DeckPickerSheet: View {
                     }
                 }
 
-                Spacer()
+                Spacer(minLength: 12)
 
                 if isSelected && style.isUnlocked {
                     Image(systemName: "checkmark")
@@ -539,10 +514,38 @@ private struct DeckPickerSheet: View {
                         .foregroundStyle(DS.Colors.gold)
                 }
             }
-            .padding(.horizontal, 18)
-            .padding(.vertical, 14)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
         }
         .disabled(!style.isUnlocked)
+    }
+
+    /// An ace-of-spades card face. Locked variant is dimmed and overlaid
+    /// with a lock badge.
+    private func aceOfSpadesIcon(unlocked: Bool) -> some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 6)
+                .fill(Color(hex: "#FEFEFE"))
+                .frame(width: 44, height: 60)
+                .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Color.black.opacity(0.15), lineWidth: 0.5))
+            VStack(spacing: 0) {
+                Text("A")
+                    .font(.custom("BarlowCondensed-ExtraBold", size: 18))
+                    .foregroundStyle(Color.black)
+                Text("\u{2660}\u{FE0E}")
+                    .font(.system(size: 22))
+                    .foregroundStyle(Color.black)
+            }
+            if !unlocked {
+                Color.black.opacity(0.45)
+                    .frame(width: 44, height: 60)
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                Image(systemName: "lock.fill")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(DS.Colors.gold)
+            }
+        }
+        .frame(width: 48)
     }
 }
 
