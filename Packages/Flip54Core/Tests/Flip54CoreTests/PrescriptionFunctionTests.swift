@@ -35,219 +35,209 @@ struct PrescriptionFunctionTests {
         #expect(p == .reps(exercise: .jumpingJacks, count: 50))
     }
 
-    // ── Ace holds ──────────────────────────────────────────────────────────
+    // ── Ace holds (suit → body region) ─────────────────────────────────────
 
-    @Test("Aces · hold seconds per difficulty")
+    @Test("Ace seconds per difficulty")
     func aceHoldSeconds() {
-        // Beginner: roundToFive(60 * 0.75) = roundToFive(45) = 45
         #expect(roundToFive(60 * 0.75) == 45)
-        // Standard: roundToFive(60 * 1.0) = 60
-        #expect(roundToFive(60 * 1.0) == 60)
-        // Advanced: roundToFive(60 * 1.25) = roundToFive(75) = 75
+        #expect(roundToFive(60 * 1.0)  == 60)
         #expect(roundToFive(60 * 1.25) == 75)
     }
 
-    @Test("Ace Hearts → push-up hold (all equipment, all difficulties)")
+    @Test("Ace Hearts (lower body) → wall sit")
     func aceHearts() {
         for (eq, _) in allEquipmentConfigs {
             for diff in Difficulty.allCases {
                 let p = prescription(for: .standard(suit: .hearts, rank: .ace), equipment: eq, difficulty: diff)
-                let expectedSecs = roundToFive(60 * diff.multiplier)
-                #expect(p == .hold(exercise: .pushUpHold, seconds: expectedSecs))
-            }
-        }
-    }
-
-    @Test("Ace Spades with bar → dead hang")
-    func aceSpadeWithBar() {
-        for diff in Difficulty.allCases {
-            let p = prescription(for: .standard(suit: .spades, rank: .ace), equipment: .fullKit, difficulty: diff)
-            let expectedSecs = roundToFive(60 * diff.multiplier)
-            #expect(p == .hold(exercise: .deadHang, seconds: expectedSecs))
-        }
-        for diff in Difficulty.allCases {
-            let p = prescription(for: .standard(suit: .spades, rank: .ace), equipment: .barOnly, difficulty: diff)
-            let expectedSecs = roundToFive(60 * diff.multiplier)
-            #expect(p == .hold(exercise: .deadHang, seconds: expectedSecs))
-        }
-    }
-
-    @Test("Ace Spades without bar → hollow body hold")
-    func aceSpadesNoBar() {
-        for diff in Difficulty.allCases {
-            let p = prescription(for: .standard(suit: .spades, rank: .ace), equipment: .bodyWeightOnly, difficulty: diff)
-            let expectedSecs = roundToFive(60 * diff.multiplier)
-            #expect(p == .hold(exercise: .hollowBodyHold, seconds: expectedSecs))
-        }
-        for diff in Difficulty.allCases {
-            let p = prescription(for: .standard(suit: .spades, rank: .ace), equipment: .weightsOnly, difficulty: diff)
-            let expectedSecs = roundToFive(60 * diff.multiplier)
-            #expect(p == .hold(exercise: .hollowBodyHold, seconds: expectedSecs))
-        }
-    }
-
-    @Test("Ace Clubs → wall sit (all equipment)")
-    func aceClubs() {
-        for (eq, _) in allEquipmentConfigs {
-            for diff in Difficulty.allCases {
-                let p = prescription(for: .standard(suit: .clubs, rank: .ace), equipment: eq, difficulty: diff)
                 let expectedSecs = roundToFive(60 * diff.multiplier)
                 #expect(p == .hold(exercise: .wallSit, seconds: expectedSecs))
             }
         }
     }
 
-    @Test("Ace Diamonds → plank (all equipment)")
-    func aceDiamonds() {
+    @Test("Ace Spades (upper body) with bar → dead hang")
+    func aceSpadeWithBar() {
+        for eq in [Equipment.fullKit, .barOnly] {
+            for diff in Difficulty.allCases {
+                let p = prescription(for: .standard(suit: .spades, rank: .ace), equipment: eq, difficulty: diff)
+                let expectedSecs = roundToFive(60 * diff.multiplier)
+                #expect(p == .hold(exercise: .deadHang, seconds: expectedSecs))
+            }
+        }
+    }
+
+    @Test("Ace Spades (upper body) without bar → push-up hold")
+    func aceSpadesNoBar() {
+        for eq in [Equipment.bodyWeightOnly, .weightsOnly] {
+            for diff in Difficulty.allCases {
+                let p = prescription(for: .standard(suit: .spades, rank: .ace), equipment: eq, difficulty: diff)
+                let expectedSecs = roundToFive(60 * diff.multiplier)
+                #expect(p == .hold(exercise: .pushUpHold, seconds: expectedSecs))
+            }
+        }
+    }
+
+    @Test("Ace Clubs (total body) → plank")
+    func aceClubs() {
         for (eq, _) in allEquipmentConfigs {
             for diff in Difficulty.allCases {
-                let p = prescription(for: .standard(suit: .diamonds, rank: .ace), equipment: eq, difficulty: diff)
+                let p = prescription(for: .standard(suit: .clubs, rank: .ace), equipment: eq, difficulty: diff)
                 let expectedSecs = roundToFive(60 * diff.multiplier)
                 #expect(p == .hold(exercise: .plank, seconds: expectedSecs))
             }
         }
     }
 
-    // ── Face cards (flat 10) ───────────────────────────────────────────────
-
-    @Test("Face cards: beginner → 8 reps (ceil(10 * 0.75))")
-    func faceCardBeginner() {
-        for rank in [Rank.jack, .queen, .king] {
-            let p = prescription(for: .standard(suit: .hearts, rank: rank), equipment: .bodyWeightOnly, difficulty: .beginner)
-            #expect(p == .reps(exercise: .pushUp, count: 8))
-        }
-    }
-
-    @Test("Face cards: standard → 10 reps")
-    func faceCardStandard() {
-        for rank in [Rank.jack, .queen, .king] {
-            let p = prescription(for: .standard(suit: .hearts, rank: rank), equipment: .bodyWeightOnly, difficulty: .standard)
-            #expect(p == .reps(exercise: .pushUp, count: 10))
-        }
-    }
-
-    @Test("Face cards: advanced → 13 reps (ceil(10 * 1.25))")
-    func faceCardAdvanced() {
-        for rank in [Rank.jack, .queen, .king] {
-            let p = prescription(for: .standard(suit: .hearts, rank: rank), equipment: .bodyWeightOnly, difficulty: .advanced)
-            #expect(p == .reps(exercise: .pushUp, count: 13))
-        }
-    }
-
-    // ── Suit mappings ──────────────────────────────────────────────────────
-
-    @Test("Hearts → push-up regardless of equipment")
-    func heartsExercise() {
+    @Test("Ace Diamonds (core) → hollow body hold")
+    func aceDiamonds() {
         for (eq, _) in allEquipmentConfigs {
-            let p = prescription(for: .standard(suit: .hearts, rank: .seven), equipment: eq, difficulty: .standard)
-            #expect(p == .reps(exercise: .pushUp, count: 7))
+            for diff in Difficulty.allCases {
+                let p = prescription(for: .standard(suit: .diamonds, rank: .ace), equipment: eq, difficulty: diff)
+                let expectedSecs = roundToFive(60 * diff.multiplier)
+                #expect(p == .hold(exercise: .hollowBodyHold, seconds: expectedSecs))
+            }
         }
     }
 
-    @Test("Spades with bar → pull-up")
+    // ── Movement pools ─────────────────────────────────────────────────────
+
+    @Test("Hearts (lower body) bodyweight pool always includes squat-family moves")
+    func heartsBodyweightPool() {
+        let pool = movementPool(for: .hearts, equipment: .bodyWeightOnly)
+        #expect(pool.contains(.bodyweightSquat))
+        #expect(pool.contains(.lunge))
+        #expect(!pool.contains(.gobletSquat))
+    }
+
+    @Test("Hearts (lower body) with weights adds goblet squats")
+    func heartsWithWeights() {
+        let pool = movementPool(for: .hearts, equipment: .weightsOnly)
+        #expect(pool.contains(.gobletSquat))
+        #expect(pool.contains(.bodyweightSquat))
+    }
+
+    @Test("Spades (upper body) bodyweight pool: push-up + Hindu push-up only")
+    func spadesBodyweightPool() {
+        let pool = movementPool(for: .spades, equipment: .bodyWeightOnly)
+        #expect(pool == [.pushUp, .hinduPushUp])
+    }
+
+    @Test("Spades (upper body) with bar adds pull-ups")
     func spadesWithBar() {
-        for eq in [Equipment.fullKit, .barOnly] {
-            let p = prescription(for: .standard(suit: .spades, rank: .seven), equipment: eq, difficulty: .standard)
-            #expect(p == .reps(exercise: .pullUp, count: 7))
+        let pool = movementPool(for: .spades, equipment: .barOnly)
+        #expect(pool.contains(.pullUp))
+        #expect(pool.contains(.pushUp))
+    }
+
+    @Test("Spades (upper body) with weights adds curl/press/triceps")
+    func spadesWithWeights() {
+        let pool = movementPool(for: .spades, equipment: .weightsOnly)
+        #expect(pool.contains(.bicepCurl))
+        #expect(pool.contains(.shoulderPress))
+        #expect(pool.contains(.tricepExtension))
+        #expect(pool.contains(.pushUp))
+    }
+
+    @Test("Clubs (total body) pool: bodyweight always; weights adds thruster")
+    func clubsPool() {
+        let bw = movementPool(for: .clubs, equipment: .bodyWeightOnly)
+        #expect(bw.contains(.burpee))
+        #expect(bw.contains(.mountainClimber))
+        #expect(!bw.contains(.thruster))
+
+        let weighted = movementPool(for: .clubs, equipment: .weightsOnly)
+        #expect(weighted.contains(.thruster))
+    }
+
+    @Test("Diamonds (core) pool: bodyweight always; weights adds weighted sit-ups")
+    func diamondsPool() {
+        let bw = movementPool(for: .diamonds, equipment: .bodyWeightOnly)
+        #expect(bw == [.sitUp, .russianTwist])
+        let weighted = movementPool(for: .diamonds, equipment: .weightsOnly)
+        #expect(weighted.contains(.weightedSitUp))
+    }
+
+    // ── Rep counts ─────────────────────────────────────────────────────────
+
+    @Test("Number-card reps = pip × difficulty (regardless of pool exercise)")
+    func numberCardReps() {
+        // 5♥ standard difficulty = 5 reps of whatever lower-body move maps.
+        let p = prescription(for: .standard(suit: .hearts, rank: .five), equipment: .bodyWeightOnly, difficulty: .standard)
+        if case .reps(_, let count) = p { #expect(count == 5) } else { Issue.record("expected reps") }
+    }
+
+    @Test("Face cards = 10 reps × difficulty")
+    func faceCardReps() {
+        for rank in [Rank.jack, .queen, .king] {
+            let beg = prescription(for: .standard(suit: .hearts, rank: rank), equipment: .bodyWeightOnly, difficulty: .beginner)
+            if case .reps(_, let c) = beg { #expect(c == 8) } else { Issue.record("expected reps") }
+
+            let std = prescription(for: .standard(suit: .hearts, rank: rank), equipment: .bodyWeightOnly, difficulty: .standard)
+            if case .reps(_, let c) = std { #expect(c == 10) } else { Issue.record("expected reps") }
+
+            let adv = prescription(for: .standard(suit: .hearts, rank: rank), equipment: .bodyWeightOnly, difficulty: .advanced)
+            if case .reps(_, let c) = adv { #expect(c == 13) } else { Issue.record("expected reps") }
         }
     }
 
-    @Test("Spades without bar → Hindu push-up")
-    func spadesNoBar() {
-        for eq in [Equipment.bodyWeightOnly, .weightsOnly] {
-            let p = prescription(for: .standard(suit: .spades, rank: .seven), equipment: eq, difficulty: .standard)
-            #expect(p == .reps(exercise: .hinduPushUp, count: 7))
-        }
+    // ── Determinism: same card always picks same exercise ──────────────────
+
+    @Test("Pool selection is deterministic per (suit, rank, equipment)")
+    func deterministicSelection() {
+        let card = Card.standard(suit: .spades, rank: .seven)
+        let p1 = prescription(for: card, equipment: .fullKit, difficulty: .standard)
+        let p2 = prescription(for: card, equipment: .fullKit, difficulty: .standard)
+        #expect(p1 == p2)
     }
 
-    @Test("Clubs with weights → goblet squat, pip×1")
-    func clubsWithWeights() {
-        for eq in [Equipment.fullKit, .weightsOnly] {
-            let p = prescription(for: .standard(suit: .clubs, rank: .seven), equipment: eq, difficulty: .standard)
-            #expect(p == .reps(exercise: .gobletSquat, count: 7))
-        }
+    @Test("Different ranks within a suit can yield different exercises")
+    func variedExercisesPerSuit() {
+        // With weights+bar (largest spades pool), different ranks should hit
+        // different pool slots.
+        let exs: Set<Exercise> = Set(
+            [Rank.two, .three, .four, .five, .six].map { rank in
+                let p = prescription(for: .standard(suit: .spades, rank: rank), equipment: .fullKit, difficulty: .standard)
+                if case .reps(let ex, _) = p { return ex }
+                return .pushUp
+            }
+        )
+        #expect(exs.count >= 2, "Expected variety across ranks; got \(exs)")
     }
 
-    @Test("Clubs without weights → body-weight squat, pip×2")
-    func clubsNoWeights() {
-        for eq in [Equipment.bodyWeightOnly, .barOnly] {
-            let p = prescription(for: .standard(suit: .clubs, rank: .seven), equipment: eq, difficulty: .standard)
-            #expect(p == .reps(exercise: .bodyweightSquat, count: 14))
-        }
-    }
+    // ── Full matrix coverage ───────────────────────────────────────────────
 
-    @Test("Diamonds → sit-up regardless of equipment")
-    func diamondsExercise() {
-        for (eq, _) in allEquipmentConfigs {
-            let p = prescription(for: .standard(suit: .diamonds, rank: .seven), equipment: eq, difficulty: .standard)
-            #expect(p == .reps(exercise: .sitUp, count: 7))
-        }
-    }
-
-    // ── Documented example from spec ───────────────────────────────────────
-
-    @Test("Spec example: Club 7, body-weight, beginner → 11 squats")
-    func specExample() {
-        // ceil(7 × 2 × 0.75) = ceil(10.5) = 11
-        let p = prescription(for: .standard(suit: .clubs, rank: .seven), equipment: .bodyWeightOnly, difficulty: .beginner)
-        #expect(p == .reps(exercise: .bodyweightSquat, count: 11))
-    }
-
-    @Test("Beginner 7 Hearts → 6 push-ups (ceil(7 * 0.75))")
-    func beginnerSevenHearts() {
-        let p = prescription(for: .standard(suit: .hearts, rank: .seven), equipment: .bodyWeightOnly, difficulty: .beginner)
-        #expect(p == .reps(exercise: .pushUp, count: 6))
-    }
-
-    @Test("Advanced 7 Hearts → 9 push-ups (ceil(7 * 1.25))")
-    func advancedSevenHearts() {
-        let p = prescription(for: .standard(suit: .hearts, rank: .seven), equipment: .bodyWeightOnly, difficulty: .advanced)
-        #expect(p == .reps(exercise: .pushUp, count: 9))
-    }
-
-    // ── Full 648-case matrix ───────────────────────────────────────────────
-
-    @Test("Full matrix: all number+face cards × 4 equipment × 3 difficulty")
+    @Test("Full matrix: number+face cards × 4 equipment × 3 difficulty = 576")
     func fullMatrix() {
         let numberAndFaceRanks = Rank.allCases.filter { $0 != .ace }
         var caseCount = 0
-
         for suit in Suit.allCases {
             for rank in numberAndFaceRanks {
                 for (eq, eqName) in allEquipmentConfigs {
                     for diff in Difficulty.allCases {
                         let card = Card.standard(suit: suit, rank: rank)
                         let p = prescription(for: card, equipment: eq, difficulty: diff)
-                        // All should be reps prescriptions for non-ace cards
                         if case .reps(_, let count) = p {
                             #expect(count > 0, "Zero reps for \(suit) \(rank) \(eqName) \(diff)")
                         } else {
-                            Issue.record("Expected reps prescription for \(suit) \(rank) \(eqName) \(diff), got hold")
+                            Issue.record("Expected reps prescription for \(suit) \(rank) \(eqName) \(diff)")
                         }
                         caseCount += 1
                     }
                 }
             }
         }
-        // 4 suits × 12 non-ace ranks × 4 equipment × 3 difficulty = 576
-        // Plus 4 suits × 1 ace × 4 equipment × 3 difficulty = 48
-        // Plus 2 joker variants × 4 equipment × 3 difficulty = 24
-        // number+face only here: 4 × 12 × 4 × 3 = 576
         #expect(caseCount == 576)
     }
 
-    @Test("Full matrix: all aces × 4 equipment × 3 difficulty = 48 holds")
+    @Test("Full matrix: aces × 4 equipment × 3 difficulty = 48 holds")
     func aceMatrix() {
         var caseCount = 0
         for suit in Suit.allCases {
             for (eq, _) in allEquipmentConfigs {
                 for diff in Difficulty.allCases {
                     let p = prescription(for: .standard(suit: suit, rank: .ace), equipment: eq, difficulty: diff)
-                    if case .hold(_, let secs) = p {
-                        #expect(secs > 0)
-                    } else {
-                        Issue.record("Expected hold prescription for ace")
-                    }
+                    if case .hold(_, let secs) = p { #expect(secs > 0) }
+                    else { Issue.record("Expected hold prescription for ace") }
                     caseCount += 1
                 }
             }
