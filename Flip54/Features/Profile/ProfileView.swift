@@ -64,7 +64,7 @@ struct ProfileView: View {
                 statTile(value: "\(stats.totalReps)", label: "Total Reps")
                 statTile(value: "\(stats.totalCards)", label: "Cards Flipped")
                 statTile(value: stats.totalTimeString, label: "Total Time")
-                statTile(value: "\(stats.currentStreak)🔥", label: "Current Streak")
+                statTile(value: "\(stats.currentStreak)", label: "Current Streak")
                 statTile(value: "\(stats.longestStreak)", label: "Best Streak")
             }
             .background(DS.Colors.bgCard)
