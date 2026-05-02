@@ -21,8 +21,9 @@ struct PreWorkoutView: View {
     @State private var showQuickRef = false
     @State private var tutorialBannerDismissed = false
     @State private var showSettings = false
+    @State private var scatterOffsets: [CardOffset] = []
 
-    private enum ShufflePhase { case idle, spread, riffle, collapse }
+    private enum ShufflePhase { case idle, spread, scatter, collapse }
 
     private var isShufflingState: Bool {
         if case .shuffling = coordinator.state { return true }
@@ -57,24 +58,39 @@ struct PreWorkoutView: View {
         .onChange(of: coordinator.state) { _, newState in
             if case .shuffling = newState {
                 isShuffling = true
-                // Phase 1: spread (0-200ms)
-                withAnimation(.spring(response: 0.32, dampingFraction: 0.68)) {
+                // Phase 1: spread out (0-150ms)
+                withAnimation(.spring(response: 0.28, dampingFraction: 0.65)) {
                     shufflePhase = .spread
                 }
                 Task { @MainActor in
-                    try? await Task.sleep(for: .milliseconds(200))
-                    // Phase 2: riffle interleave (200-500ms)
-                    withAnimation(.spring(response: 0.28, dampingFraction: 0.62)) {
-                        shufflePhase = .riffle
+                    try? await Task.sleep(for: .milliseconds(150))
+                    // Phase 2: scatter — cards explode to random positions
+                    // (150-650ms). Re-roll offsets so every shuffle looks
+                    // different.
+                    scatterOffsets = makeScatterOffsets()
+                    withAnimation(.spring(response: 0.45, dampingFraction: 0.55)) {
+                        shufflePhase = .scatter
                     }
                     HapticEngine.shared.play(.shuffle)
                     SoundPlayer.shared.play(.deckRiffle)
-                    try? await Task.sleep(for: .milliseconds(300))
-                    // Phase 3: collapse to stack (500-700ms)
-                    withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                    try? await Task.sleep(for: .milliseconds(280))
+                    // Mid-scatter: re-roll for a second burst of chaos
+                    scatterOffsets = makeScatterOffsets()
+                    withAnimation(.spring(response: 0.32, dampingFraction: 0.55)) {
+                        // Force re-evaluation of currentOffset by toggling phase
+                        // through a temporary spread back into scatter.
+                        shufflePhase = .spread
+                    }
+                    try? await Task.sleep(for: .milliseconds(80))
+                    withAnimation(.spring(response: 0.36, dampingFraction: 0.55)) {
+                        shufflePhase = .scatter
+                    }
+                    try? await Task.sleep(for: .milliseconds(220))
+                    // Phase 3: collapse to stack
+                    withAnimation(.spring(response: 0.38, dampingFraction: 0.78)) {
                         shufflePhase = .collapse
                     }
-                    try? await Task.sleep(for: .milliseconds(200))
+                    try? await Task.sleep(for: .milliseconds(220))
                     coordinator.send(.shuffleComplete)
                     // Reset fan after transition to active workout
                     try? await Task.sleep(for: .milliseconds(400))
@@ -206,29 +222,36 @@ struct PreWorkoutView: View {
 
     // Rest/fan positions
     private let fanOffsets: [CardOffset] = [
-        CardOffset(dx: -28, dy: -6,  rot: -12),
-        CardOffset(dx: -14, dy: -3,  rot:  -6),
+        CardOffset(dx: -32, dy: -8,  rot: -14),
+        CardOffset(dx: -22, dy: -5,  rot: -10),
+        CardOffset(dx: -12, dy: -2,  rot:  -6),
+        CardOffset(dx:  -4, dy:  0,  rot:  -2),
         CardOffset(dx:   0, dy:  0,  rot:   0),
-        CardOffset(dx:  14, dy: -3,  rot:   6),
-        CardOffset(dx:  28, dy: -6,  rot:  12),
+        CardOffset(dx:   4, dy:  0,  rot:   2),
+        CardOffset(dx:  12, dy: -2,  rot:   6),
+        CardOffset(dx:  22, dy: -5,  rot:  10),
+        CardOffset(dx:  32, dy: -8,  rot:  14),
     ]
 
-    // Spread positions (riffle phase — alternating L/R halves)
-    private let riffleOffsets: [CardOffset] = [
-        CardOffset(dx: -44, dy:  0, rot: -18),
-        CardOffset(dx: -20, dy:  4, rot:  -8),
-        CardOffset(dx:   0, dy:  8, rot:   0),
-        CardOffset(dx:  20, dy:  4, rot:   8),
-        CardOffset(dx:  44, dy:  0, rot:  18),
-    ]
+    /// Random positions for the scatter phase. Re-rolled each shuffle so the
+    /// animation never looks identical twice.
+    private func makeScatterOffsets() -> [CardOffset] {
+        (0..<fanOffsets.count).map { _ in
+            CardOffset(
+                dx: CGFloat.random(in: -200...200),
+                dy: CGFloat.random(in: -180...180),
+                rot: Double.random(in: -540...540)
+            )
+        }
+    }
 
     private func currentOffset(for index: Int) -> CardOffset {
-        let base   = fanOffsets[index]
-        let riffle = riffleOffsets[index]
+        let base = fanOffsets[index]
         switch shufflePhase {
         case .idle:     return base
         case .spread:   return CardOffset(dx: base.dx * 2.4, dy: base.dy * 2, rot: base.rot * 1.8)
-        case .riffle:   return riffle
+        case .scatter:
+            return scatterOffsets.indices.contains(index) ? scatterOffsets[index] : base
         case .collapse: return CardOffset(dx: 0, dy: 0, rot: 0)
         }
     }
@@ -237,7 +260,7 @@ struct PreWorkoutView: View {
         switch shufflePhase {
         case .idle:     return 0
         case .spread:   return 1
-        case .riffle:   return 2
+        case .scatter:  return 2
         case .collapse: return 3
         }
     }
