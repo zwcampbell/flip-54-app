@@ -18,6 +18,7 @@ struct SettingsView: View {
                 VStack(spacing: 0) {
                     header
                     equipmentSection
+                    deckSection
                     difficultySection
                     audioSection
                     Spacer(minLength: 60)
@@ -49,14 +50,14 @@ struct SettingsView: View {
                 equipmentRow(
                     icon: "dumbbell.fill",
                     title: "Weights",
-                    subtitle: "Clubs → Goblet Squat (otherwise Body-weight Squats ×2)",
+                    subtitle: "Adds curls/press/triceps, goblet squats, weighted sit-ups, thrusters",
                     isOn: $settings.hasWeights
                 )
                 divider
                 equipmentRow(
                     icon: "figure.strengthtraining.traditional",
                     title: "Pull-up Bar",
-                    subtitle: "Spades → Pull-ups (otherwise Hindu Push-ups)",
+                    subtitle: "Adds pull-ups to upper body workouts and dead-hang holds",
                     isOn: $settings.hasPullUpBar
                 )
                 divider
@@ -97,6 +98,26 @@ struct SettingsView: View {
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 14)
+    }
+
+    // MARK: - Deck
+
+    private var deckSection: some View {
+        VStack(spacing: 0) {
+            sectionHeader("DECK")
+            VStack(spacing: 0) {
+                equipmentRow(
+                    icon: "rectangle.stack.fill",
+                    title: "Half Deck",
+                    subtitle: "27 cards · A/K/Q/J/10/9 every suit + 1 joker",
+                    isOn: $settings.useHalfDeck
+                )
+            }
+            .background(DS.Colors.bgCard)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(DS.Colors.border, lineWidth: 1))
+            .padding(.horizontal, 20)
+        }
     }
 
     // MARK: - Difficulty

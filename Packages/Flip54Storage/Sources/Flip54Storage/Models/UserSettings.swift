@@ -9,6 +9,7 @@ public final class UserSettings {
     public var hasYogaMat: Bool
     public var difficultyRaw: String
     public var equippedDeckId: String
+    public var useHalfDeck: Bool = false
 
     public var soundEnabled: Bool
     public var hapticsEnabled: Bool
@@ -21,6 +22,7 @@ public final class UserSettings {
         hasYogaMat: Bool = false,
         difficulty: Difficulty = .standard,
         equippedDeckId: String = "standard",
+        useHalfDeck: Bool = false,
         soundEnabled: Bool = true,
         hapticsEnabled: Bool = true,
         reduceMotion: Bool = false,
@@ -31,6 +33,7 @@ public final class UserSettings {
         self.hasYogaMat = hasYogaMat
         self.difficultyRaw = difficulty.rawValue
         self.equippedDeckId = equippedDeckId
+        self.useHalfDeck = useHalfDeck
         self.soundEnabled = soundEnabled
         self.hapticsEnabled = hapticsEnabled
         self.reduceMotion = reduceMotion

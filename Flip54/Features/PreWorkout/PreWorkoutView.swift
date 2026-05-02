@@ -21,6 +21,7 @@ struct PreWorkoutView: View {
     @State private var showQuickRef = false
     @State private var tutorialBannerDismissed = false
     @State private var showSettings = false
+    @State private var showDeckPicker = false
     @State private var scatterOffsets: [CardOffset] = []
 
     private enum ShufflePhase { case idle, spread, scatter, collapse }
@@ -54,6 +55,10 @@ struct PreWorkoutView: View {
         }
         .sheet(isPresented: $showSettings) {
             PreWorkoutSettingsSheet(settings: settings)
+        }
+        .sheet(isPresented: $showDeckPicker) {
+            DeckPickerSheet(settings: settings)
+                .presentationDetents([.medium])
         }
         .onChange(of: coordinator.state) { _, newState in
             if case .shuffling = newState {
@@ -107,16 +112,21 @@ struct PreWorkoutView: View {
 
     private var topBar: some View {
         HStack {
-            HStack(spacing: 6) {
-                Text("Standard Deck")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(DS.Colors.textSecondary)
+            Button { showDeckPicker = true } label: {
+                HStack(spacing: 6) {
+                    Text(DeckCatalog.style(forId: settings.equippedDeckId).displayName)
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(DS.Colors.textSecondary)
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 9, weight: .semibold))
+                        .foregroundStyle(DS.Colors.textTertiary)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(DS.Colors.bgCard)
+                .clipShape(Capsule())
+                .overlay(Capsule().strokeBorder(DS.Colors.border, lineWidth: 1))
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(DS.Colors.bgCard)
-            .clipShape(Capsule())
-            .overlay(Capsule().strokeBorder(DS.Colors.border, lineWidth: 1))
 
             Spacer()
 
@@ -340,7 +350,7 @@ struct PreWorkoutView: View {
         HStack(spacing: 12) {
             settingColumn(
                 label: "DIFFICULTY",
-                value: settings.difficulty.displayName.uppercased()
+                value: difficultySummary
             )
             settingColumn(
                 label: "EQUIPMENT",
@@ -370,13 +380,20 @@ struct PreWorkoutView: View {
                 .foregroundStyle(DS.Colors.textPrimary)
                 .tracking(1.4)
                 .lineLimit(1)
-                .minimumScaleFactor(0.7)
+                .minimumScaleFactor(0.55)
+                .padding(.horizontal, 18)
                 .frame(maxWidth: .infinity)
                 .frame(height: 48)
                 .background(DS.Colors.bgCard)
                 .clipShape(Capsule())
                 .overlay(Capsule().strokeBorder(DS.Colors.border, lineWidth: 1))
         }
+    }
+
+    private var difficultySummary: String {
+        let level = settings.difficulty.displayName.uppercased()
+        let size  = settings.useHalfDeck ? "HALF DECK" : "FULL DECK"
+        return "\(level) + \(size)"
     }
 
     private var equipmentSummary: String {
@@ -396,7 +413,8 @@ struct PreWorkoutView: View {
                 coordinator.configure(
                     equipment: settings.equipment,
                     difficulty: settings.difficulty,
-                    deckId: settings.equippedDeckId
+                    deckId: settings.equippedDeckId,
+                    useHalfDeck: settings.useHalfDeck
                 )
                 coordinator.send(.shuffle)
             } label: {
@@ -413,6 +431,118 @@ struct PreWorkoutView: View {
         }
         .padding(.horizontal, 24)
         .padding(.bottom, 52)
+    }
+}
+
+// MARK: - Deck catalog
+
+struct DeckStyle: Identifiable, Hashable {
+    let id: String  // matches UserSettings.equippedDeckId
+    let displayName: String
+    let isUnlocked: Bool
+    let unlockHint: String?
+}
+
+enum DeckCatalog {
+    static let all: [DeckStyle] = [
+        DeckStyle(id: "standard", displayName: "Standard", isUnlocked: true,  unlockHint: nil),
+        DeckStyle(id: "midas",    displayName: "Midas",    isUnlocked: false, unlockHint: "Coming soon"),
+        DeckStyle(id: "masonic",  displayName: "Masonic",  isUnlocked: false, unlockHint: "Coming soon"),
+    ]
+
+    static func style(forId id: String) -> DeckStyle {
+        all.first(where: { $0.id == id }) ?? all[0]
+    }
+}
+
+// MARK: - Deck picker sheet
+
+private struct DeckPickerSheet: View {
+    @Bindable var settings: UserSettings
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        ZStack {
+            DS.Colors.bg.ignoresSafeArea()
+            VStack(spacing: 0) {
+                HStack {
+                    Text("DECK STYLE")
+                        .font(.custom("BarlowCondensed-ExtraBold", size: 22))
+                        .foregroundStyle(DS.Colors.textPrimary)
+                        .tracking(1.4)
+                    Spacer()
+                    Button("Done") { dismiss() }
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(DS.Colors.gold)
+                }
+                .padding(.horizontal, 24)
+                .padding(.top, 16)
+                .padding(.bottom, 16)
+
+                VStack(spacing: 0) {
+                    ForEach(Array(DeckCatalog.all.enumerated()), id: \.element.id) { idx, style in
+                        deckRow(style)
+                        if idx < DeckCatalog.all.count - 1 {
+                            Rectangle()
+                                .fill(DS.Colors.borderSub)
+                                .frame(height: 1)
+                                .padding(.leading, 56)
+                        }
+                    }
+                }
+                .background(DS.Colors.bgCard)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(DS.Colors.border, lineWidth: 1))
+                .padding(.horizontal, 20)
+
+                Spacer()
+            }
+        }
+    }
+
+    private func deckRow(_ style: DeckStyle) -> some View {
+        let isSelected = settings.equippedDeckId == style.id
+        return Button {
+            guard style.isUnlocked else { return }
+            settings.equippedDeckId = style.id
+            dismiss()
+        } label: {
+            HStack(spacing: 14) {
+                Image(systemName: style.isUnlocked ? "rectangle.stack.fill" : "lock.fill")
+                    .font(.system(size: 16))
+                    .foregroundStyle(style.isUnlocked ? DS.Colors.gold : DS.Colors.textTertiary)
+                    .frame(width: 28)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(style.displayName)
+                        .font(.custom("BarlowCondensed-ExtraBold", size: 18))
+                        .foregroundStyle(style.isUnlocked ? DS.Colors.textPrimary : DS.Colors.textTertiary)
+                        .tracking(0.5)
+                    if let hint = style.unlockHint {
+                        Text(hint.uppercased())
+                            .font(.custom("Oswald-SemiBold", size: 10))
+                            .foregroundStyle(DS.Colors.textTertiary)
+                            .tracking(1.2)
+                    } else if isSelected {
+                        Text("EQUIPPED")
+                            .font(.custom("Oswald-SemiBold", size: 10))
+                            .foregroundStyle(DS.Colors.gold)
+                            .tracking(1.2)
+                    }
+                }
+
+                Spacer()
+
+                if isSelected && style.isUnlocked {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(DS.Colors.gold)
+                }
+            }
+            .padding(.horizontal, 18)
+            .padding(.vertical, 14)
+        }
+        .disabled(!style.isUnlocked)
     }
 }
 
