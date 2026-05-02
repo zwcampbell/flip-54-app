@@ -346,6 +346,7 @@ struct ActiveWorkoutView: View {
             switch coordinator.state {
             case .cardFaceDown:
                 flipButton
+                skipButtonPlaceholder
 
             case .cardFaceUp(_, let prescription):
                 primaryButton(label: prescription.isHold ? "START HOLD" : "DONE") {
@@ -366,14 +367,22 @@ struct ActiveWorkoutView: View {
                     coordinator.send(.advanceComplete)
                     handleCardAdvance()
                 }
+                skipButtonPlaceholder
 
             default:
                 Color.clear.frame(height: 64)
+                skipButtonPlaceholder
             }
         }
         .padding(.horizontal, 24)
         .padding(.bottom, 52)
         .animation(.easeInOut(duration: 0.2), value: statePhaseKey)
+    }
+
+    /// Invisible spacer matching `skipButton`'s height so the primary button
+    /// stays at the same Y position whether or not a SKIP affordance is shown.
+    private var skipButtonPlaceholder: some View {
+        Color.clear.frame(height: 48)
     }
 
     // Used to animate action area transitions
