@@ -14,13 +14,15 @@ struct ProfileView: View {
     var body: some View {
         ZStack {
             DS.Colors.bg.ignoresSafeArea()
-            ScrollView {
-                VStack(spacing: 0) {
-                    headerBar
-                    statsSection
-                    suitsSection
-                    settingsButton
-                    Spacer(minLength: 60)
+            VStack(spacing: 0) {
+                headerBar
+                ScrollView {
+                    VStack(spacing: 0) {
+                        statsSection
+                        suitsSection
+                        settingsButton
+                        Spacer(minLength: 60)
+                    }
                 }
             }
         }
@@ -37,21 +39,11 @@ struct ProfileView: View {
                 .font(.custom("BarlowCondensed-ExtraBold", size: 32))
                 .foregroundStyle(DS.Colors.textPrimary)
             Spacer()
-            Button {
-                showSettings = true
-            } label: {
-                Image(systemName: "gearshape.fill")
-                    .font(.system(size: 18))
-                    .foregroundStyle(DS.Colors.textSecondary)
-                    .frame(width: 40, height: 40)
-                    .background(DS.Colors.bgCard)
-                    .clipShape(Circle())
-                    .overlay(Circle().strokeBorder(DS.Colors.border, lineWidth: 1))
-            }
         }
         .padding(.horizontal, 24)
         .padding(.top, 20)
         .padding(.bottom, 16)
+        .background(DS.Colors.bg)
     }
 
     // MARK: - Main stats
