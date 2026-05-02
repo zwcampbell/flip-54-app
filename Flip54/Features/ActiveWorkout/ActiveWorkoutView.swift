@@ -71,7 +71,11 @@ struct ActiveWorkoutView: View {
 
     private var isFaceUp: Bool {
         switch coordinator.state {
-        case .cardFaceUp, .holdStarting, .holding, .holdComplete: return true
+        case .cardFaceUp, .holdStarting, .holding, .holdComplete,
+             .cardCompleting, .cardSkipping:
+            // Keep the card visually face-up while it slides off — only the
+            // next .cardFaceDown render flips back to the deck back.
+            return true
         default: return false
         }
     }
@@ -587,11 +591,12 @@ struct ActiveWorkoutView: View {
             checkTooltip(for: card)
 
         case .cardCompleting:
-            // Fly off to the right (above the deck), out of frame.
+            // Fly off to the right (above the deck), out of frame. Keep the
+            // card visually face-up while it slides — the orientation reset
+            // happens off-screen so the animation starts from the card's
+            // current on-screen position.
             activeTooltip = nil
             showPrescription = false
-            flipDegrees = 0
-            flipScale = 1
             cardZIndex = 1
             withAnimation(.easeIn(duration: 0.35)) {
                 cardOffset = CGSize(width: 500, height: 30)
@@ -600,6 +605,8 @@ struct ActiveWorkoutView: View {
             }
             Task { @MainActor in
                 try? await Task.sleep(for: .milliseconds(350))
+                flipDegrees = 0
+                flipScale = 1
                 coordinator.send(.advanceComplete)
                 cardOffset = .zero
                 cardTilt = 0
@@ -607,12 +614,12 @@ struct ActiveWorkoutView: View {
             }
 
         case .cardSkipping:
-            // Slide off to the LEFT, behind the deck (returns to bottom of pile).
+            // Slide off to the LEFT, in front of the deck (Item 7 will add
+            // the behind-the-deck arc). Keep face-up while sliding; reset
+            // orientation off-screen.
             activeTooltip = nil
             showPrescription = false
-            flipDegrees = 0
-            flipScale = 1
-            cardZIndex = -1
+            cardZIndex = 1
             withAnimation(.easeIn(duration: 0.40)) {
                 cardOffset = CGSize(width: -500, height: 40)
                 cardTilt = -14
@@ -620,11 +627,12 @@ struct ActiveWorkoutView: View {
             }
             Task { @MainActor in
                 try? await Task.sleep(for: .milliseconds(400))
+                flipDegrees = 0
+                flipScale = 1
                 coordinator.send(.advanceComplete)
                 cardOffset = .zero
                 cardTilt = 0
                 cardOpacity = 1
-                cardZIndex = 1
             }
 
         case .workoutComplete:
