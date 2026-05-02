@@ -137,6 +137,7 @@ struct ActiveWorkoutView: View {
 
             // Right: pause
             Button {
+                haptic.play(.tap)
                 coordinator.send(.pause)
             } label: {
                 Image(systemName: "pause.fill")
@@ -458,6 +459,7 @@ struct ActiveWorkoutView: View {
 
                 VStack(spacing: 12) {
                     Button {
+                        haptic.play(.primary)
                         coordinator.send(.resume)
                     } label: {
                         Text("RESUME")
@@ -470,6 +472,7 @@ struct ActiveWorkoutView: View {
                     }
 
                     Button {
+                        haptic.play(.warning)
                         coordinator.endEarly()
                     } label: {
                         Text("END EARLY")

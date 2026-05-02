@@ -4,6 +4,7 @@ import UIKit
 // MARK: - Haptic events
 
 enum HapticEvent {
+    // Gameplay-specific patterns (custom Core Haptics)
     case cardFlip    // sharp click at mid-flip
     case holdStart   // low rumble building to heavy
     case holdTick    // gentle tap each countdown second
@@ -11,6 +12,12 @@ enum HapticEvent {
     case done        // medium thud on card complete
     case shuffle     // notification-style success pulse
     case completion  // crescendo burst at workout end
+
+    // UI-chrome events — standard system feedback per Apple HIG.
+    case tap         // light impact: secondary buttons, banner CTAs, dismiss
+    case primary     // medium impact: primary CTAs (START, FLIP CARD)
+    case selection   // selection feedback: picker rows, choice list toggles
+    case warning     // warning notification: potentially destructive (End Early)
 }
 
 // MARK: - Haptic engine
@@ -27,16 +34,26 @@ final class HapticEngine: @unchecked Sendable {
 
     private static let supported = CHHapticEngine.capabilitiesForHardware().supportsHaptics
 
-    // UIKit fallbacks
+    // UIKit fallbacks (also used directly for chrome events)
     private let lightImpact  = UIImpactFeedbackGenerator(style: .light)
     private let mediumImpact = UIImpactFeedbackGenerator(style: .medium)
     private let heavyImpact  = UIImpactFeedbackGenerator(style: .heavy)
     private let notifyGen    = UINotificationFeedbackGenerator()
+    private let selectionGen = UISelectionFeedbackGenerator()
 
     // MARK: - Public
 
     func play(_ event: HapticEvent) {
         guard UserDefaults.standard.hapticsEnabled else { return }
+        // Chrome events always use UIKit generators — no custom pattern needed
+        // and they auto-respect Reduce Motion / system haptics settings.
+        switch event {
+        case .tap, .primary, .selection, .warning:
+            playFallback(for: event)
+            return
+        default:
+            break
+        }
         if Self.supported, engineReady {
             playPattern(for: event)
         } else {
@@ -199,6 +216,12 @@ final class HapticEngine: @unchecked Sendable {
                     ],
                     relativeTime: 0)
             ])
+
+        case .tap, .primary, .selection, .warning:
+            // Chrome events are routed to UIKit generators upstream and
+            // never reach makePattern. This branch keeps the switch
+            // exhaustive.
+            return try CHHapticPattern(events: [], parameters: [])
         }
     }
 
@@ -213,6 +236,11 @@ final class HapticEngine: @unchecked Sendable {
         case .done:       mediumImpact.impactOccurred()
         case .shuffle:    notifyGen.notificationOccurred(.success)
         case .completion: notifyGen.notificationOccurred(.success)
+        // Chrome events
+        case .tap:        lightImpact.impactOccurred()
+        case .primary:    mediumImpact.impactOccurred()
+        case .selection:  selectionGen.selectionChanged()
+        case .warning:    notifyGen.notificationOccurred(.warning)
         }
     }
 }

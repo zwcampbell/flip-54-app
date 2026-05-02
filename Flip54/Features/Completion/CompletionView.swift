@@ -223,7 +223,10 @@ struct CompletionView: View {
 
     private var actionButtons: some View {
         VStack(spacing: 12) {
-            Button(action: onDone) {
+            Button {
+                HapticEngine.shared.play(.primary)
+                onDone()
+            } label: {
                 Text("DONE")
                     .font(.custom("BarlowCondensed-ExtraBold", size: 26))
                     .foregroundStyle(Color(hex: "#111111"))
@@ -235,6 +238,7 @@ struct CompletionView: View {
             }
 
             Button {
+                HapticEngine.shared.play(.tap)
                 showSharePlaceholder = true
             } label: {
                 HStack(spacing: 8) {

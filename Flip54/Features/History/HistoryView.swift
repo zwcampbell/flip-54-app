@@ -54,6 +54,7 @@ struct HistoryView: View {
                 .foregroundStyle(DS.Colors.textPrimary)
             Spacer()
             Button {
+                HapticEngine.shared.play(.tap)
                 withAnimation(.easeInOut(duration: 0.2)) {
                     displayMonth = Date()
                 }
@@ -85,6 +86,7 @@ struct HistoryView: View {
             // Month navigation
             HStack {
                 Button {
+                    HapticEngine.shared.play(.tap)
                     displayMonth = calendar.date(byAdding: .month, value: -1, to: displayMonth) ?? displayMonth
                 } label: {
                     Image(systemName: "chevron.left")
@@ -108,6 +110,7 @@ struct HistoryView: View {
                     let next = calendar.date(byAdding: .month, value: 1, to: displayMonth) ?? displayMonth
                     if !calendar.isDate(next, equalTo: Date(), toGranularity: .month) ||
                        next <= Date() {
+                        HapticEngine.shared.play(.tap)
                         displayMonth = next
                     }
                 } label: {
@@ -164,6 +167,7 @@ struct HistoryView: View {
 
             Button {
                 if let first = workoutsOnDay.first {
+                    HapticEngine.shared.play(.tap)
                     selectedWorkout = first
                 }
             } label: {
@@ -203,6 +207,7 @@ struct HistoryView: View {
                 VStack(spacing: 0) {
                     ForEach(pageItems) { workout in
                         Button {
+                            HapticEngine.shared.play(.tap)
                             selectedWorkout = workout
                         } label: {
                             workoutRow(workout)
@@ -229,7 +234,10 @@ struct HistoryView: View {
     private var paginationBar: some View {
         HStack {
             Button {
-                if recentPage > 0 { recentPage -= 1 }
+                if recentPage > 0 {
+                    HapticEngine.shared.play(.tap)
+                    recentPage -= 1
+                }
             } label: {
                 Image(systemName: "chevron.left")
                     .font(.system(size: 13, weight: .semibold))
@@ -250,7 +258,10 @@ struct HistoryView: View {
             Spacer()
 
             Button {
-                if recentPage < recentPageCount - 1 { recentPage += 1 }
+                if recentPage < recentPageCount - 1 {
+                    HapticEngine.shared.play(.tap)
+                    recentPage += 1
+                }
             } label: {
                 Image(systemName: "chevron.right")
                     .font(.system(size: 13, weight: .semibold))
