@@ -245,44 +245,33 @@ struct ActiveWorkoutView: View {
 
     // MARK: - Deck stack indicator
 
-    /// Three thin card shapes stacked behind the active card, shrinking as cards are depleted.
+    /// Face-down card backs stacked behind the active card so the user sees
+    /// there are more cards to come. Hidden when the active card is the last
+    /// card in the deck (cardsRemaining ≤ 1).
     private var deckStackIndicator: some View {
-        let remaining = coordinator.session?.cardsRemaining ?? 54
+        // drawPile = cards still waiting to be drawn (i.e., cards behind the
+        // active one). Using drawPile directly avoids a transient mid-flip
+        // state where currentCard=nil makes (remaining - 1) drop too low.
+        let cardsBehind = coordinator.session?.drawPile.count ?? 0
         let total = coordinator.session?.deckSize ?? 54
-        let fraction = total > 0 ? Double(remaining) / Double(total) : 0
-        // Show 0–3 shadow cards based on remaining fraction
-        let layers = fraction > 0.66 ? 3 : fraction > 0.33 ? 2 : fraction > 0 ? 1 : 0
+        let fraction = total > 0 ? Double(cardsBehind) / Double(total) : 0
+        let layers = cardsBehind == 0 ? 0
+                   : fraction > 0.66  ? 3
+                   : fraction > 0.33  ? 2
+                                      : 1
+        let deckId = coordinator.session?.deckId ?? "standard"
+        let dummyCard: Card = .standard(suit: .hearts, rank: .two)
 
         return ZStack {
-            ForEach(0..<3, id: \.self) { idx in
+            // Render farthest-back layer first so closer ones overlap on top.
+            ForEach((0..<3).reversed(), id: \.self) { idx in
                 if idx < layers {
-                    RoundedRectangle(cornerRadius: 14)
-                        .fill(
-                            LinearGradient(
-                                colors: [DS.Colors.bgCard, DS.Colors.bgRaised],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(
-                            width: CardView.cardWidth  - CGFloat(idx + 1) * 4,
-                            height: CardView.cardHeight - CGFloat(idx + 1) * 4
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 14)
-                                .strokeBorder(DS.Colors.border.opacity(0.6 - Double(idx) * 0.15), lineWidth: 1)
-                        )
-                        .offset(y: CGFloat(idx + 1) * 5)
-                        .zIndex(-Double(idx + 1))
-                        .opacity(0.6 - Double(idx) * 0.15)
-                } else {
-                    Color.clear
-                        .frame(width: CardView.cardWidth, height: CardView.cardHeight)
-                        .zIndex(-Double(idx + 1))
+                    CardView(card: dummyCard, faceUp: false, deckId: deckId)
+                        .allowsHitTesting(false)
                 }
             }
         }
-        .animation(.easeOut(duration: 0.5), value: layers)
+        .animation(.easeOut(duration: 0.4), value: layers)
     }
 
     @ViewBuilder
