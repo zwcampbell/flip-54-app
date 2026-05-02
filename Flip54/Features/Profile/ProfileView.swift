@@ -93,11 +93,11 @@ struct ProfileView: View {
 
     private var suitsSection: some View {
         VStack(spacing: 0) {
-            sectionHeader("REPS BY SUIT")
+            sectionHeader("REPS BY BODY FOCUS")
             VStack(spacing: 0) {
-                suitBar(.hearts,   label: "Push-ups",    reps: stats.repsByHeart)
+                suitBar(.hearts,   label: "Lower Body",  reps: stats.repsByHeart)
                 Divider().background(DS.Colors.borderSub).padding(.leading, 50)
-                suitBar(.spades,   label: "Pull-ups",    reps: stats.repsBySpade)
+                suitBar(.spades,   label: "Upper Body",  reps: stats.repsBySpade)
                 Divider().background(DS.Colors.borderSub).padding(.leading, 50)
                 suitBar(.clubs,    label: "Total Body",  reps: stats.repsByClub)
                 Divider().background(DS.Colors.borderSub).padding(.leading, 50)
@@ -131,11 +131,11 @@ struct ProfileView: View {
         let maxReps = max(1, [stats.repsByHeart, stats.repsBySpade, stats.repsByClub, stats.repsByDiamond, stats.jumpingJacks].max() ?? 1)
         let pct = Double(reps) / Double(maxReps)
 
-        return HStack(spacing: 14) {
+        return HStack(alignment: .firstTextBaseline, spacing: 14) {
             Text(glyph)
                 .font(.system(size: 16))
                 .foregroundStyle(color)
-                .frame(width: 20)
+                .frame(width: 20, alignment: .leading)
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     Text(label)

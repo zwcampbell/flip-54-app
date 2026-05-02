@@ -97,15 +97,15 @@ struct QuickReferenceView: View {
 
     private var suitsSection: some View {
         VStack(spacing: 0) {
-            sectionLabel("SUITS → EXERCISES")
+            sectionLabel("SUITS → BODY FOCUS")
             VStack(spacing: 0) {
-                suitRow("♥", color: DS.Colors.red,         label: "Hearts",   exercise: "Push-ups")
+                suitRow("♥", color: DS.Colors.red,         label: "Hearts",   exercise: "Lower Body")
                 divider
-                suitRow("♠", color: DS.Colors.textPrimary, label: "Spades",   exercise: "Pull-ups / Hindu Push-ups")
+                suitRow("♠", color: DS.Colors.textPrimary, label: "Spades",   exercise: "Upper Body")
                 divider
-                suitRow("♣", color: DS.Colors.textPrimary, label: "Clubs",    exercise: "Squats / Goblet Squats")
+                suitRow("♣", color: DS.Colors.textPrimary, label: "Clubs",    exercise: "Total Body")
                 divider
-                suitRow("♦", color: DS.Colors.red,         label: "Diamonds", exercise: "Core (Sit-ups etc.)")
+                suitRow("♦", color: DS.Colors.red,         label: "Diamonds", exercise: "Core")
             }
             .background(DS.Colors.bgCard)
             .clipShape(RoundedRectangle(cornerRadius: 16))

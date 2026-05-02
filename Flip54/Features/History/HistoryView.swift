@@ -421,13 +421,13 @@ struct WorkoutDetailView: View {
 
             Divider().background(DS.Colors.border)
 
-            suitRow(.hearts, label: "Push-ups",    reps: workout.heartsReps)
+            suitRow(.hearts,   label: "Lower Body", reps: workout.heartsReps)
             Divider().background(DS.Colors.borderSub).padding(.leading, 50)
-            suitRow(.spades, label: "Pull-ups",    reps: workout.spadesReps)
+            suitRow(.spades,   label: "Upper Body", reps: workout.spadesReps)
             Divider().background(DS.Colors.borderSub).padding(.leading, 50)
-            suitRow(.clubs,  label: "Total Body",  reps: workout.clubsReps)
+            suitRow(.clubs,    label: "Total Body", reps: workout.clubsReps)
             Divider().background(DS.Colors.borderSub).padding(.leading, 50)
-            suitRow(.diamonds, label: "Core",      reps: workout.diamondsReps)
+            suitRow(.diamonds, label: "Core",       reps: workout.diamondsReps)
 
             if workout.jumpingJacks > 0 {
                 Divider().background(DS.Colors.borderSub).padding(.leading, 50)
