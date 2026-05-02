@@ -28,6 +28,12 @@ public struct ActiveSession: Codable, Hashable, Sendable {
         drawPile.count + (currentCard != nil ? 1 : 0)
     }
 
+    /// Total cards in the deck this session was started with. Stable for the
+    /// life of the session because skipped cards are reinserted into drawPile.
+    public var deckSize: Int {
+        drawPile.count + (currentCard != nil ? 1 : 0) + cardsCompleted
+    }
+
     public var isComplete: Bool {
         drawPile.isEmpty && currentCard == nil
     }
