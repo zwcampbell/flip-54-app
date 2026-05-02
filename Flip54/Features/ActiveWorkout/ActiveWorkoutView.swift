@@ -9,6 +9,9 @@ struct ActiveWorkoutView: View {
     /// Pass the live OnboardingState to enable first-time contextual tooltips.
     /// Nil disables all tooltips.
     var onboardingState: OnboardingState? = nil
+    /// True when this is the user's first workout (no completed workouts in history).
+    /// Tooltips only show when this is true.
+    var isFirstWorkout: Bool = false
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -17,9 +20,11 @@ struct ActiveWorkoutView: View {
     @State private var flipScale: CGFloat = 1         // subtle mid-flip scale pulse
     @State private var isFlipping = false
 
-    // Card exit animation
-    @State private var cardOffsetY: CGFloat = 0
+    // Card position / exit animation
+    @State private var cardOffset: CGSize = .zero
     @State private var cardOpacity: Double = 1
+    @State private var cardTilt: Double = 0     // Z-axis rotation (degrees)
+    @State private var cardZIndex: Double = 1   // 1 = above deck, -1 = behind deck
 
     // Card enter animation
     @State private var showPrescription = false
@@ -94,8 +99,9 @@ struct ActiveWorkoutView: View {
         let total = 54
         let done = cardsCompleted
         let pct = total > 0 ? Double(done) / Double(total) : 0
-        return HStack(spacing: 12) {
-            // Ring + done count
+
+        return HStack(spacing: 0) {
+            // Left: progress ring
             ZStack {
                 Circle()
                     .stroke(DS.Colors.bgRaised, lineWidth: 4)
@@ -105,23 +111,27 @@ struct ActiveWorkoutView: View {
                     .rotationEffect(.degrees(-90))
                     .animation(.easeInOut(duration: 0.4), value: done)
                 Text("\(done)")
-                    .font(.custom("IBMPlexMono-Medium", size: 11))
+                    .font(.custom("IBMPlexMono-Medium", size: 12))
                     .foregroundStyle(DS.Colors.textPrimary)
             }
-            .frame(width: 44, height: 44)
+            .frame(width: 52, height: 52)
 
-            VStack(alignment: .leading, spacing: 0) {
-                Text("DONE")
+            Spacer()
+
+            // Center: cards remaining
+            VStack(spacing: 1) {
+                Text("CARDS REMAINING")
                     .font(.custom("Oswald-SemiBold", size: 10))
                     .foregroundStyle(DS.Colors.textTertiary)
                     .tracking(1.2)
-                Text("\(cardsRemaining) left")
-                    .font(.custom("BarlowCondensed-ExtraBold", size: 22))
+                Text("\(cardsRemaining)")
+                    .font(.custom("BarlowCondensed-ExtraBold", size: 32))
                     .foregroundStyle(DS.Colors.textPrimary)
             }
 
             Spacer()
 
+            // Right: pause
             Button {
                 coordinator.send(.pause)
             } label: {
@@ -151,6 +161,7 @@ struct ActiveWorkoutView: View {
             // Card + deck-stack indicator behind it
             ZStack {
                 deckStackIndicator
+                    .zIndex(0)
                 Group {
                     if let card = currentCard {
                         CardView(card: card, faceUp: isFaceUp,
@@ -159,22 +170,73 @@ struct ActiveWorkoutView: View {
                         CardView(card: .standard(suit: .hearts, rank: .two), faceUp: false)
                     }
                 }
-                // 3D flip: rotate on Y axis; scaleEffect provides mid-flip size pulse
+                // 3D flip + Z-axis tilt for swipe; scaleEffect = mid-flip size pulse
                 .rotation3DEffect(.degrees(flipDegrees), axis: (x: 0, y: 1, z: 0), perspective: 0.6)
+                .rotationEffect(.degrees(cardTilt))
                 .scaleEffect(flipScale)
-                .offset(y: cardOffsetY)
+                .offset(cardOffset)
                 .opacity(cardOpacity)
-            }
-            .onTapGesture {
-                if case .cardFaceDown = coordinator.state { handleFlipTap() }
+                .zIndex(cardZIndex)
+                .onTapGesture {
+                    if case .cardFaceDown = coordinator.state { handleFlipTap() }
+                }
+                .gesture(swipeGesture)
             }
 
             // Prescription / prompt
             prescriptionArea
-                .frame(minHeight: 100)
+                .frame(height: 130)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, DS.Layout.horizontalMargin)
+    }
+
+    // MARK: - Swipe gesture
+
+    private var canSwipe: Bool {
+        switch coordinator.state {
+        case .cardFaceUp(_, let p): return !p.isHold
+        case .holdComplete:         return true
+        default:                    return false
+        }
+    }
+
+    private var swipeGesture: some Gesture {
+        DragGesture(minimumDistance: 10)
+            .onChanged { value in
+                guard canSwipe else { return }
+                cardOffset = CGSize(
+                    width: value.translation.width,
+                    height: value.translation.height * 0.4
+                )
+                cardTilt = Double(value.translation.width / 18)
+            }
+            .onEnded { value in
+                guard canSwipe else {
+                    springBackCard()
+                    return
+                }
+                let threshold: CGFloat = 100
+                if value.translation.width > threshold {
+                    if case .holdComplete = coordinator.state {
+                        coordinator.send(.advanceComplete)
+                        handleCardAdvance()
+                    } else {
+                        handleDone()
+                    }
+                } else if value.translation.width < -threshold {
+                    handleSkip()
+                } else {
+                    springBackCard()
+                }
+            }
+    }
+
+    private func springBackCard() {
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+            cardOffset = .zero
+            cardTilt = 0
+        }
     }
 
     // MARK: - Deck stack indicator
@@ -238,11 +300,8 @@ struct ActiveWorkoutView: View {
                 if case .reps(let exercise, let count) = prescription {
                     let isRed = isRedCard
                     let isJoker = exercise == .jumpingJacks
-                    Text("\(count)")
-                        .font(.custom("BarlowCondensed-ExtraBold", size: 64))
-                        .foregroundStyle(isRed && !isJoker ? DS.Colors.red : DS.Colors.gold)
-                    + Text(" reps")
-                        .font(.custom("BarlowCondensed-ExtraBold", size: 36))
+                    Text("\(count) reps")
+                        .font(.custom("BarlowCondensed-ExtraBold", size: 52))
                         .foregroundStyle(isRed && !isJoker ? DS.Colors.red : DS.Colors.gold)
                 }
             }
@@ -275,20 +334,8 @@ struct ActiveWorkoutView: View {
     // MARK: - Hold complete
 
     private func holdCompleteView(secondsHeld: Int, completedFully: Bool) -> some View {
-        VStack(spacing: 8) {
-            ZStack {
-                Circle()
-                    .fill(DS.Colors.success)
-                    .frame(width: 80, height: 80)
-                Image(systemName: "checkmark")
-                    .font(.system(size: 34, weight: .bold))
-                    .foregroundStyle(.white)
-            }
+        AnimatedCheckmarkRing(size: 110, lineWidth: 7, color: DS.Colors.success)
             .transition(.scale.combined(with: .opacity))
-            Text(completedFully ? "HELD IT!" : "\(secondsHeld)s held")
-                .font(.custom("BarlowCondensed-ExtraBold", size: 24))
-                .foregroundStyle(DS.Colors.textSecondary)
-        }
     }
 
     // MARK: - Action area
@@ -311,7 +358,7 @@ struct ActiveWorkoutView: View {
                 skipButton
 
             case .holding:
-                primaryButton(label: "HOLDING…", enabled: false) { }
+                holdingButton
                 skipButton
 
             case .holdComplete:
@@ -353,6 +400,18 @@ struct ActiveWorkoutView: View {
         }
     }
 
+    private var holdingButton: some View {
+        Text("HOLDING…")
+            .font(.custom("BarlowCondensed-ExtraBold", size: 26))
+            .foregroundStyle(Color(hex: "#111111"))
+            .frame(maxWidth: .infinity)
+            .frame(height: 64)
+            .background(DS.Colors.gold)
+            .overlay(ShimmerOverlay())
+            .clipShape(Capsule())
+            .shadow(color: DS.Colors.gold.opacity(0.25), radius: 12)
+    }
+
     private func primaryButton(label: String, enabled: Bool = true, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(label)
@@ -371,7 +430,7 @@ struct ActiveWorkoutView: View {
         Button {
             handleSkip()
         } label: {
-            Text("Skip")
+            Text("SKIP")
                 .font(.custom("Oswald-SemiBold", size: 14))
                 .foregroundStyle(DS.Colors.textTertiary)
                 .tracking(1.2)
@@ -457,16 +516,19 @@ struct ActiveWorkoutView: View {
             }
             Task { @MainActor in
                 try? await Task.sleep(for: .milliseconds(200))
+                // At edge-on, swap state to face-up AND snap rotation to -90°
+                // (also edge-on — the swap is invisible). This avoids ending
+                // the animation at 180° where the face would render mirrored.
                 coordinator.send(.flipCard)
                 haptic.play(.cardFlip)
                 SoundPlayer.shared.play(.cardFlip)
-                // Phase 2: continue to 180° — ease-out 0.22s
+                flipDegrees = -90
+                // Phase 2: -90° → 0° brings the front face flat, unmirrored
                 withAnimation(.easeOut(duration: 0.22)) {
-                    flipDegrees = 180
+                    flipDegrees = 0
                     flipScale = 1
                 }
                 try? await Task.sleep(for: .milliseconds(220))
-                flipDegrees = 0
                 withAnimation(.easeOut(duration: 0.2)) { showPrescription = true }
                 isFlipping = false
                 if let card = coordinator.session?.currentCard {
@@ -490,14 +552,18 @@ struct ActiveWorkoutView: View {
     }
 
     private func handleCardAdvance() {
+        // Used after .holdComplete DONE — fly off to the right.
         showPrescription = false
-        withAnimation(.easeIn(duration: 0.3)) {
-            cardOffsetY = -30
+        cardZIndex = 1
+        withAnimation(.easeIn(duration: 0.32)) {
+            cardOffset = CGSize(width: 500, height: 24)
+            cardTilt = 16
             cardOpacity = 0
         }
         Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(300))
-            cardOffsetY = 0
+            try? await Task.sleep(for: .milliseconds(320))
+            cardOffset = .zero
+            cardTilt = 0
             cardOpacity = 1
         }
     }
@@ -513,35 +579,44 @@ struct ActiveWorkoutView: View {
             checkTooltip(for: card)
 
         case .cardCompleting:
+            // Fly off to the right (above the deck), out of frame.
             activeTooltip = nil
             showPrescription = false
             flipDegrees = 0
             flipScale = 1
+            cardZIndex = 1
             withAnimation(.easeIn(duration: 0.35)) {
-                cardOffsetY = -40
+                cardOffset = CGSize(width: 500, height: 30)
+                cardTilt = 18
                 cardOpacity = 0
             }
             Task { @MainActor in
                 try? await Task.sleep(for: .milliseconds(350))
                 coordinator.send(.advanceComplete)
-                cardOffsetY = 0
+                cardOffset = .zero
+                cardTilt = 0
                 cardOpacity = 1
             }
 
         case .cardSkipping:
+            // Slide off to the LEFT, behind the deck (returns to bottom of pile).
             activeTooltip = nil
             showPrescription = false
             flipDegrees = 0
             flipScale = 1
-            withAnimation(.easeIn(duration: 0.28)) {
-                cardOffsetY = 40
+            cardZIndex = -1
+            withAnimation(.easeIn(duration: 0.40)) {
+                cardOffset = CGSize(width: -500, height: 40)
+                cardTilt = -14
                 cardOpacity = 0
             }
             Task { @MainActor in
-                try? await Task.sleep(for: .milliseconds(280))
+                try? await Task.sleep(for: .milliseconds(400))
                 coordinator.send(.advanceComplete)
-                cardOffsetY = 0
+                cardOffset = .zero
+                cardTilt = 0
                 cardOpacity = 1
+                cardZIndex = 1
             }
 
         case .workoutComplete:
@@ -556,7 +631,7 @@ struct ActiveWorkoutView: View {
     // MARK: - Contextual tooltip logic
 
     private func checkTooltip(for card: Card) {
-        guard let ob = onboardingState else { return }
+        guard isFirstWorkout, let ob = onboardingState else { return }
         if card.isAce, !ob.seenAceTooltip {
             withAnimation(.spring(response: 0.4)) { activeTooltip = .ace }
         } else if card.isFaceCard, !ob.seenFaceCardTooltip {
@@ -585,22 +660,27 @@ struct ActiveWorkoutView: View {
             Spacer()
             Button(action: dismissTooltip) {
                 HStack(alignment: .top, spacing: 14) {
-                    Image(systemName: tip.icon)
-                        .font(.system(size: 20))
+                    Image(systemName: "info.circle.fill")
+                        .font(.system(size: 22))
                         .foregroundStyle(DS.Colors.gold)
                         .frame(width: 28)
                     VStack(alignment: .leading, spacing: 4) {
                         Text(tip.title)
                             .font(.custom("BarlowCondensed-ExtraBold", size: 18))
                             .foregroundStyle(DS.Colors.textPrimary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .multilineTextAlignment(.leading)
                         Text(tip.body)
                             .font(.system(size: 13))
                             .foregroundStyle(DS.Colors.textSecondary)
+                            .multilineTextAlignment(.leading)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                             .fixedSize(horizontal: false, vertical: true)
                         Text("TAP TO DISMISS")
                             .font(.custom("Oswald-SemiBold", size: 10))
                             .foregroundStyle(DS.Colors.textTertiary)
                             .tracking(1.2)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.top, 2)
                     }
                 }
@@ -614,6 +694,7 @@ struct ActiveWorkoutView: View {
                 .padding(.horizontal, 20)
                 .padding(.bottom, 130)
             }
+            .buttonStyle(.plain)
         }
         .transition(.scale(scale: 0.9, anchor: .bottom).combined(with: .opacity))
         .ignoresSafeArea(edges: .bottom)
@@ -624,15 +705,6 @@ struct ActiveWorkoutView: View {
 
 private enum TooltipKind {
     case ace, faceCard, joker, skip
-
-    var icon: String {
-        switch self {
-        case .ace:      return "timer"
-        case .faceCard: return "star.fill"
-        case .joker:    return "bolt.fill"
-        case .skip:     return "forward.fill"
-        }
-    }
 
     var title: String {
         switch self {
@@ -657,6 +729,37 @@ private enum TooltipKind {
     }
 }
 
+// MARK: - Shimmer overlay
+
+private struct ShimmerOverlay: View {
+    @State private var offset: CGFloat = -1.0
+
+    var body: some View {
+        GeometryReader { geo in
+            let bandWidth = geo.size.width * 0.45
+            LinearGradient(
+                colors: [
+                    .white.opacity(0),
+                    .white.opacity(0.55),
+                    .white.opacity(0)
+                ],
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+            .frame(width: bandWidth, height: geo.size.height * 1.6)
+            .rotationEffect(.degrees(20))
+            .offset(x: offset * (geo.size.width + bandWidth))
+            .onAppear {
+                withAnimation(.linear(duration: 1.6).repeatForever(autoreverses: false)) {
+                    offset = 1.0
+                }
+            }
+        }
+        .blendMode(.plusLighter)
+        .allowsHitTesting(false)
+    }
+}
+
 // MARK: - Hold timer
 
 private struct HoldTimerView: View {
@@ -665,7 +768,15 @@ private struct HoldTimerView: View {
 
     @State private var lastAnnounced: Int = -1
 
+    // Threshold shimmer (45 / 30 / 15s) — animates a bright comet around the ring once.
+    @State private var shimmerHead: CGFloat = 0
+    @State private var shimmerOpacity: Double = 0
+
+    private let ringDiameter: CGFloat = 110
+    private let ringLineWidth: CGFloat = 8
+
     private let announcementThresholds: Set<Int> = [30, 15, 10, 5, 4, 3, 2, 1]
+    private let shimmerThresholds: Set<Int> = [45, 30, 15]
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 1)) { context in
@@ -675,7 +786,22 @@ private struct HoldTimerView: View {
             holdRing(remaining: remaining, pct: pct)
                 .onChange(of: remaining) { _, secs in
                     announceIfNeeded(secs)
+                    if shimmerThresholds.contains(secs) { triggerShimmer() }
                 }
+        }
+    }
+
+    private func triggerShimmer() {
+        shimmerHead = 0
+        shimmerOpacity = 1
+        withAnimation(.easeInOut(duration: 1.0)) {
+            shimmerHead = 1
+        }
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(1000))
+            withAnimation(.easeOut(duration: 0.2)) {
+                shimmerOpacity = 0
+            }
         }
     }
 
@@ -694,36 +820,154 @@ private struct HoldTimerView: View {
         UIAccessibility.post(notification: .announcement, argument: msg)
     }
 
-    private func holdRing(remaining: Int, pct: Double) -> some View {
-        let ringColor: Color = pct > 0.75 ? DS.Colors.red
-                             : pct > 0.5  ? Color(hex: "#D4712A")
-                             : pct > 0.25 ? Color(hex: "#C9A832")
-                             :              DS.Colors.success
+    /// Smoothly interpolates red → orange → yellow → green over the hold duration.
+    private func ringColor(remaining: Int) -> Color {
+        let red    = DS.Colors.red
+        let orange = Color(hex: "#D4712A")
+        let yellow = DS.Colors.gold
+        let green  = Color(hex: "#1D6944")
 
-        return VStack(spacing: 4) {
-            ZStack {
-                Circle()
-                    .stroke(DS.Colors.bgCard, lineWidth: 8)
-                Circle()
-                    .trim(from: 0, to: pct)
-                    .stroke(ringColor, style: StrokeStyle(lineWidth: 8, lineCap: .round))
-                    .rotationEffect(.degrees(-90))
-                    .animation(.linear(duration: 1), value: pct)
+        let total = max(1, Double(durationSeconds))
+        let secs  = max(0, min(Double(remaining), total))
+        let third = total / 3.0
 
-                VStack(spacing: 0) {
-                    let secs = remaining % 60
-                    let secsStr = secs < 10 ? "0\(secs)" : "\(secs)"
-                    Text(":\(secsStr)")
-                        .font(.custom("IBMPlexMono-Medium", size: 30))
-                        .foregroundStyle(ringColor)
-                        .animation(.easeInOut(duration: 0.8), value: remaining)
-                    Text("HOLD")
-                        .font(.custom("Oswald-SemiBold", size: 10))
-                        .foregroundStyle(DS.Colors.textTertiary)
-                        .tracking(1.2)
-                }
-            }
-            .frame(width: 112, height: 112)
+        if secs >= 2 * third {
+            return ColorMath.lerp(orange, red, t: (secs - 2 * third) / third)
+        } else if secs >= third {
+            return ColorMath.lerp(yellow, orange, t: (secs - third) / third)
+        } else {
+            return ColorMath.lerp(green, yellow, t: secs / third)
         }
+    }
+
+    private func holdRing(remaining: Int, pct: Double) -> some View {
+        let color = ringColor(remaining: remaining)
+        let m = remaining / 60
+        let s = remaining % 60
+        let timeStr = "\(m):\(s < 10 ? "0\(s)" : "\(s)")"
+
+        // Shimmer comet: a 0.18-arc-length head that travels around the ring.
+        let shimmerTail = max(0, shimmerHead - 0.18)
+
+        return ZStack {
+            // Background ring
+            Circle()
+                .stroke(DS.Colors.bgCard, lineWidth: ringLineWidth)
+            // Progress arc
+            Circle()
+                .trim(from: 0, to: pct)
+                .stroke(color, style: StrokeStyle(lineWidth: ringLineWidth, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+                .animation(.linear(duration: 1), value: pct)
+            // Threshold shimmer (45/30/15s) — 1s comet traveling CCW around the ring.
+            // scaleEffect(x: -1) mirrors the path so the trim direction reverses.
+            Circle()
+                .trim(from: shimmerTail, to: shimmerHead)
+                .stroke(.white, style: StrokeStyle(lineWidth: ringLineWidth, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+                .scaleEffect(x: -1, y: 1)
+                .opacity(shimmerOpacity)
+                .blendMode(.plusLighter)
+                .allowsHitTesting(false)
+
+            Text(timeStr)
+                .font(.custom("IBMPlexMono-Medium", size: 30))
+                .foregroundStyle(color)
+        }
+        .frame(width: ringDiameter, height: ringDiameter)
+    }
+}
+
+// MARK: - Animated checkmark ring (hold complete)
+
+private struct AnimatedCheckmarkRing: View {
+    let size: CGFloat
+    let lineWidth: CGFloat
+    let color: Color
+
+    @State private var progress: CGFloat = 0
+
+    var body: some View {
+        ZStack {
+            // Main outline + check, drawn progressively
+            CheckmarkRingShape()
+                .trim(from: 0, to: progress)
+                .stroke(color,
+                        style: StrokeStyle(lineWidth: lineWidth, lineCap: .round, lineJoin: .round))
+            // Bright leading edge — gives the drawing a shimmery feel
+            CheckmarkRingShape()
+                .trim(from: max(0, progress - 0.06), to: progress)
+                .stroke(.white,
+                        style: StrokeStyle(lineWidth: lineWidth, lineCap: .round, lineJoin: .round))
+                .blendMode(.plusLighter)
+                .opacity(progress > 0 && progress < 1 ? 1 : 0)
+        }
+        .frame(width: size, height: size)
+        .onAppear {
+            withAnimation(.easeOut(duration: 1.1)) { progress = 1 }
+        }
+    }
+}
+
+/// One continuous path: outer ring (12 → CCW around → 1 o'clock),
+/// then checkmark inside (1 → 6.5 → 9 o'clock).
+private struct CheckmarkRingShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        var p = Path()
+        let center = CGPoint(x: rect.midX, y: rect.midY)
+        let outerR = min(rect.width, rect.height) / 2
+        let innerR = outerR * 0.55
+
+        // Clock-position helper. 12 = top, 3 = right, 6 = bottom, 9 = left.
+        // Maps to standard math angles where 0° = 3 o'clock and angles grow
+        // clockwise in screen space (Y-down).
+        func clock(_ hour: Double, radius: CGFloat) -> CGPoint {
+            let angle = (hour / 12.0) * 2 * .pi - .pi / 2
+            return CGPoint(
+                x: center.x + radius * cos(angle),
+                y: center.y + radius * sin(angle)
+            )
+        }
+
+        // Start at 12 o'clock, on the outer ring.
+        p.move(to: clock(12, radius: outerR))
+
+        // Sweep CCW (visually: leftward from 12) all the way around
+        // to 1 o'clock — a 330° arc that "runs around in a circle".
+        let segments = 96
+        for i in 1...segments {
+            let t = Double(i) / Double(segments)
+            // -90° start, sweeping by -330° (CCW)
+            let angle = -90.0 - t * 330.0
+            let rad = angle * .pi / 180.0
+            p.addLine(to: CGPoint(
+                x: center.x + outerR * cos(rad),
+                y: center.y + outerR * sin(rad)
+            ))
+        }
+
+        // Checkmark: from 1 o'clock outer down to ~6.5 o'clock inner,
+        // then up to 9 o'clock inner.
+        p.addLine(to: clock(6.5, radius: innerR))
+        p.addLine(to: clock(9,   radius: innerR))
+
+        return p
+    }
+}
+
+// MARK: - Color interpolation helper
+
+private enum ColorMath {
+    static func lerp(_ a: Color, _ b: Color, t: Double) -> Color {
+        let tt = max(0, min(1, t))
+        var ar: CGFloat = 0, ag: CGFloat = 0, ab: CGFloat = 0, aa: CGFloat = 0
+        var br: CGFloat = 0, bg: CGFloat = 0, bb: CGFloat = 0, ba: CGFloat = 0
+        UIColor(a).getRed(&ar, green: &ag, blue: &ab, alpha: &aa)
+        UIColor(b).getRed(&br, green: &bg, blue: &bb, alpha: &ba)
+        return Color(
+            red:   Double(ar) + (Double(br) - Double(ar)) * tt,
+            green: Double(ag) + (Double(bg) - Double(ag)) * tt,
+            blue:  Double(ab) + (Double(bb) - Double(ab)) * tt
+        )
     }
 }

@@ -76,7 +76,9 @@ public final class WorkoutCoordinator {
         case (.holdComplete(let card, _, _), .advanceComplete):
             return .cardCompleting(card: card)
 
-        case (.cardFaceUp(let card, _), .skip):
+        case (.cardFaceUp(let card, _), .skip),
+             (.holdStarting(let card), .skip),
+             (.holding(let card, _, _), .skip):
             return .cardSkipping(card: card)
 
         case (.cardCompleting, .advanceComplete):
@@ -123,6 +125,7 @@ public final class WorkoutCoordinator {
             persistSession()
 
         case .cardSkipping:
+            holdTimer.cancel()
             session?.skipCurrentCard()
             persistSession()
 

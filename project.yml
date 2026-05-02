@@ -51,6 +51,10 @@ targets:
           UIColorName: AppBackground
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
+        UIAppFonts:
+          - BarlowCondensed-ExtraBold.ttf
+          - Oswald-SemiBold.ttf
+          - IBMPlexMono-Medium.ttf
     entitlements:
       path: Flip54/Flip54.entitlements
       properties: {}

@@ -242,25 +242,7 @@ struct PreWorkoutView: View {
         ZStack {
             ForEach(fanOffsets.indices, id: \.self) { i in
                 let o = currentOffset(for: i)
-
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(
-                        LinearGradient(
-                            colors: [DS.Colors.bgCard, DS.Colors.bgRaised],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 140, height: 196)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 14)
-                            .strokeBorder(DS.Colors.border, lineWidth: 1.5)
-                    )
-                    .overlay(
-                        Text("54")
-                            .font(.custom("BarlowCondensed-ExtraBold", size: 40))
-                            .foregroundStyle(DS.Colors.gold)
-                    )
+                fanCard
                     .shadow(color: .black.opacity(shufflePhase == .collapse ? 0.9 : 0.6),
                             radius: shufflePhase == .collapse ? 24 : 12, x: 0, y: 6)
                     .offset(x: o.dx, y: o.dy)
@@ -274,6 +256,55 @@ struct PreWorkoutView: View {
             }
         }
         .frame(height: 260)
+    }
+
+    private var fanCard: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 14)
+                .fill(
+                    LinearGradient(
+                        colors: [Color(hex: "#1A1A22"), Color(hex: "#0E0E16")],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+
+            RoundedRectangle(cornerRadius: 14)
+                .strokeBorder(DS.Colors.border, lineWidth: 1.5)
+
+            RoundedRectangle(cornerRadius: 10)
+                .strokeBorder(DS.Colors.border.opacity(0.5), lineWidth: 1)
+                .padding(8)
+
+            Circle()
+                .strokeBorder(DS.Colors.gold.opacity(0.4), lineWidth: 1.5)
+                .frame(width: 56, height: 56)
+
+            Text("54")
+                .font(.custom("BarlowCondensed-ExtraBold", size: 32))
+                .foregroundStyle(DS.Colors.gold)
+
+            fanCornerDots
+        }
+        .frame(width: 140, height: 196)
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+    }
+
+    private var fanCornerDots: some View {
+        GeometryReader { geo in
+            let inset: CGFloat = 11
+            let dotSize: CGFloat = 4
+            Group {
+                Circle().fill(DS.Colors.gold.opacity(0.35)).frame(width: dotSize, height: dotSize)
+                    .position(x: inset, y: inset)
+                Circle().fill(DS.Colors.gold.opacity(0.35)).frame(width: dotSize, height: dotSize)
+                    .position(x: geo.size.width - inset, y: inset)
+                Circle().fill(DS.Colors.gold.opacity(0.35)).frame(width: dotSize, height: dotSize)
+                    .position(x: inset, y: geo.size.height - inset)
+                Circle().fill(DS.Colors.gold.opacity(0.35)).frame(width: dotSize, height: dotSize)
+                    .position(x: geo.size.width - inset, y: geo.size.height - inset)
+            }
+        }
     }
 
     // MARK: - Difficulty badge

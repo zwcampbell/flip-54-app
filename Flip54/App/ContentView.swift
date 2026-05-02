@@ -68,7 +68,8 @@ struct ContentView: View {
                 ActiveWorkoutView(
                     coordinator: coordinator,
                     onWorkoutComplete: captureCompletion,
-                    onboardingState: onboardingState
+                    onboardingState: onboardingState,
+                    isFirstWorkout: historyQuery.isEmpty
                 )
                 .transition(.asymmetric(insertion: .opacity, removal: .opacity))
                 .zIndex(1)
