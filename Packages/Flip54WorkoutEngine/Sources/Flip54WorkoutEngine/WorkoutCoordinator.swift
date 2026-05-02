@@ -154,7 +154,10 @@ public final class WorkoutCoordinator {
     // MARK: - Helpers
 
     private func startNewSession() {
-        isTutorial = false
+        // If a tutorial was just configured, the session is already populated
+        // with the abridged tutorial deck and isTutorial=true. Don't clobber it
+        // with a fresh standard deck on .shuffle.
+        if isTutorial { return }
         var rng = SystemRandomNumberGenerator()
         let equipment = session?.equipment ?? .bodyWeightOnly
         let difficulty = session?.difficulty ?? .standard
@@ -183,6 +186,7 @@ public final class WorkoutCoordinator {
     public func restoreIfNeeded(equipment: Equipment, difficulty: Difficulty, deckId: String) {
         if let saved = store.load(), !saved.isComplete,
            Date().timeIntervalSince(saved.startedAt) < 86400 {
+            isTutorial = false  // Persisted sessions are never tutorials.
             session = saved
             state = .cardFaceDown
         } else {
@@ -192,6 +196,7 @@ public final class WorkoutCoordinator {
     }
 
     public func configure(equipment: Equipment, difficulty: Difficulty, deckId: String) {
+        isTutorial = false
         var rng = SystemRandomNumberGenerator()
         session = ActiveSession.start(
             deck: Card.standardDeck(),
@@ -224,6 +229,23 @@ public final class WorkoutCoordinator {
         // Tutorial deck is already in the desired order — override the shuffled pile
         session?.drawPile = tutorialCards
         session?.currentCard = nil
+    }
+
+    /// Exit the in-progress workout and return to `.idle`. For real workouts
+    /// the session is left persisted in `ActiveSessionStore` so the home
+    /// screen's resume banner can pick it back up. For tutorials the on-disk
+    /// store is untouched (tutorials never persist) so any prior real workout
+    /// session remains resumable. No history record is written.
+    public func endEarly() {
+        holdTimer.cancel()
+        if !isTutorial, let s = session {
+            // Make sure the latest paused session is on disk before we drop
+            // our in-memory reference, so the resume banner can find it.
+            try? store.save(s)
+        }
+        session = nil
+        isTutorial = false
+        state = .idle
     }
 
     /// Seed a specific draw pile for testing purposes.

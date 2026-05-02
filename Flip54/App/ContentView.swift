@@ -83,6 +83,13 @@ struct ContentView: View {
         .animation(.easeInOut(duration: 0.22), value: showCompletion)
         .animation(.easeInOut(duration: 0.22), value: isActiveWorkout)
         .onAppear { checkForResume() }
+        .onChange(of: isActiveWorkout) { wasActive, isActive in
+            // When leaving an active workout (e.g., End Early), surface the
+            // resume banner if a session is still persisted.
+            if wasActive && !isActive {
+                checkForResume()
+            }
+        }
         .injectReduceMotion()
     }
 

@@ -465,8 +465,7 @@ struct ActiveWorkoutView: View {
                     }
 
                     Button {
-                        coordinator.send(.resume)
-                        // TODO: end early and save partial
+                        coordinator.endEarly()
                     } label: {
                         Text("END EARLY")
                             .font(.custom("BarlowCondensed-ExtraBold", size: 26))
