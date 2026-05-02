@@ -503,8 +503,6 @@ private struct EquipmentPage: View {
                     isOn: settings.hasWeights)    { settings.hasWeights.toggle() }
                 row(icon: "🪀", label: "Pull-up Bar", sub: "Fixed or doorframe bar",
                     isOn: settings.hasPullUpBar)  { settings.hasPullUpBar.toggle() }
-                row(icon: "🧘", label: "Yoga Mat",    sub: "Affects illustrations only",
-                    isOn: settings.hasYogaMat)    { settings.hasYogaMat.toggle() }
             }
             .padding(.horizontal, 24)
 
