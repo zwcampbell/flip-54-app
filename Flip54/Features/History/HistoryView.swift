@@ -8,6 +8,24 @@ struct HistoryView: View {
 
     @State private var displayMonth: Date = Date()
     @State private var selectedWorkout: WorkoutHistory?
+    @State private var recentPage: Int = 0
+
+    private let recentPageSize = 5
+
+    private var isOnTodayMonth: Bool {
+        calendar.isDate(displayMonth, equalTo: Date(), toGranularity: .month)
+    }
+
+    private var recentPageCount: Int {
+        max(1, Int(ceil(Double(history.count) / Double(recentPageSize))))
+    }
+
+    private var recentPageWorkouts: ArraySlice<WorkoutHistory> {
+        let start = recentPage * recentPageSize
+        let end = min(start + recentPageSize, history.count)
+        guard start < end else { return [] }
+        return history[start..<end]
+    }
 
     private var calendar: Calendar { .current }
 
@@ -35,6 +53,25 @@ struct HistoryView: View {
                 .font(.custom("BarlowCondensed-ExtraBold", size: 32))
                 .foregroundStyle(DS.Colors.textPrimary)
             Spacer()
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    displayMonth = Date()
+                }
+            } label: {
+                Text("TODAY")
+                    .font(.custom("Oswald-SemiBold", size: 12))
+                    .foregroundStyle(isOnTodayMonth ? DS.Colors.textTertiary : DS.Colors.gold)
+                    .tracking(1.2)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(DS.Colors.bgCard)
+                    .clipShape(Capsule())
+                    .overlay(Capsule().strokeBorder(
+                        isOnTodayMonth ? DS.Colors.border : DS.Colors.gold.opacity(0.6),
+                        lineWidth: 1)
+                    )
+            }
+            .disabled(isOnTodayMonth)
         }
         .padding(.horizontal, 24)
         .padding(.top, 20)
@@ -161,23 +198,70 @@ struct HistoryView: View {
                 emptyState
             } else {
                 sectionHeader("RECENT")
-                ForEach(history.prefix(10)) { workout in
-                    Button {
-                        selectedWorkout = workout
-                    } label: {
-                        workoutRow(workout)
-                    }
-                    if workout.id != history.prefix(10).last?.id {
-                        Divider().background(DS.Colors.borderSub).padding(.leading, 56)
+                let pageItems = recentPageWorkouts
+                let lastID = pageItems.last?.id
+                VStack(spacing: 0) {
+                    ForEach(pageItems) { workout in
+                        Button {
+                            selectedWorkout = workout
+                        } label: {
+                            workoutRow(workout)
+                        }
+                        if workout.id != lastID {
+                            Divider().background(DS.Colors.borderSub).padding(.leading, 56)
+                        }
                     }
                 }
                 .background(DS.Colors.bgCard)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
                 .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(DS.Colors.border, lineWidth: 1))
                 .padding(.horizontal, 20)
-                .padding(.bottom, 60)
+
+                if recentPageCount > 1 {
+                    paginationBar
+                        .padding(.top, 12)
+                }
+                Color.clear.frame(height: 60)
             }
         }
+    }
+
+    private var paginationBar: some View {
+        HStack {
+            Button {
+                if recentPage > 0 { recentPage -= 1 }
+            } label: {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(recentPage > 0 ? DS.Colors.textSecondary : DS.Colors.textTertiary.opacity(0.4))
+                    .frame(width: 36, height: 36)
+                    .background(DS.Colors.bgCard)
+                    .clipShape(Circle())
+            }
+            .disabled(recentPage == 0)
+
+            Spacer()
+
+            Text("PAGE \(recentPage + 1) OF \(recentPageCount)")
+                .font(.custom("Oswald-SemiBold", size: 11))
+                .foregroundStyle(DS.Colors.textTertiary)
+                .tracking(1.2)
+
+            Spacer()
+
+            Button {
+                if recentPage < recentPageCount - 1 { recentPage += 1 }
+            } label: {
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(recentPage < recentPageCount - 1 ? DS.Colors.textSecondary : DS.Colors.textTertiary.opacity(0.4))
+                    .frame(width: 36, height: 36)
+                    .background(DS.Colors.bgCard)
+                    .clipShape(Circle())
+            }
+            .disabled(recentPage >= recentPageCount - 1)
+        }
+        .padding(.horizontal, 24)
     }
 
     private func workoutRow(_ workout: WorkoutHistory) -> some View {
