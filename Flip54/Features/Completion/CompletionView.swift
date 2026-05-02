@@ -137,9 +137,9 @@ struct CompletionView: View {
             Divider().background(DS.Colors.border)
 
             // Per-suit rows
-            suitRow(suit: .hearts,   label: "Push-ups")
+            suitRow(suit: .hearts,   label: "Lower Body")
             Divider().background(DS.Colors.borderSub).padding(.leading, 50)
-            suitRow(suit: .spades,   label: "Pull-ups")
+            suitRow(suit: .spades,   label: "Upper Body")
             Divider().background(DS.Colors.borderSub).padding(.leading, 50)
             suitRow(suit: .clubs,    label: "Total Body")
             Divider().background(DS.Colors.borderSub).padding(.leading, 50)
