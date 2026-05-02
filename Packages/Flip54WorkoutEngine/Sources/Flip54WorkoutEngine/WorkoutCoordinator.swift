@@ -11,6 +11,8 @@ public final class WorkoutCoordinator {
     public private(set) var session: ActiveSession?
     /// True when running a tutorial flip — coordinator won't persist session and caller skips history save.
     public private(set) var isTutorial: Bool = false
+    /// True when the next session should use the 27-card half deck.
+    public private(set) var useHalfDeck: Bool = false
 
     private let store: ActiveSessionStore
     private let holdTimer: HoldTimer
@@ -162,7 +164,7 @@ public final class WorkoutCoordinator {
         let equipment = session?.equipment ?? .bodyWeightOnly
         let difficulty = session?.difficulty ?? .standard
         session = ActiveSession.start(
-            deck: Card.standardDeck(),
+            deck: useHalfDeck ? Card.halfDeck() : Card.standardDeck(),
             deckId: session?.deckId ?? "standard",
             equipment: equipment,
             difficulty: difficulty,
@@ -195,11 +197,12 @@ public final class WorkoutCoordinator {
         }
     }
 
-    public func configure(equipment: Equipment, difficulty: Difficulty, deckId: String) {
+    public func configure(equipment: Equipment, difficulty: Difficulty, deckId: String, useHalfDeck: Bool = false) {
         isTutorial = false
+        self.useHalfDeck = useHalfDeck
         var rng = SystemRandomNumberGenerator()
         session = ActiveSession.start(
-            deck: Card.standardDeck(),
+            deck: useHalfDeck ? Card.halfDeck() : Card.standardDeck(),
             deckId: deckId,
             equipment: equipment,
             difficulty: difficulty,
