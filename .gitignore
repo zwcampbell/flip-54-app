@@ -50,3 +50,18 @@ fastlane/test_output
 
 # Skills lock (local tooling config)
 skills-lock.json
+
+# Archives — generally large and not needed in source control
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# Logs
+*.log
