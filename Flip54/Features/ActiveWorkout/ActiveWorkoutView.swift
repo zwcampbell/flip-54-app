@@ -223,8 +223,9 @@ struct ActiveWorkoutView: View {
                 let threshold: CGFloat = 100
                 if value.translation.width > threshold {
                     if case .holdComplete = coordinator.state {
+                        // .advanceComplete from .holdComplete transitions to
+                        // .cardCompleting; handleStateChange runs the slide.
                         coordinator.send(.advanceComplete)
-                        handleCardAdvance()
                     } else {
                         handleDone()
                     }
@@ -357,8 +358,10 @@ struct ActiveWorkoutView: View {
 
             case .holdComplete:
                 primaryButton(label: "DONE") {
+                    // Transitions to .cardCompleting; handleStateChange runs
+                    // the slide. Keeping a separate handleCardAdvance() ran
+                    // in parallel and caused a single-frame flash.
                     coordinator.send(.advanceComplete)
-                    handleCardAdvance()
                 }
                 skipButtonPlaceholder
 
@@ -550,23 +553,6 @@ struct ActiveWorkoutView: View {
         SoundPlayer.shared.play(.cardSkip, volume: 0.6)
         coordinator.send(.skip)
         // .cardSkipping is handled in onChange
-    }
-
-    private func handleCardAdvance() {
-        // Used after .holdComplete DONE — fly off to the right.
-        showPrescription = false
-        cardZIndex = 1
-        withAnimation(.easeIn(duration: 0.32)) {
-            cardOffset = CGSize(width: 500, height: 24)
-            cardTilt = 16
-            cardOpacity = 0
-        }
-        Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(320))
-            cardOffset = .zero
-            cardTilt = 0
-            cardOpacity = 1
-        }
     }
 
     private func handleStateChange(_ newState: WorkoutState) {
