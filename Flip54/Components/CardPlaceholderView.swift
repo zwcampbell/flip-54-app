@@ -159,19 +159,22 @@ struct CardPlaceholderView: View {
                     .foregroundStyle(inkColor)
             }
         } else {
-            // Number cards: faint center glyph
+            // Number cards: solid center glyph, matching pip values and suits.
             Text(glyph)
                 .font(.system(size: 80))
-                .foregroundStyle(inkColor.opacity(0.2))
+                .foregroundStyle(inkColor)
         }
     }
 
     private func suitGlyph(_ suit: Suit) -> String {
+        // U+FE0E forces text presentation; without it, large-size system font
+        // renders these as Apple Color Emoji and adds built-in shading that
+        // reads as a drop shadow on the center motif.
         switch suit {
-        case .hearts:   return "♥"
-        case .spades:   return "♠"
-        case .clubs:    return "♣"
-        case .diamonds: return "♦"
+        case .hearts:   return "♥\u{FE0E}"
+        case .spades:   return "♠\u{FE0E}"
+        case .clubs:    return "♣\u{FE0E}"
+        case .diamonds: return "♦\u{FE0E}"
         }
     }
 }
