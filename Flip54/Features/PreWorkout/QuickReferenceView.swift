@@ -46,7 +46,10 @@ struct QuickReferenceView: View {
                     .foregroundStyle(DS.Colors.textTertiary)
             }
             Spacer()
-            Button("Done") { dismiss() }
+            Button("Done") {
+                HapticEngine.shared.play(.tap)
+                dismiss()
+            }
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundStyle(DS.Colors.gold)
         }

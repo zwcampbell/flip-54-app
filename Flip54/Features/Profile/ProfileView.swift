@@ -157,6 +157,7 @@ struct ProfileView: View {
 
     private var settingsButton: some View {
         Button {
+            HapticEngine.shared.play(.tap)
             showSettings = true
         } label: {
             HStack {

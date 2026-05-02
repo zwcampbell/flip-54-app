@@ -25,6 +25,14 @@ struct SettingsView: View {
                 }
             }
         }
+        // Toggle haptics — light impact when any toggle flips.
+        .sensoryFeedback(.impact(weight: .light), trigger: settings.hasWeights)
+        .sensoryFeedback(.impact(weight: .light), trigger: settings.hasPullUpBar)
+        .sensoryFeedback(.impact(weight: .light), trigger: settings.useHalfDeck)
+        .sensoryFeedback(.impact(weight: .light), trigger: sfxEnabled)
+        .sensoryFeedback(.impact(weight: .light), trigger: hapticsEnabled)
+        // Difficulty selection — selection feedback on each row tap.
+        .sensoryFeedback(.selection, trigger: settings.difficultyRaw)
     }
 
     // MARK: - Header

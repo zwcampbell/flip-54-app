@@ -108,7 +108,10 @@ struct PreWorkoutView: View {
 
     private var topBar: some View {
         HStack {
-            Button { showDeckPicker = true } label: {
+            Button {
+                HapticEngine.shared.play(.tap)
+                showDeckPicker = true
+            } label: {
                 HStack(spacing: 6) {
                     Text(DeckCatalog.style(forId: settings.equippedDeckId).displayName)
                         .font(.system(size: 12, weight: .semibold))
@@ -130,7 +133,10 @@ struct PreWorkoutView: View {
 
             Spacer()
 
-            Button { showQuickRef = true } label: {
+            Button {
+                HapticEngine.shared.play(.tap)
+                showQuickRef = true
+            } label: {
                 Text("?")
                     .font(.system(size: 16, weight: .medium))
                     .foregroundStyle(DS.Colors.textSecondary)
@@ -159,10 +165,14 @@ struct PreWorkoutView: View {
                 .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(DS.Colors.textSecondary)
             Spacer()
-            Button("Resume") { onResume() }
+            Button("Resume") {
+                HapticEngine.shared.play(.tap)
+                onResume()
+            }
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(DS.Colors.gold)
             Button {
+                HapticEngine.shared.play(.tap)
                 withAnimation { showResumeBanner = false }
                 onDismissResume()
             } label: {
@@ -199,12 +209,14 @@ struct PreWorkoutView: View {
                 .foregroundStyle(DS.Colors.textSecondary)
             Spacer()
             Button("Start") {
+                HapticEngine.shared.play(.primary)
                 withAnimation { tutorialBannerDismissed = true }
                 onStartTutorial?()
             }
             .font(.system(size: 13, weight: .semibold))
             .foregroundStyle(DS.Colors.gold)
             Button {
+                HapticEngine.shared.play(.tap)
                 withAnimation { tutorialBannerDismissed = true }
             } label: {
                 Image(systemName: "xmark")
@@ -373,6 +385,7 @@ struct PreWorkoutView: View {
 
     private func settingPill(text: String) -> some View {
         Button {
+            HapticEngine.shared.play(.tap)
             showSettings = true
         } label: {
             Text(text)
@@ -409,6 +422,7 @@ struct PreWorkoutView: View {
     private var bottomBar: some View {
         VStack(spacing: 12) {
             Button {
+                HapticEngine.shared.play(.primary)
                 // Configure coordinator with current settings before shuffle
                 coordinator.configure(
                     equipment: settings.equipment,
@@ -481,7 +495,7 @@ private struct DeckPickerPopover: View {
     private func deckRow(_ style: DeckStyle) -> some View {
         let isSelected = settings.equippedDeckId == style.id
         return Button {
-            guard style.isUnlocked else { return }
+            HapticEngine.shared.play(.selection)
             settings.equippedDeckId = style.id
             isPresented = false
         } label: {

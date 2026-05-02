@@ -500,9 +500,15 @@ private struct EquipmentPage: View {
 
             VStack(spacing: 10) {
                 row(icon: "🏋️", label: "Weights",     sub: "Dumbbells or kettlebells",
-                    isOn: settings.hasWeights)    { settings.hasWeights.toggle() }
+                    isOn: settings.hasWeights)    {
+                        HapticEngine.shared.play(.tap)
+                        settings.hasWeights.toggle()
+                    }
                 row(icon: "🪀", label: "Pull-up Bar", sub: "Fixed or doorframe bar",
-                    isOn: settings.hasPullUpBar)  { settings.hasPullUpBar.toggle() }
+                    isOn: settings.hasPullUpBar)  {
+                        HapticEngine.shared.play(.tap)
+                        settings.hasPullUpBar.toggle()
+                    }
             }
             .padding(.horizontal, 24)
 
