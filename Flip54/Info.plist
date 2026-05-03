@@ -30,6 +30,8 @@
 	<dict>
 		<key>UIColorName</key>
 		<string>AppBackground</string>
+		<key>UIImageName</key>
+		<string>LaunchLogo</string>
 	</dict>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>

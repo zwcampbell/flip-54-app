@@ -2,7 +2,7 @@ name: Flip54
 options:
   bundleIdPrefix: com.flip54
   deploymentTarget:
-    iOS: "17.0"
+    iOS: "18.0"
   xcodeVersion: "16"
   createIntermediateGroups: true
   groupSortPosition: top
@@ -25,7 +25,7 @@ targets:
   Flip54:
     type: application
     platform: iOS
-    deploymentTarget: "17.0"
+    deploymentTarget: "18.0"
     sources:
       - path: Flip54
       - path: Flip54/PrivacyInfo.xcprivacy
@@ -49,6 +49,7 @@ targets:
         CFBundleVersion: "1"
         UILaunchScreen:
           UIColorName: AppBackground
+          UIImageName: LaunchLogo
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
         UIAppFonts:
