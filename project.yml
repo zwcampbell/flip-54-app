@@ -50,7 +50,7 @@ targets:
         CFBundleName: Flip 54
         CFBundleDisplayName: Flip 54
         CFBundleShortVersionString: "1.0"
-        CFBundleVersion: "1"
+        CFBundleVersion: "2"
         ITSAppUsesNonExemptEncryption: false
         UILaunchScreen:
           UIColorName: AppBackground
