@@ -291,7 +291,7 @@ struct PreWorkoutView: View {
         ZStack {
             ForEach(fanOffsets.indices, id: \.self) { i in
                 let o = currentOffset(for: i)
-                fanCard
+                fanCard(deckId: settings.equippedDeckId)
                     .shadow(color: .black.opacity(shufflePhase == .collapse ? 0.9 : 0.6),
                             radius: shufflePhase == .collapse ? 24 : 12, x: 0, y: 6)
                     .offset(x: o.dx, y: o.dy)
@@ -307,7 +307,16 @@ struct PreWorkoutView: View {
         .frame(height: 260)
     }
 
-    private var fanCard: some View {
+    @ViewBuilder
+    private func fanCard(deckId: String) -> some View {
+        if deckId == "midas" {
+            MidasBackView(width: 140, height: 196)
+        } else {
+            standardFanCard
+        }
+    }
+
+    private var standardFanCard: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 14)
                 .fill(
@@ -460,7 +469,7 @@ struct DeckStyle: Identifiable, Hashable {
 enum DeckCatalog {
     static let all: [DeckStyle] = [
         DeckStyle(id: "standard", displayName: "Standard", isUnlocked: true,  unlockHint: nil),
-        DeckStyle(id: "midas",    displayName: "Midas",    isUnlocked: false, unlockHint: "Coming soon"),
+        DeckStyle(id: "midas",    displayName: "Midas",    isUnlocked: true,  unlockHint: nil),
         DeckStyle(id: "masonic",  displayName: "Masonic",  isUnlocked: false, unlockHint: "Coming soon"),
     ]
 
@@ -500,7 +509,7 @@ private struct DeckPickerPopover: View {
             isPresented = false
         } label: {
             HStack(spacing: 14) {
-                aceOfSpadesIcon(unlocked: style.isUnlocked)
+                deckBackIcon(style)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(style.displayName)
@@ -534,28 +543,41 @@ private struct DeckPickerPopover: View {
         .disabled(!style.isUnlocked)
     }
 
-    /// An ace-of-spades card face. Locked variant is dimmed and overlaid
-    /// with a lock badge.
-    private func aceOfSpadesIcon(unlocked: Bool) -> some View {
+    @ViewBuilder
+    private func deckBackIcon(_ style: DeckStyle) -> some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 6)
-                .fill(Color(hex: "#FEFEFE"))
+            if style.id == "midas" {
+                MidasBackView(width: 44, height: 60)
+            } else {
+                // Standard dark back (also used for locked/unknown decks)
+                ZStack {
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(LinearGradient(
+                            colors: [Color(hex: "#1A1A22"), Color(hex: "#0E0E16")],
+                            startPoint: .topLeading, endPoint: .bottomTrailing
+                        ))
+                    RoundedRectangle(cornerRadius: 6)
+                        .strokeBorder(DS.Colors.border, lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 4)
+                        .strokeBorder(DS.Colors.border.opacity(0.5), lineWidth: 0.5)
+                        .padding(4)
+                    Circle()
+                        .strokeBorder(DS.Colors.gold.opacity(0.4), lineWidth: 1)
+                        .frame(width: 18, height: 18)
+                    Text("54")
+                        .font(.custom("BarlowCondensed-ExtraBold", size: 10))
+                        .foregroundStyle(DS.Colors.gold)
+                }
                 .frame(width: 44, height: 60)
-                .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Color.black.opacity(0.15), lineWidth: 0.5))
-            VStack(spacing: 0) {
-                Text("A")
-                    .font(.custom("BarlowCondensed-ExtraBold", size: 18))
-                    .foregroundStyle(Color.black)
-                Text("\u{2660}\u{FE0E}")
-                    .font(.system(size: 22))
-                    .foregroundStyle(Color.black)
+                .clipShape(RoundedRectangle(cornerRadius: 6))
             }
-            if !unlocked {
-                Color.black.opacity(0.45)
+
+            if !style.isUnlocked {
+                Color.black.opacity(0.55)
                     .frame(width: 44, height: 60)
                     .clipShape(RoundedRectangle(cornerRadius: 6))
                 Image(systemName: "lock.fill")
-                    .font(.system(size: 16, weight: .bold))
+                    .font(.system(size: 14, weight: .bold))
                     .foregroundStyle(DS.Colors.gold)
             }
         }

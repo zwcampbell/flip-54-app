@@ -11,7 +11,8 @@ enum HapticEvent {
     case skip        // double-tap (two transients 100ms apart)
     case done        // medium thud on card complete
     case shuffle     // notification-style success pulse
-    case completion  // crescendo burst at workout end
+    case completion   // crescendo burst at workout end
+    case midasLanding // heavy thud when gilded card hits the floor
 
     // UI-chrome events — standard system feedback per Apple HIG.
     case tap         // light impact: secondary buttons, banner CTAs, dismiss
@@ -217,6 +218,26 @@ final class HapticEngine: @unchecked Sendable {
                     relativeTime: 0)
             ])
 
+        case .midasLanding:
+            // Heavy thud — gilded card slams onto the floor.
+            // Layered low-rumble continuous + sharp transient for physical-impact feel.
+            return try CHHapticPattern(events: [
+                CHHapticEvent(
+                    eventType: .hapticContinuous,
+                    parameters: [
+                        CHHapticEventParameter(parameterID: .hapticIntensity, value: 1.00),
+                        CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.15)
+                    ],
+                    relativeTime: 0.00, duration: 0.12),
+                CHHapticEvent(
+                    eventType: .hapticTransient,
+                    parameters: [
+                        CHHapticEventParameter(parameterID: .hapticIntensity, value: 1.00),
+                        CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.70)
+                    ],
+                    relativeTime: 0.00)
+            ], parameters: [])
+
         case .tap, .primary, .selection, .warning:
             // Chrome events are routed to UIKit generators upstream and
             // never reach makePattern. This branch keeps the switch
@@ -235,7 +256,8 @@ final class HapticEngine: @unchecked Sendable {
         case .skip:       notifyGen.notificationOccurred(.warning)
         case .done:       mediumImpact.impactOccurred()
         case .shuffle:    notifyGen.notificationOccurred(.success)
-        case .completion: notifyGen.notificationOccurred(.success)
+        case .completion:    notifyGen.notificationOccurred(.success)
+        case .midasLanding:  heavyImpact.impactOccurred(intensity: 1.0)
         // Chrome events
         case .tap:        lightImpact.impactOccurred()
         case .primary:    mediumImpact.impactOccurred()
