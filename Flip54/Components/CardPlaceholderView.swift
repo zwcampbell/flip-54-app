@@ -5,18 +5,24 @@ import Flip54Core
 struct CardPlaceholderView: View {
     let card: Card
     let faceUp: Bool
+    var deckId: String = "standard"
 
     static let cardWidth: CGFloat  = 200
     static let cardHeight: CGFloat = 280   // ≈ 2.5 : 3.5 ratio
 
     var body: some View {
-        RoundedRectangle(cornerRadius: 14)
-            .fill(faceUp ? Color(hex: "#FEFEFE") : Color(hex: "#1A1A22"))
-            .frame(width: Self.cardWidth, height: Self.cardHeight)
-            .overlay {
-                if faceUp { faceUpOverlay } else { faceDownOverlay }
-            }
-            .shadow(color: .black.opacity(0.65), radius: 20, x: 0, y: 10)
+        // Midas face-down uses MidasBackView instead of the standard dark back.
+        if !faceUp && deckId == "midas" {
+            MidasBackView()
+        } else {
+            RoundedRectangle(cornerRadius: 14)
+                .fill(faceUp ? Color(hex: "#FEFEFE") : Color(hex: "#1A1A22"))
+                .frame(width: Self.cardWidth, height: Self.cardHeight)
+                .overlay {
+                    if faceUp { faceUpOverlay } else { faceDownOverlay }
+                }
+                .shadow(color: .black.opacity(0.65), radius: 20, x: 0, y: 10)
+        }
     }
 
     // MARK: - Face down

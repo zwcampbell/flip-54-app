@@ -33,7 +33,7 @@ struct CardView: View {
                 .shadow(color: .black.opacity(0.65), radius: 20, x: 0, y: 10)
                 .accessibilityLabel(a11yLabel)
         } else {
-            CardPlaceholderView(card: card, faceUp: faceUp)
+            CardPlaceholderView(card: card, faceUp: faceUp, deckId: deckId)
                 .accessibilityLabel(a11yLabel)
         }
     }
