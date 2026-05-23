@@ -230,7 +230,14 @@ struct ActiveWorkoutView: View {
                 .opacity(isMidasAnimating ? midasCardOpacity : cardOpacity)
                 .zIndex(cardZIndex)
                 .onTapGesture {
-                    if case .cardFaceDown = coordinator.state { handleFlipTap() }
+                    switch coordinator.state {
+                    case .cardFaceDown:
+                        handleFlipTap()
+                    case .cardFaceUp(_, let prescription) where isMidasDeck && !prescription.isHold:
+                        handleDone()
+                    default:
+                        break
+                    }
                 }
                 .gesture(swipeGesture)
 
