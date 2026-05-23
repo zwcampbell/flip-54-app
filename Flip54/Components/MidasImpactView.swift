@@ -113,6 +113,9 @@ struct MidasSparklesView: View {
 /// Dust puffs — 7 circles that rise and dissipate:
 ///   @keyframes dustRise: translate(-50%, 8px) scale(0.3) → translate(-50%, -32px) scale(1.7)
 ///
+/// Gold burst — 18 rectangular fragments burst radially from impact point on landing,
+///   fly outward under gravity, rotating freely, then fall off screen.
+///
 /// Position: centred on-screen at the card's landing point (below and forward of card).
 struct MidasImpactView: View {
     let startDate: Date
@@ -140,6 +143,43 @@ struct MidasImpactView: View {
     // Absolute fire times within this view's own startDate timeline
     private var primaryDelay:   Double { Self.fallDuration * 0.68 }
     private var secondaryDelay: Double { Self.fallDuration * 0.79 }
+
+    // MARK: - Gold burst pieces
+
+    private struct GoldPiece {
+        let vx: CGFloat       // initial x velocity (pt/s)
+        let vy: CGFloat       // initial y velocity (pt/s, negative = up)
+        let rotSpeed: Double  // degrees/s
+        let w: CGFloat
+        let h: CGFloat
+        let delay: Double     // seconds after impact
+        let duration: Double  // lifespan in seconds
+        let colorIdx: Int     // 0 = primary gold, 1 = bright gold, 2 = dark gold
+    }
+
+    // Fresh random pieces per view instance so every completion differs.
+    private let goldPieces: [GoldPiece]
+
+    init(startDate: Date) {
+        self.startDate = startDate
+        self.goldPieces = (0..<18).map { _ in
+            // Burst centered on "straight up" (−π/2 in screen-space Y-down),
+            // ±120° spread covers all upward directions plus wide sideways arcs.
+            let spread = Double.random(in: -2.094...2.094)
+            let angle  = -Double.pi / 2.0 + spread
+            let speed  = CGFloat.random(in: 280...700)
+            return GoldPiece(
+                vx:       speed * CGFloat(cos(angle)),
+                vy:       speed * CGFloat(sin(angle)),
+                rotSpeed: Double.random(in: -600...600),
+                w:        CGFloat.random(in: 5...11),
+                h:        CGFloat.random(in: 11...24),
+                delay:    Double.random(in: 0...0.10),
+                duration: Double.random(in: 0.85...1.45),
+                colorIdx: Int.random(in: 0...2)
+            )
+        }
+    }
 
     var body: some View {
         GeometryReader { geo in
@@ -211,6 +251,45 @@ struct MidasImpactView: View {
                             cg.setFillColor(CGColor(red: 0.745, green: 0.706, blue: 0.627, alpha: 0.38))
                             let rect = CGRect(x: x - r, y: y - r, width: r * 2, height: r * 2)
                             cg.fillEllipse(in: rect)
+                            cg.restoreGState()
+                        }
+                    }
+
+                    // ── Gold piece burst ───────────────────────────────────────
+                    // Rectangular card-fragment pieces burst at impact and fall
+                    // off-screen under gravity (1400 pt/s²).
+                    let gravity: CGFloat = 1400
+                    let pieceColors: [CGColor] = [
+                        CGColor(red: 0.831, green: 0.635, blue: 0.298, alpha: 1), // #D4A24C
+                        CGColor(red: 0.969, green: 0.863, blue: 0.557, alpha: 1), // #F7DC8E
+                        CGColor(red: 0.722, green: 0.525, blue: 0.043, alpha: 1), // #B8860B
+                    ]
+                    for piece in goldPieces {
+                        let t = CGFloat(elapsed - piece.delay)
+                        guard t > 0 else { continue }
+                        let life = min(1.0, Double(t) / piece.duration)
+                        let x = cx + piece.vx * t
+                        let y = cy + piece.vy * t + 0.5 * gravity * t * t
+                        // Fade over final 45% of lifespan
+                        let opacity: CGFloat = life < 0.55
+                            ? 1.0
+                            : CGFloat(1.0 - (life - 0.55) / 0.45)
+                        guard opacity > 0 else { continue }
+                        let rotation = CGFloat(piece.rotSpeed * Double(t) * .pi / 180.0)
+
+                        drawCtx.withCGContext { cg in
+                            cg.saveGState()
+                            cg.translateBy(x: x, y: y)
+                            cg.rotate(by: rotation)
+                            cg.setAlpha(opacity)
+                            cg.setFillColor(pieceColors[piece.colorIdx])
+                            let rect = CGRect(x: -piece.w / 2, y: -piece.h / 2,
+                                             width: piece.w, height: piece.h)
+                            let path = CGPath(roundedRect: rect,
+                                             cornerWidth: 1.5, cornerHeight: 1.5,
+                                             transform: nil)
+                            cg.addPath(path)
+                            cg.fillPath()
                             cg.restoreGState()
                         }
                     }
