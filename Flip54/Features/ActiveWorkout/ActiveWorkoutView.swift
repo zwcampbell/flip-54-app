@@ -194,7 +194,8 @@ struct ActiveWorkoutView: View {
                             CardView(card: card, faceUp: isFaceUp,
                                      deckId: coordinator.session?.deckId ?? "standard")
                         } else {
-                            CardView(card: .standard(suit: .hearts, rank: .two), faceUp: false)
+                            CardView(card: .standard(suit: .hearts, rank: .two), faceUp: false,
+                                     deckId: coordinator.session?.deckId ?? "standard")
                         }
                         // Gold-leaf face expands from centre via animated circle clip
                         if isMidasAnimating, let card = currentCard {
