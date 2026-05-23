@@ -29,6 +29,18 @@ struct ActiveWorkoutView: View {
     // Card enter animation
     @State private var showPrescription = false
 
+    // Midas deck gilding + fall animation
+    private enum MidasPhase: Equatable { case idle, gilding, gilded, falling }
+    @State private var midasPhase:         MidasPhase = .idle
+    @State private var midasGildingRadius: CGFloat    = 0      // GrowingCircleMask radius 0 → diagonal
+    @State private var midasShowGleam:     Bool       = false
+    @State private var midasShowSparkles:  Bool       = false
+    @State private var midasImpactDate:    Date?      = nil    // set when card hits floor
+    @State private var midasCardRotX:      Double     = 0      // X-axis rotation during fall
+    @State private var midasCardOffsetY:   CGFloat    = 0      // Y translation during fall
+    @State private var midasCardOpacity:   Double     = 1
+    @State private var midasPhoneOffset:   CGSize     = .zero  // whole-UI thud shake
+
     private let haptic = HapticEngine.shared
 
     // First-time contextual tooltip
@@ -42,11 +54,17 @@ struct ActiveWorkoutView: View {
                 cardArea
                 actionArea
             }
+            // Phone-thud shake — applied to the whole UI during impact
+            .offset(midasPhoneOffset)
             if isPaused {
                 pauseOverlay
             }
             if let tip = activeTooltip {
                 tooltipOverlay(tip)
+            }
+            // Full-screen shockwave rings + dust puffs
+            if let date = midasImpactDate {
+                MidasImpactView(startDate: date)
             }
         }
         .onChange(of: coordinator.state) { _, newState in
@@ -167,25 +185,65 @@ struct ActiveWorkoutView: View {
             ZStack {
                 deckStackIndicator
                     .zIndex(0)
+
+                let isMidasAnimating = midasPhase != .idle
+                // Card + Midas gilding overlay + gleam
                 Group {
-                    if let card = currentCard {
-                        CardView(card: card, faceUp: isFaceUp,
-                                 deckId: coordinator.session?.deckId ?? "standard")
-                    } else {
-                        CardView(card: .standard(suit: .hearts, rank: .two), faceUp: false)
+                    ZStack {
+                        if let card = currentCard {
+                            CardView(card: card, faceUp: isFaceUp,
+                                     deckId: coordinator.session?.deckId ?? "standard")
+                        } else {
+                            CardView(card: .standard(suit: .hearts, rank: .two), faceUp: false)
+                        }
+                        // Gold-leaf face expands from centre via animated circle clip
+                        if isMidasAnimating, let card = currentCard {
+                            MidasFaceView(card: card)
+                                .clipShape(GrowingCircleMask(
+                                    radius:  midasGildingRadius,
+                                    centerX: CardPlaceholderView.cardWidth  / 2,
+                                    centerY: CardPlaceholderView.cardHeight / 2
+                                ))
+                        }
+                        // Gleam sweep during gilded + falling phases
+                        if midasShowGleam {
+                            MidasGleamOverlay(fallingOpacity: midasPhase == .falling)
+                        }
                     }
                 }
-                // 3D flip + Z-axis tilt for swipe; scaleEffect = mid-flip size pulse
-                .rotation3DEffect(.degrees(flipDegrees), axis: (x: 0, y: 1, z: 0), perspective: 0.6)
-                .rotationEffect(.degrees(cardTilt))
-                .scaleEffect(flipScale)
-                .offset(cardOffset)
-                .opacity(cardOpacity)
+                // Normal Y-axis flip (inhibited while Midas animation runs)
+                .rotation3DEffect(
+                    .degrees(isMidasAnimating ? 0 : flipDegrees),
+                    axis: (x: 0, y: 1, z: 0), perspective: 0.6)
+                // Midas fall: X-axis rotation hinged at the card's bottom edge
+                .rotation3DEffect(
+                    .degrees(isMidasAnimating ? midasCardRotX : 0),
+                    axis: (x: 1, y: 0, z: 0),
+                    anchor: .bottom,
+                    perspective: 0.4)
+                .rotationEffect(.degrees(isMidasAnimating ? 0 : cardTilt))
+                .scaleEffect(isMidasAnimating ? 1 : flipScale)
+                .offset(isMidasAnimating
+                    ? CGSize(width: 0, height: midasCardOffsetY)
+                    : cardOffset)
+                .opacity(isMidasAnimating ? midasCardOpacity : cardOpacity)
                 .zIndex(cardZIndex)
                 .onTapGesture {
                     if case .cardFaceDown = coordinator.state { handleFlipTap() }
                 }
                 .gesture(swipeGesture)
+
+                // Sparkles scatter from card centre during gilding phase
+                if midasShowSparkles {
+                    MidasSparklesView(
+                        originX: CardPlaceholderView.cardWidth,
+                        originY: CardPlaceholderView.cardHeight
+                    )
+                    .frame(width:  CardPlaceholderView.cardWidth  * 2,
+                           height: CardPlaceholderView.cardHeight * 2)
+                    .allowsHitTesting(false)
+                    .zIndex(2)
+                }
             }
 
             // Prescription / prompt
@@ -324,6 +382,10 @@ struct ActiveWorkoutView: View {
             return suit == .hearts || suit == .diamonds
         }
         return false
+    }
+
+    private var isMidasDeck: Bool {
+        coordinator.session?.deckId == "midas"
     }
 
     // MARK: - Hold complete
@@ -558,6 +620,130 @@ struct ActiveWorkoutView: View {
         // .cardSkipping is handled in onChange
     }
 
+    // MARK: - Midas completion
+
+    /// Runs the three-phase Midas completion sequence:
+    ///   1. Gilding  (1700 ms) — circular gold reveal expands from card centre + sparkles
+    ///   2. Gilded   ( 450 ms) — full gold card holds; gleam begins sweeping
+    ///   3. Falling  ( 950 ms) — 6-segment sequential withAnimation fall, phone thud,
+    ///                           shockwave + dust via MidasImpactView
+    /// Matches MidasGildingCard phases in midas-cards.jsx exactly.
+    private func handleMidasCompletion() {
+        guard let _ = currentCard else { return }
+
+        // ── Phase 1: Gilding ───────────────────────────────────────────────────
+        // GrowingCircleMask expands from 0 → card diagonal in 1700 ms.
+        midasPhase = .gilding
+        midasShowSparkles = true
+        let diagonal = sqrt(pow(CardPlaceholderView.cardWidth,  2) +
+                            pow(CardPlaceholderView.cardHeight, 2))
+        withAnimation(.timingCurve(0.22, 0.61, 0.36, 1, duration: 1.70)) {
+            midasGildingRadius = diagonal
+        }
+
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(1700))
+
+            // ── Phase 2: Gilded ────────────────────────────────────────────────
+            midasPhase = .gilded
+            midasShowSparkles = false
+            midasShowGleam = true
+
+            try? await Task.sleep(for: .milliseconds(450))
+
+            // ── Phase 3: Fall — 6 sequential segments (950 ms total) ──────────
+            // CSS keyframe source: @keyframes midasFall in Flip 54 Midas Touch.html
+            // transformOrigin: '50% 100%' → anchor: .bottom on SwiftUI rotation
+            midasPhase = .falling
+
+            // Seg 1 — 85 ms, lean back -3°, cubic-bezier(0.40, 0, 0.60, 1)
+            withAnimation(.timingCurve(0.40, 0, 0.60, 1, duration: 0.085)) {
+                midasCardRotX   = -3
+            }
+            try? await Task.sleep(for: .milliseconds(85))
+
+            // Seg 2 — 559 ms, fall forward to 104° / Y+68, cb(0.55, 0, 0.90, 0.05)
+            withAnimation(.timingCurve(0.55, 0, 0.90, 0.05, duration: 0.559)) {
+                midasCardRotX   = 104
+                midasCardOffsetY = 68
+            }
+            try? await Task.sleep(for: .milliseconds(559))
+
+            // Primary impact fires at 68 % of fall (644 ms from fall start).
+            midasImpactDate = Date()
+            haptic.play(.midasLanding)
+            // Phone thud: translateY 0 → 8 pt at 70 % (+19 ms), back at 74 % (+57 ms)
+            withAnimation(.linear(duration: 0.019)) {
+                midasPhoneOffset = CGSize(width: 0, height: 8)
+            }
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(57))
+                withAnimation(.spring(response: 0.10, dampingFraction: 0.7)) {
+                    midasPhoneOffset = .zero
+                }
+            }
+
+            // Seg 3 — 57 ms, bounce back to 80° / Y+36, cb(0.15, 0.70, 0.45, 1)
+            withAnimation(.timingCurve(0.15, 0.70, 0.45, 1, duration: 0.057)) {
+                midasCardRotX   = 80
+                midasCardOffsetY = 36
+            }
+            try? await Task.sleep(for: .milliseconds(57))
+
+            // Seg 4 — 47 ms, forward to 98° / Y+64, cb(0.50, 0, 0.85, 0)
+            withAnimation(.timingCurve(0.50, 0, 0.85, 0, duration: 0.047)) {
+                midasCardRotX   = 98
+                midasCardOffsetY = 64
+            }
+            try? await Task.sleep(for: .milliseconds(47))
+
+            // Secondary impact fires at 79 % of fall (750 ms from fall start).
+            haptic.play(.midasLanding)
+            // Phone thud: translateY 0 → 4 pt at 82 % (+29 ms), back at 86 % (+67 ms)
+            withAnimation(.linear(duration: 0.029)) {
+                midasPhoneOffset = CGSize(width: 0, height: 4)
+            }
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(67))
+                withAnimation(.spring(response: 0.10, dampingFraction: 0.7)) {
+                    midasPhoneOffset = .zero
+                }
+            }
+
+            // Seg 5 — 38 ms, 95° / Y+60, cb(0.55, 0, 1, 1)
+            withAnimation(.timingCurve(0.55, 0, 1, 1, duration: 0.038)) {
+                midasCardRotX   = 95
+                midasCardOffsetY = 60
+            }
+            try? await Task.sleep(for: .milliseconds(38))
+
+            // Seg 6 — 161 ms, card flies off screen + fades, linear
+            withAnimation(.linear(duration: 0.161)) {
+                midasCardOffsetY = 820
+                midasCardOpacity = 0
+            }
+            try? await Task.sleep(for: .milliseconds(161))
+
+            // Advance state machine; reset all Midas-specific state.
+            // midasImpactDate is reset separately so impact effects complete naturally.
+            coordinator.send(.advanceComplete)
+            midasPhase        = .idle
+            midasGildingRadius = 0
+            midasShowGleam    = false
+            midasShowSparkles  = false
+            midasCardRotX      = 0
+            midasCardOffsetY   = 0
+            midasCardOpacity   = 1
+            midasPhoneOffset   = .zero
+
+            // Let shockwaves (720 ms) + dust (up to 1100 ms) finish from impact fire.
+            // Primary impact was 644 ms into fall; we're now at 947 ms → 303 ms elapsed.
+            // Keep the impact view alive 420 ms more (~723 ms total) then remove it.
+            try? await Task.sleep(for: .milliseconds(420))
+            midasImpactDate = nil
+        }
+    }
+
     private func handleStateChange(_ newState: WorkoutState) {
         switch newState {
         case .holdStarting:
@@ -569,26 +755,28 @@ struct ActiveWorkoutView: View {
             checkTooltip(for: card)
 
         case .cardCompleting:
-            // Fly off to the right (above the deck), out of frame. Keep the
-            // card visually face-up while it slides — the orientation reset
-            // happens off-screen so the animation starts from the card's
-            // current on-screen position.
             activeTooltip = nil
             showPrescription = false
             cardZIndex = 1
-            withAnimation(.easeIn(duration: 0.35)) {
-                cardOffset = CGSize(width: 500, height: 30)
-                cardTilt = 18
-                cardOpacity = 0
-            }
-            Task { @MainActor in
-                try? await Task.sleep(for: .milliseconds(350))
-                flipDegrees = 0
-                flipScale = 1
-                coordinator.send(.advanceComplete)
-                cardOffset = .zero
-                cardTilt = 0
-                cardOpacity = 1
+            if isMidasDeck {
+                // Midas deck: gilding reveal → gilded hold → 6-keyframe fall
+                handleMidasCompletion()
+            } else {
+                // Standard deck: fly off to the right, out of frame.
+                withAnimation(.easeIn(duration: 0.35)) {
+                    cardOffset = CGSize(width: 500, height: 30)
+                    cardTilt = 18
+                    cardOpacity = 0
+                }
+                Task { @MainActor in
+                    try? await Task.sleep(for: .milliseconds(350))
+                    flipDegrees = 0
+                    flipScale = 1
+                    coordinator.send(.advanceComplete)
+                    cardOffset = .zero
+                    cardTilt = 0
+                    cardOpacity = 1
+                }
             }
 
         case .cardSkipping:

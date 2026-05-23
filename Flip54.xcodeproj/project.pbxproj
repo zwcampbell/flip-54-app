@@ -19,12 +19,12 @@
 		3CCC2F542F8EBF35946C88E2 /* BarlowCondensed-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 797C33D1DEAD007BF9C5C0DC /* BarlowCondensed-ExtraBold.ttf */; };
 		4304FC6348DA78A4FC89FDA8 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = D1AF62437A47B9A3B38343F9 /* README.md */; };
 		462EB8EE5E5F6C960752E793 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D8D079C4FAD5217145A2CF2B /* PrivacyInfo.xcprivacy */; };
+		55434A6514E6F3184EFD0867 /* MidasCardOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 721FCE0A4A92F61561184ABA /* MidasCardOverlay.swift */; };
+		74FE86AAEE03A9CD31F607B2 /* MidasImpactView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DEB8D41E86483258DAAB20F /* MidasImpactView.swift */; };
 		7E3FDDD6F934762A428B88EC /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A24DD0F3DDE3CD532E4F7B /* ProfileView.swift */; };
 		86786B8D37B71797D0525F8B /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B95F95B2A017F274DA35B4A2 /* SettingsView.swift */; };
 		9A06BE069CB319704BD09C35 /* AccessibilityHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20C3BAE428A6C45455C0FBC /* AccessibilityHelpers.swift */; };
 		9C973F526285EC2405E8DB23 /* Flip54Core in Frameworks */ = {isa = PBXBuildFile; productRef = B2272B8D6AB1191879B2C915 /* Flip54Core */; };
-		F0862EE7DF904A72BC0C0C3C /* MidasImpactView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 161761CE8BD44EEAA1554D93 /* MidasImpactView.swift */; };
-		C339423572DA41E3BECC34BB /* MidasCardOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC7F126B9DC74159A2BFB194 /* MidasCardOverlay.swift */; };
 		9F74E2E6B610D17F1B239643 /* CardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C22DB04AA5EF70E9C1363F2 /* CardView.swift */; };
 		A42E668F4DAA7EB48B233764 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76D5BCF1A3AA119192222201 /* ContentView.swift */; };
 		A54A77351D527C0E5C6D7EE6 /* CompletionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 778F6D7BDE8134694108A176 /* CompletionView.swift */; };
@@ -48,9 +48,9 @@
 		41BB8F655ECC069322AD2C5E /* PreWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreWorkoutView.swift; sourceTree = "<group>"; };
 		47A24DD0F3DDE3CD532E4F7B /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		4C293BCC81644491CB0BD3F5 /* Flip54App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Flip54App.swift; sourceTree = "<group>"; };
-		161761CE8BD44EEAA1554D93 /* MidasImpactView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MidasImpactView.swift; sourceTree = "<group>"; };
-		CC7F126B9DC74159A2BFB194 /* MidasCardOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MidasCardOverlay.swift; sourceTree = "<group>"; };
 		5C22DB04AA5EF70E9C1363F2 /* CardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardView.swift; sourceTree = "<group>"; };
+		6DEB8D41E86483258DAAB20F /* MidasImpactView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MidasImpactView.swift; sourceTree = "<group>"; };
+		721FCE0A4A92F61561184ABA /* MidasCardOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MidasCardOverlay.swift; sourceTree = "<group>"; };
 		7555D96771AC4BF11EF0B262 /* Flip54.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Flip54.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		76D5BCF1A3AA119192222201 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		778F6D7BDE8134694108A176 /* CompletionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionView.swift; sourceTree = "<group>"; };
@@ -271,8 +271,8 @@
 				B52C6675A9690E75127037D0 /* CardImageProvider.swift */,
 				34349F3E0E7F44A9A584119C /* CardPlaceholderView.swift */,
 				5C22DB04AA5EF70E9C1363F2 /* CardView.swift */,
-				CC7F126B9DC74159A2BFB194 /* MidasCardOverlay.swift */,
-				161761CE8BD44EEAA1554D93 /* MidasImpactView.swift */,
+				721FCE0A4A92F61561184ABA /* MidasCardOverlay.swift */,
+				6DEB8D41E86483258DAAB20F /* MidasImpactView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -374,15 +374,15 @@
 				32AECE4A2A64CAEF5516DB64 /* ActiveWorkoutView.swift in Sources */,
 				06BA75DF8FA0AF5D8311C1A7 /* CardImageProvider.swift in Sources */,
 				D3AFF4176855C0C48FE71951 /* CardPlaceholderView.swift in Sources */,
-				F0862EE7DF904A72BC0C0C3C /* MidasImpactView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 161761CE8BD44EEAA1554D93 /* MidasImpactView.swift */; };
-		C339423572DA41E3BECC34BB /* MidasCardOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC7F126B9DC74159A2BFB194 /* MidasCardOverlay.swift */; };
-		9F74E2E6B610D17F1B239643 /* CardView.swift in Sources */,
+				9F74E2E6B610D17F1B239643 /* CardView.swift in Sources */,
 				A54A77351D527C0E5C6D7EE6 /* CompletionView.swift in Sources */,
 				A42E668F4DAA7EB48B233764 /* ContentView.swift in Sources */,
 				2134B6F99390180A3883DAA4 /* DS.swift in Sources */,
 				13C8374D14C68238A9884023 /* Flip54App.swift in Sources */,
 				0C83819DD8F298213C30FF6C /* HapticEngine.swift in Sources */,
 				30C7674ECC7B0BC4F40270C6 /* HistoryView.swift in Sources */,
+				55434A6514E6F3184EFD0867 /* MidasCardOverlay.swift in Sources */,
+				74FE86AAEE03A9CD31F607B2 /* MidasImpactView.swift in Sources */,
 				09079A13155A5EF7E320E05A /* OnboardingView.swift in Sources */,
 				C6AF881D1F7AC594EBAF8951 /* PreWorkoutView.swift in Sources */,
 				7E3FDDD6F934762A428B88EC /* ProfileView.swift in Sources */,
