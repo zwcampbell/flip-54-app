@@ -23,6 +23,7 @@
 		86786B8D37B71797D0525F8B /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B95F95B2A017F274DA35B4A2 /* SettingsView.swift */; };
 		9A06BE069CB319704BD09C35 /* AccessibilityHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20C3BAE428A6C45455C0FBC /* AccessibilityHelpers.swift */; };
 		9C973F526285EC2405E8DB23 /* Flip54Core in Frameworks */ = {isa = PBXBuildFile; productRef = B2272B8D6AB1191879B2C915 /* Flip54Core */; };
+		F0862EE7DF904A72BC0C0C3C /* MidasImpactView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 161761CE8BD44EEAA1554D93 /* MidasImpactView.swift */; };
 		C339423572DA41E3BECC34BB /* MidasCardOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC7F126B9DC74159A2BFB194 /* MidasCardOverlay.swift */; };
 		9F74E2E6B610D17F1B239643 /* CardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C22DB04AA5EF70E9C1363F2 /* CardView.swift */; };
 		A42E668F4DAA7EB48B233764 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76D5BCF1A3AA119192222201 /* ContentView.swift */; };
@@ -47,6 +48,7 @@
 		41BB8F655ECC069322AD2C5E /* PreWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreWorkoutView.swift; sourceTree = "<group>"; };
 		47A24DD0F3DDE3CD532E4F7B /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		4C293BCC81644491CB0BD3F5 /* Flip54App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Flip54App.swift; sourceTree = "<group>"; };
+		161761CE8BD44EEAA1554D93 /* MidasImpactView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MidasImpactView.swift; sourceTree = "<group>"; };
 		CC7F126B9DC74159A2BFB194 /* MidasCardOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MidasCardOverlay.swift; sourceTree = "<group>"; };
 		5C22DB04AA5EF70E9C1363F2 /* CardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardView.swift; sourceTree = "<group>"; };
 		7555D96771AC4BF11EF0B262 /* Flip54.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Flip54.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -270,6 +272,7 @@
 				34349F3E0E7F44A9A584119C /* CardPlaceholderView.swift */,
 				5C22DB04AA5EF70E9C1363F2 /* CardView.swift */,
 				CC7F126B9DC74159A2BFB194 /* MidasCardOverlay.swift */,
+				161761CE8BD44EEAA1554D93 /* MidasImpactView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -371,7 +374,8 @@
 				32AECE4A2A64CAEF5516DB64 /* ActiveWorkoutView.swift in Sources */,
 				06BA75DF8FA0AF5D8311C1A7 /* CardImageProvider.swift in Sources */,
 				D3AFF4176855C0C48FE71951 /* CardPlaceholderView.swift in Sources */,
-				C339423572DA41E3BECC34BB /* MidasCardOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC7F126B9DC74159A2BFB194 /* MidasCardOverlay.swift */; };
+				F0862EE7DF904A72BC0C0C3C /* MidasImpactView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 161761CE8BD44EEAA1554D93 /* MidasImpactView.swift */; };
+		C339423572DA41E3BECC34BB /* MidasCardOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC7F126B9DC74159A2BFB194 /* MidasCardOverlay.swift */; };
 		9F74E2E6B610D17F1B239643 /* CardView.swift in Sources */,
 				A54A77351D527C0E5C6D7EE6 /* CompletionView.swift in Sources */,
 				A42E668F4DAA7EB48B233764 /* ContentView.swift in Sources */,
