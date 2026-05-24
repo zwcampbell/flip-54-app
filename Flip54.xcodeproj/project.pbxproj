@@ -23,6 +23,7 @@
 		496CEFD122018717863BE103 /* deck-riffle.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 6BA794D5974CE861ECD526FA /* deck-riffle.mp3 */; };
 		4D68DCFEEA99D18478DC006D /* card-flip.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 6B254E17B5B82FAA1FD27B93 /* card-flip.mp3 */; };
 		55434A6514E6F3184EFD0867 /* MidasCardOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 721FCE0A4A92F61561184ABA /* MidasCardOverlay.swift */; };
+		6479736F5C06DFC793DB77A5 /* ExerciseFigureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93EEF78A53282188026A6ED5 /* ExerciseFigureView.swift */; };
 		7202DB4D2A5A43358D35D896 /* FormGuideData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D07624E9408F6FEE5F7F1E4 /* FormGuideData.swift */; };
 		74FE86AAEE03A9CD31F607B2 /* MidasImpactView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DEB8D41E86483258DAAB20F /* MidasImpactView.swift */; };
 		7E3FDDD6F934762A428B88EC /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A24DD0F3DDE3CD532E4F7B /* ProfileView.swift */; };
@@ -70,6 +71,7 @@
 		7D098F0AF7D594520638A834 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		90383C127A53DA7D5D458841 /* HapticEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticEngine.swift; sourceTree = "<group>"; };
 		910BD7AC775D141B643FC071 /* Flip54Core */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Flip54Core; path = Packages/Flip54Core; sourceTree = SOURCE_ROOT; };
+		93EEF78A53282188026A6ED5 /* ExerciseFigureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseFigureView.swift; sourceTree = "<group>"; };
 		9F529C57C49C8623E926E6D9 /* SoundPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundPlayer.swift; sourceTree = "<group>"; };
 		B52C6675A9690E75127037D0 /* CardImageProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardImageProvider.swift; sourceTree = "<group>"; };
 		B928E34F93C13CA23F613011 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
@@ -235,6 +237,7 @@
 			isa = PBXGroup;
 			children = (
 				DA90C35153A1139687DE3849 /* ActiveWorkoutView.swift */,
+				93EEF78A53282188026A6ED5 /* ExerciseFigureView.swift */,
 				3D07624E9408F6FEE5F7F1E4 /* FormGuideData.swift */,
 				D2F68260DD5A0BA2596CC39C /* FormGuideView.swift */,
 			);
@@ -416,6 +419,7 @@
 				A54A77351D527C0E5C6D7EE6 /* CompletionView.swift in Sources */,
 				A42E668F4DAA7EB48B233764 /* ContentView.swift in Sources */,
 				2134B6F99390180A3883DAA4 /* DS.swift in Sources */,
+				6479736F5C06DFC793DB77A5 /* ExerciseFigureView.swift in Sources */,
 				13C8374D14C68238A9884023 /* Flip54App.swift in Sources */,
 				7202DB4D2A5A43358D35D896 /* FormGuideData.swift in Sources */,
 				D2BD426E977B3477700E6DB0 /* FormGuideView.swift in Sources */,

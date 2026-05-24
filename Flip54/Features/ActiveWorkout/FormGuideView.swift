@@ -100,18 +100,9 @@ struct FormGuideView: View {
             }
             .frame(height: 200)
 
-            // Center label
-            VStack(spacing: 8) {
-                Image(systemName: "figure.strengthtraining.traditional")
-                    .font(.system(size: 36, weight: .thin))
-                    .foregroundStyle(DS.Colors.textTertiary.opacity(0.4))
-                Text("DEMO FIGURE")
-                    .font(.custom("IBMPlexMono-Medium", size: 10))
-                    .foregroundStyle(DS.Colors.textTertiary.opacity(0.5))
-                    .tracking(0.8)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .frame(height: 200)
+            ExerciseFigureView(exercise: exercise)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(height: 200)
 
             // Category chip
             Text(guide.category)
