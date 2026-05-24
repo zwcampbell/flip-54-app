@@ -28,7 +28,17 @@ enum HapticEvent {
 @MainActor
 final class HapticEngine: @unchecked Sendable {
     static let shared = HapticEngine()
-    private init() { startEngine() }
+    private init() {
+        startEngine()
+        prepareGenerators()
+        becomeActiveObserver = NotificationCenter.default.addObserver(
+            forName: UIApplication.didBecomeActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in self?.handleBecomeActive() }
+        }
+    }
 
     private var engine: CHHapticEngine?
     private var engineReady = false
@@ -41,6 +51,8 @@ final class HapticEngine: @unchecked Sendable {
     private let heavyImpact  = UIImpactFeedbackGenerator(style: .heavy)
     private let notifyGen    = UINotificationFeedbackGenerator()
     private let selectionGen = UISelectionFeedbackGenerator()
+
+    private var becomeActiveObserver: NSObjectProtocol?
 
     // MARK: - Public
 
@@ -63,6 +75,19 @@ final class HapticEngine: @unchecked Sendable {
     }
 
     // MARK: - Engine lifecycle
+
+    private func prepareGenerators() {
+        lightImpact.prepare()
+        mediumImpact.prepare()
+        heavyImpact.prepare()
+        notifyGen.prepare()
+        selectionGen.prepare()
+    }
+
+    private func handleBecomeActive() {
+        prepareGenerators()
+        if !engineReady { restartEngine() }
+    }
 
     private func startEngine() {
         guard Self.supported else { return }
