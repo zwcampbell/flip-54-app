@@ -31,11 +31,11 @@ final class SoundPlayer: @unchecked Sendable {
     // MARK: - Playback
 
     func play(_ sound: SoundEffect, volume: Float = 1.0) {
-        guard UserDefaults.standard.bool(forKey: UserDefaultsKeys.sfxEnabled) else { return }
+        guard UserDefaults.standard.sfxEnabled else { return }
         if !loaded { preload() }
         guard let player = players[sound] else { return }
-        let masterVol = UserDefaults.standard.float(forKey: UserDefaultsKeys.sfxVolume)
-        player.volume = volume * max(0, min(1, masterVol > 0 ? masterVol : 1))
+        let masterVol = UserDefaults.standard.sfxVolume
+        player.volume = volume * max(0, min(1, masterVol))
         player.currentTime = 0
         player.play()
     }
