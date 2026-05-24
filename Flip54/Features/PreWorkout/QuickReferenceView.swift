@@ -15,7 +15,6 @@ struct QuickReferenceView: View {
                     header
                     cardValuesSection
                     suitsSection
-                    specialCardsSection
                     Spacer(minLength: 40)
                 }
                 .padding(.horizontal, 24)
@@ -130,45 +129,6 @@ struct QuickReferenceView: View {
                     .font(.system(size: 12))
                     .foregroundStyle(DS.Colors.textTertiary)
             }
-            Spacer()
-        }
-        .padding(.horizontal, 18)
-        .padding(.vertical, 14)
-    }
-
-    // MARK: - Special cards
-
-    private var specialCardsSection: some View {
-        VStack(spacing: 0) {
-            sectionLabel("DIFFICULTY MULTIPLIERS")
-            VStack(spacing: 0) {
-                multiplierRow(level: "Beginner", mult: "×0.75", desc: "Scaled-down reps")
-                divider
-                multiplierRow(level: "Standard", mult: "×1.0",  desc: "The full challenge")
-                divider
-                multiplierRow(level: "Advanced", mult: "×1.25", desc: "Extra reps on every card")
-            }
-            .background(DS.Colors.bgCard)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
-            .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(DS.Colors.border, lineWidth: 1))
-        }
-    }
-
-    private func multiplierRow(level: String, mult: String, desc: String) -> some View {
-        HStack {
-            Text(level.uppercased())
-                .font(.custom("BarlowCondensed-ExtraBold", size: 18))
-                .foregroundStyle(DS.Colors.textPrimary)
-                .frame(width: 88, alignment: .leading)
-            Text(mult)
-                .font(.custom("IBMPlexMono-Medium", size: 14))
-                .foregroundStyle(DS.Colors.gold)
-                .lineLimit(1)
-                .fixedSize()
-                .frame(width: 56, alignment: .leading)
-            Text(desc)
-                .font(.system(size: 12))
-                .foregroundStyle(DS.Colors.textTertiary)
             Spacer()
         }
         .padding(.horizontal, 18)

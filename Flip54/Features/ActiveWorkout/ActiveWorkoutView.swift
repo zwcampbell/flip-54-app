@@ -1167,10 +1167,7 @@ private enum ColorMath {
         var br: CGFloat = 0, bg: CGFloat = 0, bb: CGFloat = 0, ba: CGFloat = 0
         UIColor(a).getRed(&ar, green: &ag, blue: &ab, alpha: &aa)
         UIColor(b).getRed(&br, green: &bg, blue: &bb, alpha: &ba)
-        return Color(
-            red:   Double(ar) + (Double(br) - Double(ar)) * tt,
-            green: Double(ag) + (Double(bg) - Double(ag)) * tt,
-            blue:  Double(ab) + (Double(bb) - Double(ab)) * tt
-        )
+        func lerp1(_ a: CGFloat, _ b: CGFloat) -> Double { max(0, min(1, Double(a) + (Double(b) - Double(a)) * tt)) }
+        return Color(red: lerp1(ar, br), green: lerp1(ag, bg), blue: lerp1(ab, bb))
     }
 }
