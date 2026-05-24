@@ -250,10 +250,11 @@ extension Difficulty: CaseIterable {
     }
 
     var description: String {
+        let m = String(format: "×%.1f", multiplier)
         switch self {
-        case .beginner:  return "×0.75 reps — great for starting out"
-        case .standard:  return "×1.0 reps — the full deck challenge"
-        case .advanced:  return "×1.25 reps — for seasoned athletes"
+        case .beginner:  return "\(m) reps — great for starting out"
+        case .standard:  return "\(m) reps — the full deck challenge"
+        case .advanced:  return "\(m) reps — for seasoned athletes"
         }
     }
 }
