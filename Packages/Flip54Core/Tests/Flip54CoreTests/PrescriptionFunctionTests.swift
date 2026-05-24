@@ -17,10 +17,10 @@ struct PrescriptionFunctionTests {
 
     // ── Joker ──────────────────────────────────────────────────────────────
 
-    @Test("Joker · beginner → 30 jumping jacks")
+    @Test("Joker · beginner → 20 jumping jacks")
     func jokerBeginner() {
         let p = prescription(for: .joker(variant: .red), equipment: .bodyWeightOnly, difficulty: .beginner)
-        #expect(p == .reps(exercise: .jumpingJacks, count: 30))
+        #expect(p == .reps(exercise: .jumpingJacks, count: 20))
     }
 
     @Test("Joker · standard → 40 jumping jacks")
@@ -29,19 +29,19 @@ struct PrescriptionFunctionTests {
         #expect(p == .reps(exercise: .jumpingJacks, count: 40))
     }
 
-    @Test("Joker · advanced → 50 jumping jacks")
+    @Test("Joker · advanced → 80 jumping jacks")
     func jokerAdvanced() {
         let p = prescription(for: .joker(variant: .red), equipment: .fullKit, difficulty: .advanced)
-        #expect(p == .reps(exercise: .jumpingJacks, count: 50))
+        #expect(p == .reps(exercise: .jumpingJacks, count: 80))
     }
 
     // ── Ace holds (suit → body region) ─────────────────────────────────────
 
     @Test("Ace seconds per difficulty")
     func aceHoldSeconds() {
-        #expect(roundToFive(60 * 0.75) == 45)
-        #expect(roundToFive(60 * 1.0)  == 60)
-        #expect(roundToFive(60 * 1.25) == 75)
+        #expect(roundToFive(60 * 0.5) == 30)
+        #expect(roundToFive(60 * 1.0) == 60)
+        #expect(roundToFive(60 * 2.0) == 120)
     }
 
     @Test("Ace Hearts (lower body) → wall sit")
@@ -170,13 +170,13 @@ struct PrescriptionFunctionTests {
     func faceCardReps() {
         for rank in [Rank.jack, .queen, .king] {
             let beg = prescription(for: .standard(suit: .hearts, rank: rank), equipment: .bodyWeightOnly, difficulty: .beginner)
-            if case .reps(_, let c) = beg { #expect(c == 8) } else { Issue.record("expected reps") }
+            if case .reps(_, let c) = beg { #expect(c == 5) } else { Issue.record("expected reps") }
 
             let std = prescription(for: .standard(suit: .hearts, rank: rank), equipment: .bodyWeightOnly, difficulty: .standard)
             if case .reps(_, let c) = std { #expect(c == 10) } else { Issue.record("expected reps") }
 
             let adv = prescription(for: .standard(suit: .hearts, rank: rank), equipment: .bodyWeightOnly, difficulty: .advanced)
-            if case .reps(_, let c) = adv { #expect(c == 13) } else { Issue.record("expected reps") }
+            if case .reps(_, let c) = adv { #expect(c == 20) } else { Issue.record("expected reps") }
         }
     }
 

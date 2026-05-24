@@ -3,9 +3,9 @@ public enum Difficulty: String, Codable, CaseIterable, Hashable, Sendable {
 
     public var multiplier: Double {
         switch self {
-        case .beginner: return 0.75
+        case .beginner: return 0.5
         case .standard: return 1.0
-        case .advanced: return 1.25
+        case .advanced: return 2.0
         }
     }
 
