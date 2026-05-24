@@ -58,7 +58,7 @@ struct SettingsView: View {
                 equipmentRow(
                     icon: "dumbbell.fill",
                     title: "Weights",
-                    subtitle: "Adds curls/press/triceps, goblet squats, weighted sit-ups, thrusters",
+                    subtitle: "Adds curls, goblet squats, and thrusters",
                     isOn: $settings.hasWeights
                 )
                 divider
