@@ -818,6 +818,10 @@ struct ActiveWorkoutView: View {
                 cardOpacity = 1
             }
 
+        case .holdComplete:
+            SoundPlayer.shared.play(.holdEnd)
+            haptic.play(.done)
+
         case .workoutComplete:
             SoundPlayer.shared.play(.completion)
             onWorkoutComplete()
