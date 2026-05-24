@@ -29,6 +29,9 @@ struct ActiveWorkoutView: View {
     // Card enter animation
     @State private var showPrescription = false
 
+    // Form guide sheet — uses .sheet(item:) so the exercise is available immediately on first present
+    @State private var formGuideItem: FormGuideSheetItem? = nil
+
     // Midas deck gilding + fall animation
     private enum MidasPhase: Equatable { case idle, gilding, gilded, falling }
     @State private var midasPhase:         MidasPhase = .idle
@@ -62,13 +65,18 @@ struct ActiveWorkoutView: View {
             if let tip = activeTooltip {
                 tooltipOverlay(tip)
             }
-            // Full-screen shockwave rings + dust puffs
+                // Full-screen shockwave rings + dust puffs
             if let date = midasImpactDate {
                 MidasImpactView(startDate: date)
             }
         }
         .onChange(of: coordinator.state) { _, newState in
             handleStateChange(newState)
+        }
+        .sheet(item: $formGuideItem) { item in
+            FormGuideView(exercise: item.exercise)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.hidden)
         }
     }
 
@@ -353,10 +361,20 @@ struct ActiveWorkoutView: View {
 
         case .cardFaceUp(_, let prescription):
             VStack(spacing: 8) {
-                Text(prescription.exercise.displayName.uppercased())
-                    .font(.custom("Oswald-SemiBold", size: 17))
-                    .foregroundStyle(DS.Colors.textSecondary)
-                    .tracking(1.0)
+                HStack(spacing: 8) {
+                    Text(prescription.exercise.displayName.uppercased())
+                        .font(.custom("Oswald-SemiBold", size: 17))
+                        .foregroundStyle(DS.Colors.textSecondary)
+                        .tracking(1.0)
+                    Button {
+                        HapticEngine.shared.play(.tap)
+                        formGuideItem = FormGuideSheetItem(exercise: prescription.exercise)
+                    } label: {
+                        Image(systemName: "info.circle")
+                            .font(.system(size: 14))
+                            .foregroundStyle(DS.Colors.textTertiary)
+                    }
+                }
 
                 if case .reps(let exercise, let count) = prescription {
                     let isRed = isRedCard
@@ -1156,6 +1174,13 @@ private struct CheckmarkRingShape: Shape {
 
         return p
     }
+}
+
+// MARK: - Form guide sheet item
+
+struct FormGuideSheetItem: Identifiable {
+    let exercise: Exercise
+    var id: String { exercise.rawValue }
 }
 
 // MARK: - Color interpolation helper
