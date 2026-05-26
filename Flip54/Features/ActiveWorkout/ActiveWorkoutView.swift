@@ -784,6 +784,17 @@ struct ActiveWorkoutView: View {
         case .cardFaceUp(let card, _):
             checkTooltip(for: card)
 
+        case .cardFaceDown:
+            // Authoritative reset — fires in the same onChange cycle as the
+            // state transition, guaranteeing the incoming face-down card always
+            // starts at its neutral position regardless of prior animation state.
+            cardOffset = .zero
+            cardTilt = 0
+            cardOpacity = 1
+            flipDegrees = 0
+            flipScale = 1
+            cardZIndex = 1
+
         case .cardCompleting:
             activeTooltip = nil
             showPrescription = false
@@ -800,12 +811,9 @@ struct ActiveWorkoutView: View {
                 }
                 Task { @MainActor in
                     try? await Task.sleep(for: .milliseconds(350))
-                    flipDegrees = 0
-                    flipScale = 1
                     coordinator.send(.advanceComplete)
-                    cardOffset = .zero
-                    cardTilt = 0
-                    cardOpacity = 1
+                    // handleStateChange(.cardFaceDown) resets all visual state
+                    // in the same view-update cycle as the transition above.
                 }
             }
 
@@ -836,8 +844,7 @@ struct ActiveWorkoutView: View {
                 }
                 try? await Task.sleep(for: .milliseconds(320))
                 coordinator.send(.advanceComplete)
-                cardZIndex = 1
-                cardOpacity = 1
+                // handleStateChange(.cardFaceDown) resets remaining visual state.
             }
 
         case .holdComplete:
