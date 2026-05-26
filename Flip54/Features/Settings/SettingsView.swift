@@ -186,6 +186,24 @@ struct SettingsView: View {
                     subtitle: "Vibration on flip, done, and skip",
                     isOn: $hapticsEnabled
                 )
+                // If haptics are on but Core Haptics engine isn't running, UIKit
+                // fallbacks are used — those respect the system Haptics toggle. Prompt
+                // the user to check iOS Settings if they're not feeling anything.
+                if hapticsEnabled && !HapticEngine.shared.isCoreHapticsRunning {
+                    divider
+                    HStack(spacing: 14) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 14))
+                            .foregroundStyle(DS.Colors.textTertiary)
+                            .frame(width: 28)
+                        Text("If you feel no vibration, check **Settings → Sounds & Haptics → System Haptics**")
+                            .font(.system(size: 12))
+                            .foregroundStyle(DS.Colors.textTertiary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 12)
+                }
                 if sfxEnabled {
                     divider
                     HStack(spacing: 14) {
