@@ -56,7 +56,14 @@ final class HapticEngine: @unchecked Sendable {
 
     // MARK: - Public
 
+    /// True when Core Haptics is running. False means game haptics are falling
+    /// through to UIKit generators, which respect the system Haptics toggle.
+    var isCoreHapticsRunning: Bool { Self.supported && engineReady }
+
     func play(_ event: HapticEvent) {
+        #if DEBUG
+        print("[HapticEngine] play(\(event)) — hapticsEnabled=\(UserDefaults.standard.hapticsEnabled) supported=\(Self.supported) engineReady=\(engineReady)")
+        #endif
         guard UserDefaults.standard.hapticsEnabled else { return }
         // Chrome events always use UIKit generators — no custom pattern needed
         // and they auto-respect Reduce Motion / system haptics settings.
@@ -67,8 +74,18 @@ final class HapticEngine: @unchecked Sendable {
         default:
             break
         }
-        if Self.supported, engineReady {
-            playPattern(for: event)
+        if Self.supported {
+            // Engine can auto-shut-down after idle. Restart on demand so game
+            // haptics (Core Haptics, ignores system Haptics toggle) fire reliably
+            // instead of silently falling through to UIKit fallbacks (which DO
+            // respect the system Haptics toggle and will be silent if the user
+            // has it off in iOS Settings → Sounds & Haptics).
+            if !engineReady { restartEngine() }
+            if engineReady {
+                playPattern(for: event)
+            } else {
+                playFallback(for: event)
+            }
         } else {
             playFallback(for: event)
         }
@@ -99,12 +116,24 @@ final class HapticEngine: @unchecked Sendable {
             try e.start()
             engine = e
             engineReady = true
-        } catch { }
+        } catch {
+            #if DEBUG
+            print("[HapticEngine] startEngine failed: \(error)")
+            #endif
+        }
     }
 
     private func restartEngine() {
         guard let e = engine else { return }
-        do { try e.start(); engineReady = true } catch { engineReady = false }
+        do {
+            try e.start()
+            engineReady = true
+        } catch {
+            engineReady = false
+            #if DEBUG
+            print("[HapticEngine] restartEngine failed: \(error)")
+            #endif
+        }
     }
 
     // MARK: - Core Haptics playback
@@ -115,7 +144,12 @@ final class HapticEngine: @unchecked Sendable {
             let pattern = try makePattern(for: event)
             let player = try engine.makePlayer(with: pattern)
             try player.start(atTime: CHHapticTimeImmediate)
-        } catch { }
+        } catch {
+            #if DEBUG
+            print("[HapticEngine] playPattern(\(event)) failed: \(error)")
+            #endif
+            playFallback(for: event)
+        }
     }
 
     private func makePattern(for event: HapticEvent) throws -> CHHapticPattern {
