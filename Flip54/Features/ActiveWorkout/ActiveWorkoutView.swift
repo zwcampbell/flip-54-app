@@ -6,6 +6,9 @@ import Flip54WorkoutEngine
 struct ActiveWorkoutView: View {
     let coordinator: WorkoutCoordinator
     let onWorkoutComplete: () -> Void
+    /// Called immediately before `coordinator.endEarly()` so the caller can
+    /// snapshot and save partial history while the session is still in memory.
+    var onEndEarly: () -> Void = {}
     /// Pass the live OnboardingState to enable first-time contextual tooltips.
     /// Nil disables all tooltips.
     var onboardingState: OnboardingState? = nil
@@ -561,6 +564,7 @@ struct ActiveWorkoutView: View {
 
                     Button {
                         haptic.play(.warning)
+                        onEndEarly()
                         coordinator.endEarly()
                     } label: {
                         Text("END EARLY")
