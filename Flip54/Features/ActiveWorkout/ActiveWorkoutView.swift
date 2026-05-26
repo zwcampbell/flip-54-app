@@ -729,6 +729,7 @@ struct ActiveWorkoutView: View {
             midasCardOpacity = 0
             midasImpactDate  = Date()
             haptic.play(.midasLanding)
+            SoundPlayer.shared.play(.midasImpact)
             withAnimation(.linear(duration: 0.019)) {
                 midasPhoneOffset = CGSize(width: 0, height: 8)
             }

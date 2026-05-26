@@ -44,6 +44,7 @@
 		E0E3EBD5A1E0D42B677E4902 /* card-skip.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1547DB0832E5B1333C988DA /* card-skip.mp3 */; };
 		E8D56DE252E2A0AEFDBF952E /* Flip54Storage in Frameworks */ = {isa = PBXBuildFile; productRef = 5525B307D9C2B8A0070837FB /* Flip54Storage */; };
 		F131DC7A16A5B25DFA7BF43C /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 28F0CE3652748EEEE3EC94AC /* Preview Assets.xcassets */; };
+		F1FA0AE786D6B09009CB8950 /* midas-impact.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 994DD6C364A16122294A0D03 /* midas-impact.mp3 */; };
 		FF967861E75F075648113A63 /* Oswald-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DE7C0B695322513B3A793379 /* Oswald-SemiBold.ttf */; };
 /* End PBXBuildFile section */
 
@@ -72,6 +73,7 @@
 		90383C127A53DA7D5D458841 /* HapticEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticEngine.swift; sourceTree = "<group>"; };
 		910BD7AC775D141B643FC071 /* Flip54Core */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Flip54Core; path = Packages/Flip54Core; sourceTree = SOURCE_ROOT; };
 		93EEF78A53282188026A6ED5 /* ExerciseFigureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseFigureView.swift; sourceTree = "<group>"; };
+		994DD6C364A16122294A0D03 /* midas-impact.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "midas-impact.mp3"; sourceTree = "<group>"; };
 		9F529C57C49C8623E926E6D9 /* SoundPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundPlayer.swift; sourceTree = "<group>"; };
 		B52C6675A9690E75127037D0 /* CardImageProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardImageProvider.swift; sourceTree = "<group>"; };
 		B928E34F93C13CA23F613011 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
@@ -308,6 +310,7 @@
 				6BA794D5974CE861ECD526FA /* deck-riffle.mp3 */,
 				D09C6413ABE6028FD1865207 /* hold-end.mp3 */,
 				BBD4D49983FB48B423445AD0 /* hold-start.mp3 */,
+				994DD6C364A16122294A0D03 /* midas-impact.mp3 */,
 			);
 			path = Sounds;
 			sourceTree = "<group>";
@@ -401,6 +404,7 @@
 				496CEFD122018717863BE103 /* deck-riffle.mp3 in Resources */,
 				2818671E6C54485229ED9768 /* hold-end.mp3 in Resources */,
 				CD2EB938FA9F6191353E1382 /* hold-start.mp3 in Resources */,
+				F1FA0AE786D6B09009CB8950 /* midas-impact.mp3 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
