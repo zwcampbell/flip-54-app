@@ -6,6 +6,7 @@ import Foundation
 @MainActor
 public final class HoldTimer {
     private var timer: Timer?
+    private var tickTimer: Timer?
     private var fireDate: Date?
     public private(set) var remainingSeconds: Int = 0
 
@@ -41,6 +42,8 @@ public final class HoldTimer {
     public func cancel() {
         timer?.invalidate()
         timer = nil
+        tickTimer?.invalidate()
+        tickTimer = nil
         fireDate = nil
     }
 
@@ -55,7 +58,7 @@ public final class HoldTimer {
         timer = t
 
         // Secondary per-second tick timer for UI countdown
-        let tickTimer = Timer(timeInterval: 1.0, repeats: true) { [weak self] _ in
+        let tick = Timer(timeInterval: 1.0, repeats: true) { [weak self] _ in
             Task { @MainActor [weak self] in
                 guard let self, let fire = self.fireDate else { return }
                 let remaining = max(0, Int(fire.timeIntervalSince(Date()).rounded(.up)))
@@ -63,6 +66,7 @@ public final class HoldTimer {
                 self.onTick?(remaining)
             }
         }
-        RunLoop.main.add(tickTimer, forMode: .common)
+        RunLoop.main.add(tick, forMode: .common)
+        tickTimer = tick
     }
 }
