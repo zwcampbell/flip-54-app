@@ -46,6 +46,11 @@ struct ActiveWorkoutView: View {
     @State private var midasCardOffsetY:   CGFloat    = 0      // Y translation during fall
     @State private var midasCardOpacity:   Double     = 1
     @State private var midasPhoneOffset:   CGSize     = .zero  // whole-UI thud shake
+    // Touch origin for the gilding reveal; defaults to card centre for button-triggered completions.
+    @State private var midasTouchOrigin:   CGPoint    = CGPoint(
+        x: CardPlaceholderView.cardWidth  / 2,
+        y: CardPlaceholderView.cardHeight / 2
+    )
 
     private let haptic = HapticEngine.shared
 
@@ -208,13 +213,13 @@ struct ActiveWorkoutView: View {
                             CardView(card: .standard(suit: .hearts, rank: .two), faceUp: false,
                                      deckId: coordinator.session?.deckId ?? "standard")
                         }
-                        // Gold-leaf face expands from centre via animated circle clip
+                        // Gold-leaf face expands from the touch origin via animated circle clip
                         if isMidasAnimating, let card = currentCard {
                             MidasFaceView(card: card)
                                 .clipShape(GrowingCircleMask(
                                     radius:  midasGildingRadius,
-                                    centerX: CardPlaceholderView.cardWidth  / 2,
-                                    centerY: CardPlaceholderView.cardHeight / 2
+                                    centerX: midasTouchOrigin.x,
+                                    centerY: midasTouchOrigin.y
                                 ))
                         }
                         // Gleam sweep during gilded + falling phases
@@ -240,11 +245,12 @@ struct ActiveWorkoutView: View {
                     : cardOffset)
                 .opacity(isMidasAnimating ? midasCardOpacity : cardOpacity)
                 .zIndex(cardZIndex)
-                .onTapGesture {
+                .onTapGesture(count: 1, coordinateSpace: .local) { location in
                     switch coordinator.state {
                     case .cardFaceDown:
                         handleFlipTap()
                     case .cardFaceUp(_, let prescription) where isMidasDeck && !prescription.isHold:
+                        midasTouchOrigin = location
                         handleDone()
                     default:
                         break
@@ -277,7 +283,7 @@ struct ActiveWorkoutView: View {
 
     private var canSwipe: Bool {
         switch coordinator.state {
-        case .cardFaceUp(_, let p): return !p.isHold
+        case .cardFaceUp(_, let p): return !p.isHold && !isMidasDeck
         case .holdComplete:         return true
         default:                    return false
         }
@@ -439,6 +445,10 @@ struct ActiveWorkoutView: View {
                     if prescription.isHold {
                         coordinator.send(.startHold)
                     } else {
+                        midasTouchOrigin = CGPoint(
+                            x: CardPlaceholderView.cardWidth  / 2,
+                            y: CardPlaceholderView.cardHeight / 2
+                        )
                         handleDone()
                     }
                 }
@@ -662,11 +672,16 @@ struct ActiveWorkoutView: View {
         guard let _ = currentCard else { return }
 
         // ── Phase 1: Gilding ───────────────────────────────────────────────────
-        // GrowingCircleMask expands from 0 → card diagonal in 1700 ms.
+        // GrowingCircleMask expands from midasTouchOrigin → farthest card corner in 1700 ms.
         midasPhase = .gilding
         midasShowSparkles = true
-        let diagonal = sqrt(pow(CardPlaceholderView.cardWidth,  2) +
-                            pow(CardPlaceholderView.cardHeight, 2))
+        let w = CardPlaceholderView.cardWidth
+        let h = CardPlaceholderView.cardHeight
+        let ox = midasTouchOrigin.x
+        let oy = midasTouchOrigin.y
+        let diagonal = [(CGFloat(0), CGFloat(0)), (w, 0), (0, h), (w, h)]
+            .map { sqrt(pow($0.0 - ox, 2) + pow($0.1 - oy, 2)) }
+            .max() ?? sqrt(pow(w, 2) + pow(h, 2))
         withAnimation(.timingCurve(0.22, 0.61, 0.36, 1, duration: 1.70)) {
             midasGildingRadius = diagonal
         }
