@@ -104,45 +104,38 @@ struct MidasSparklesView: View {
 // MARK: - MidasImpactView
 
 /// Impact effects fired when the falling gold card hits the "floor".
-/// Matches the impact effects in Flip 54 Midas Touch.html:
 ///
-/// Shockwaves — two elliptical rings that expand outward:
-///   Primary:   fires at 68% of fall (≈ 646ms), expands from scale(0.1, 0.06) → scale(16, 8)
-///   Secondary: fires at 79% of fall (≈ 750ms), slightly smaller
+/// Shockwaves — two elliptical rings that expand outward from the impact point.
+/// Dust puffs — 7 circles that rise and dissipate.
+/// Gold burst — 18 rectangular fragments burst radially, fall under gravity.
 ///
-/// Dust puffs — 7 circles that rise and dissipate:
-///   @keyframes dustRise: translate(-50%, 8px) scale(0.3) → translate(-50%, -32px) scale(1.7)
-///
-/// Gold burst — 18 rectangular fragments burst radially from impact point on landing,
-///   fly outward under gravity, rotating freely, then fall off screen.
-///
-/// Position: centred on-screen at the card's landing point (below and forward of card).
+/// All effects are timed from `startDate` = the moment of impact.
+/// `impactY` is the card's floor contact Y in full-screen (ignoresSafeArea) coordinates.
 struct MidasImpactView: View {
     let startDate: Date
-
-    private static let fallDuration: Double = 0.950  // seconds
+    let impactY:   CGFloat
 
     private struct DustPuff {
         let xFrac:    CGFloat  // x offset as fraction of cardWidth
-        let yOffset:  CGFloat  // y offset in points (negative = above)
+        let yOffset:  CGFloat  // y offset in points (negative = above impact point)
         let size:     CGFloat
-        let delayFrac: Double  // fraction of fall duration
-        let duration:  Double  // ms → seconds
+        let delay:    Double   // seconds after impact
+        let duration: Double
     }
 
     private static let dustPuffs: [DustPuff] = [
-        DustPuff(xFrac: -0.38, yOffset: -14,  size: 70, delayFrac: 0.69, duration: 1.10),
-        DustPuff(xFrac:  0.40, yOffset: -16,  size: 72, delayFrac: 0.70, duration: 1.10),
-        DustPuff(xFrac: -0.30, yOffset: -70,  size: 64, delayFrac: 0.73, duration: 1.00),
-        DustPuff(xFrac:  0.32, yOffset: -72,  size: 66, delayFrac: 0.74, duration: 1.00),
-        DustPuff(xFrac:  0.00, yOffset: -100, size: 80, delayFrac: 0.76, duration: 1.05),
-        DustPuff(xFrac: -0.10, yOffset: -40,  size: 50, delayFrac: 0.71, duration: 0.95),
-        DustPuff(xFrac:  0.12, yOffset: -42,  size: 52, delayFrac: 0.72, duration: 0.95),
+        DustPuff(xFrac: -0.38, yOffset: -14,  size: 70, delay: 0.00, duration: 1.10),
+        DustPuff(xFrac:  0.40, yOffset: -16,  size: 72, delay: 0.01, duration: 1.10),
+        DustPuff(xFrac: -0.10, yOffset: -40,  size: 50, delay: 0.01, duration: 0.95),
+        DustPuff(xFrac:  0.12, yOffset: -42,  size: 52, delay: 0.02, duration: 0.95),
+        DustPuff(xFrac: -0.30, yOffset: -70,  size: 64, delay: 0.03, duration: 1.00),
+        DustPuff(xFrac:  0.32, yOffset: -72,  size: 66, delay: 0.04, duration: 1.00),
+        DustPuff(xFrac:  0.00, yOffset: -100, size: 80, delay: 0.06, duration: 1.05),
     ]
 
-    // Absolute fire times within this view's own startDate timeline
-    private var primaryDelay:   Double { Self.fallDuration * 0.68 }
-    private var secondaryDelay: Double { Self.fallDuration * 0.79 }
+    // Both rings fire at/just after impact so they burst out from under the card.
+    private let primaryDelay:   Double = 0.00
+    private let secondaryDelay: Double = 0.10
 
     // MARK: - Gold burst pieces
 
@@ -160,8 +153,9 @@ struct MidasImpactView: View {
     // Fresh random pieces per view instance so every completion differs.
     private let goldPieces: [GoldPiece]
 
-    init(startDate: Date) {
+    init(startDate: Date, impactY: CGFloat) {
         self.startDate = startDate
+        self.impactY   = impactY
         self.goldPieces = (0..<18).map { _ in
             // Burst centered on "straight up" (−π/2 in screen-space Y-down),
             // ±120° spread covers all upward directions plus wide sideways arcs.
@@ -184,7 +178,7 @@ struct MidasImpactView: View {
     var body: some View {
         GeometryReader { geo in
             let cx  = geo.size.width  / 2
-            let cy  = geo.size.height * 0.62   // approximate landing Y
+            let cy  = impactY                  // card's floor contact in screen coords
             let cw  = CardPlaceholderView.cardWidth
 
             TimelineView(.animation(minimumInterval: 1.0 / 60.0)) { ctx in
@@ -223,8 +217,7 @@ struct MidasImpactView: View {
 
                     // ── Dust puffs ─────────────────────────────────────────────
                     for dust in Self.dustPuffs {
-                        let delay = Self.fallDuration * dust.delayFrac
-                        let t     = elapsed - delay
+                        let t = elapsed - dust.delay
                         guard t > 0 else { continue }
                         let progress = min(1.0, t / dust.duration)
                         // @keyframes dustRise: 0% scale(0.3), 18% opacity 0.7, 100% scale(1.7) opacity 0
