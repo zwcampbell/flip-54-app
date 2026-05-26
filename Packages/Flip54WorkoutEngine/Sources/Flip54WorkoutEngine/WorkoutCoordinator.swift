@@ -30,8 +30,15 @@ public final class WorkoutCoordinator {
     // MARK: - Public API
 
     public func send(_ event: WorkoutEvent) {
-        let next = transition(state: state, event: event)
+        var next = transition(state: state, event: event)
         guard next != state else { return }
+        // When resuming from pause into a hold, rebuild startTime so HoldTimerView
+        // shows remaining time from before the pause rather than wall-clock elapsed.
+        if case .paused(_) = state,
+           case .holding(let card, _, let dur) = next {
+            let elapsed = session?.holdElapsed ?? 0
+            next = .holding(card: card, startTime: Date().addingTimeInterval(-elapsed), durationSeconds: dur)
+        }
         applyTransition(from: state, to: next, event: event)
         state = next
     }
@@ -108,11 +115,13 @@ public final class WorkoutCoordinator {
         case .shuffling:
             startNewSession()
 
-        case .holding(_, let start, let dur):
-            var elapsed: TimeInterval = 0
-            if let s = session { elapsed = s.holdElapsed }
+        case .holding(_, _, let dur):
+            let elapsed = session?.holdElapsed ?? 0
             holdTimer.start(durationSeconds: dur, alreadyElapsed: elapsed)
-            session?.startHold(at: start)
+            if case .paused(_) = from {
+                session?.resume(at: Date())
+            }
+            session?.startHold(at: Date())
 
         case .holdComplete(let card, let secs, _):
             holdTimer.cancel()
