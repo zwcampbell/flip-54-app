@@ -385,6 +385,9 @@ struct HistoryView: View {
 struct WorkoutDetailView: View {
     let workout: WorkoutHistory
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+
+    @State private var showDeleteConfirmation = false
 
     var body: some View {
         ZStack {
@@ -411,10 +414,38 @@ struct WorkoutDetailView: View {
                     // Stats
                     statsCard
 
-                    Spacer(minLength: 40)
+                    deleteButton
+                        .padding(.top, 32)
+                        .padding(.bottom, 40)
                 }
                 .padding(.horizontal, 24)
             }
+        }
+        .confirmationDialog("Delete this workout?", isPresented: $showDeleteConfirmation, titleVisibility: .visible) {
+            Button("Delete", role: .destructive) {
+                dismiss()
+                modelContext.delete(workout)
+                try? modelContext.save()
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This cannot be undone.")
+        }
+    }
+
+    private var deleteButton: some View {
+        Button {
+            HapticEngine.shared.play(.warning)
+            showDeleteConfirmation = true
+        } label: {
+            Text("DELETE WORKOUT")
+                .font(.custom("BarlowCondensed-ExtraBold", size: 22))
+                .foregroundStyle(DS.Colors.red)
+                .frame(maxWidth: .infinity)
+                .frame(height: 56)
+                .background(Color.clear)
+                .clipShape(Capsule())
+                .overlay(Capsule().strokeBorder(DS.Colors.red, lineWidth: 1.5))
         }
     }
 

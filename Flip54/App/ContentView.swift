@@ -68,6 +68,7 @@ struct ContentView: View {
                 ActiveWorkoutView(
                     coordinator: coordinator,
                     onWorkoutComplete: captureCompletion,
+                    onEndEarly: captureEarlyHistory,
                     onboardingState: onboardingState,
                     isFirstWorkout: historyQuery.isEmpty
                 )
@@ -184,6 +185,14 @@ struct ContentView: View {
         } else {
             saveHistory(data)
         }
+    }
+
+    private func captureEarlyHistory() {
+        guard !coordinator.isTutorial,
+              let session = coordinator.session,
+              session.cardsCompleted > 0 else { return }
+        let data = CompletedWorkoutData(session: session, completedAt: Date())
+        saveHistory(data)
     }
 
     private func saveHistory(_ data: CompletedWorkoutData) {
