@@ -46,6 +46,13 @@ struct ActiveWorkoutView: View {
     @State private var midasCardOffsetY:   CGFloat    = 0      // Y translation during fall
     @State private var midasCardOpacity:   Double     = 1
     @State private var midasPhoneOffset:   CGSize     = .zero  // whole-UI thud shake
+    // Touch origin for the gilding reveal; defaults to card centre for button-triggered completions.
+    @State private var midasTouchOrigin:   CGPoint    = CGPoint(
+        x: CardPlaceholderView.cardWidth  / 2,
+        y: CardPlaceholderView.cardHeight / 2
+    )
+    // Card center Y in full-screen global coordinates; used to position MidasImpactView.
+    @State private var cardCenterYInScreen: CGFloat   = 0
 
     private let haptic = HapticEngine.shared
 
@@ -70,7 +77,12 @@ struct ActiveWorkoutView: View {
             }
                 // Full-screen shockwave rings + dust puffs
             if let date = midasImpactDate {
-                MidasImpactView(startDate: date)
+                MidasImpactView(
+                    startDate: date,
+                    impactY: cardCenterYInScreen
+                        + CardPlaceholderView.cardHeight / 2
+                        + 68   // midasCardOffsetY at the moment of impact
+                )
             }
         }
         .onChange(of: coordinator.state) { _, newState in
@@ -208,13 +220,13 @@ struct ActiveWorkoutView: View {
                             CardView(card: .standard(suit: .hearts, rank: .two), faceUp: false,
                                      deckId: coordinator.session?.deckId ?? "standard")
                         }
-                        // Gold-leaf face expands from centre via animated circle clip
+                        // Gold-leaf face expands from the touch origin via animated circle clip
                         if isMidasAnimating, let card = currentCard {
                             MidasFaceView(card: card)
                                 .clipShape(GrowingCircleMask(
                                     radius:  midasGildingRadius,
-                                    centerX: CardPlaceholderView.cardWidth  / 2,
-                                    centerY: CardPlaceholderView.cardHeight / 2
+                                    centerX: midasTouchOrigin.x,
+                                    centerY: midasTouchOrigin.y
                                 ))
                         }
                         // Gleam sweep during gilded + falling phases
@@ -240,11 +252,17 @@ struct ActiveWorkoutView: View {
                     : cardOffset)
                 .opacity(isMidasAnimating ? midasCardOpacity : cardOpacity)
                 .zIndex(cardZIndex)
-                .onTapGesture {
+                .onGeometryChange(for: CGFloat.self) { geo in
+                    geo.frame(in: .global).midY
+                } action: { midY in
+                    cardCenterYInScreen = midY
+                }
+                .onTapGesture(count: 1, coordinateSpace: .local) { location in
                     switch coordinator.state {
                     case .cardFaceDown:
                         handleFlipTap()
                     case .cardFaceUp(_, let prescription) where isMidasDeck && !prescription.isHold:
+                        midasTouchOrigin = location
                         handleDone()
                     default:
                         break
@@ -277,7 +295,7 @@ struct ActiveWorkoutView: View {
 
     private var canSwipe: Bool {
         switch coordinator.state {
-        case .cardFaceUp(_, let p): return !p.isHold
+        case .cardFaceUp(_, let p): return !p.isHold && !isMidasDeck
         case .holdComplete:         return true
         default:                    return false
         }
@@ -439,6 +457,10 @@ struct ActiveWorkoutView: View {
                     if prescription.isHold {
                         coordinator.send(.startHold)
                     } else {
+                        midasTouchOrigin = CGPoint(
+                            x: CardPlaceholderView.cardWidth  / 2,
+                            y: CardPlaceholderView.cardHeight / 2
+                        )
                         handleDone()
                     }
                 }
@@ -662,11 +684,16 @@ struct ActiveWorkoutView: View {
         guard let _ = currentCard else { return }
 
         // ── Phase 1: Gilding ───────────────────────────────────────────────────
-        // GrowingCircleMask expands from 0 → card diagonal in 1700 ms.
+        // GrowingCircleMask expands from midasTouchOrigin → farthest card corner in 1700 ms.
         midasPhase = .gilding
         midasShowSparkles = true
-        let diagonal = sqrt(pow(CardPlaceholderView.cardWidth,  2) +
-                            pow(CardPlaceholderView.cardHeight, 2))
+        let w = CardPlaceholderView.cardWidth
+        let h = CardPlaceholderView.cardHeight
+        let ox = midasTouchOrigin.x
+        let oy = midasTouchOrigin.y
+        let diagonal = [(CGFloat(0), CGFloat(0)), (w, 0), (0, h), (w, h)]
+            .map { sqrt(pow($0.0 - ox, 2) + pow($0.1 - oy, 2)) }
+            .max() ?? sqrt(pow(w, 2) + pow(h, 2))
         withAnimation(.timingCurve(0.22, 0.61, 0.36, 1, duration: 1.70)) {
             midasGildingRadius = diagonal
         }
@@ -681,28 +708,28 @@ struct ActiveWorkoutView: View {
 
             try? await Task.sleep(for: .milliseconds(450))
 
-            // ── Phase 3: Fall — 6 sequential segments (950 ms total) ──────────
-            // CSS keyframe source: @keyframes midasFall in Flip 54 Midas Touch.html
-            // transformOrigin: '50% 100%' → anchor: .bottom on SwiftUI rotation
+            // ── Phase 3: Fall (644 ms, 2 segments) ────────────────────────────
             midasPhase = .falling
 
-            // Seg 1 — 85 ms, lean back -3°, cubic-bezier(0.40, 0, 0.60, 1)
+            // Seg 1 — 85 ms, lean back -3°
             withAnimation(.timingCurve(0.40, 0, 0.60, 1, duration: 0.085)) {
-                midasCardRotX   = -3
+                midasCardRotX = -3
             }
             try? await Task.sleep(for: .milliseconds(85))
 
-            // Seg 2 — 559 ms, fall forward to 104° / Y+68, cb(0.55, 0, 0.90, 0.05)
+            // Seg 2 — 559 ms, fall forward to 90° flat (capped; never tips past floor)
             withAnimation(.timingCurve(0.55, 0, 0.90, 0.05, duration: 0.559)) {
-                midasCardRotX   = 104
+                midasCardRotX    = 90
                 midasCardOffsetY = 68
             }
             try? await Task.sleep(for: .milliseconds(559))
 
-            // Primary impact fires at 68 % of fall (644 ms from fall start).
-            midasImpactDate = Date()
+            // ── Impact: card shatters ──────────────────────────────────────────
+            // Card vanishes and all effects (shockwave, dust, fragments) fire simultaneously.
+            midasCardOpacity = 0
+            midasImpactDate  = Date()
             haptic.play(.midasLanding)
-            // Phone thud: translateY 0 → 8 pt at 70 % (+19 ms), back at 74 % (+57 ms)
+            SoundPlayer.shared.play(.midasImpact)
             withAnimation(.linear(duration: 0.019)) {
                 midasPhoneOffset = CGSize(width: 0, height: 8)
             }
@@ -713,49 +740,9 @@ struct ActiveWorkoutView: View {
                 }
             }
 
-            // Seg 3 — 57 ms, bounce back to 80° / Y+36, cb(0.15, 0.70, 0.45, 1)
-            withAnimation(.timingCurve(0.15, 0.70, 0.45, 1, duration: 0.057)) {
-                midasCardRotX   = 80
-                midasCardOffsetY = 36
-            }
-            try? await Task.sleep(for: .milliseconds(57))
-
-            // Seg 4 — 47 ms, forward to 98° / Y+64, cb(0.50, 0, 0.85, 0)
-            withAnimation(.timingCurve(0.50, 0, 0.85, 0, duration: 0.047)) {
-                midasCardRotX   = 98
-                midasCardOffsetY = 64
-            }
-            try? await Task.sleep(for: .milliseconds(47))
-
-            // Secondary impact fires at 79 % of fall (750 ms from fall start).
-            haptic.play(.midasLanding)
-            // Phone thud: translateY 0 → 4 pt at 82 % (+29 ms), back at 86 % (+67 ms)
-            withAnimation(.linear(duration: 0.029)) {
-                midasPhoneOffset = CGSize(width: 0, height: 4)
-            }
-            Task { @MainActor in
-                try? await Task.sleep(for: .milliseconds(67))
-                withAnimation(.spring(response: 0.10, dampingFraction: 0.7)) {
-                    midasPhoneOffset = .zero
-                }
-            }
-
-            // Seg 5 — 38 ms, 95° / Y+60, cb(0.55, 0, 1, 1)
-            withAnimation(.timingCurve(0.55, 0, 1, 1, duration: 0.038)) {
-                midasCardRotX   = 95
-                midasCardOffsetY = 60
-            }
-            try? await Task.sleep(for: .milliseconds(38))
-
-            // Seg 6 — 161 ms, card flies off screen + fades, linear
-            withAnimation(.linear(duration: 0.161)) {
-                midasCardOffsetY = 820
-                midasCardOpacity = 0
-            }
-            try? await Task.sleep(for: .milliseconds(161))
-
-            // Advance state machine; reset all Midas-specific state.
-            // midasImpactDate is reset separately so impact effects complete naturally.
+            // Advance state (next card) after a brief pause so the first frame of
+            // shockwave/fragments renders before the new card fades in.
+            try? await Task.sleep(for: .milliseconds(200))
             coordinator.send(.advanceComplete)
             midasPhase        = .idle
             midasGildingRadius = 0
@@ -766,10 +753,8 @@ struct ActiveWorkoutView: View {
             midasCardOpacity   = 1
             midasPhoneOffset   = .zero
 
-            // Let shockwaves (720 ms) + dust (up to 1100 ms) finish from impact fire.
-            // Primary impact was 644 ms into fall; we're now at 947 ms → 303 ms elapsed.
-            // Keep the impact view alive 420 ms more (~723 ms total) then remove it.
-            try? await Task.sleep(for: .milliseconds(420))
+            // Keep the impact view alive until all fragments and dust settle (~1200 ms).
+            try? await Task.sleep(for: .milliseconds(1200))
             midasImpactDate = nil
         }
     }

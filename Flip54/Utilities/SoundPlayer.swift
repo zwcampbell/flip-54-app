@@ -11,6 +11,7 @@ enum SoundEffect: String, CaseIterable {
     case holdTick    = "hold-tick"
     case holdEnd     = "hold-end"
     case completion  = "completion"
+    case midasImpact = "midas-impact"
 
     var fileName: String { rawValue }
     var fileExtension: String { "mp3" }
