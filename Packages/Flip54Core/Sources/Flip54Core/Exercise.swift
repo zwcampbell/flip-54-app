@@ -22,6 +22,8 @@ public enum Exercise: String, Codable, Hashable, Sendable {
     case sitUp
     case russianTwist
     case weightedSitUp
+    case vSit
+    case bicycleCrunch
 
     // Conditioning
     case jumpingJacks
@@ -58,6 +60,8 @@ public enum Exercise: String, Codable, Hashable, Sendable {
         case .sitUp:           return "Sit-ups"
         case .russianTwist:    return "Russian Twists"
         case .weightedSitUp:   return "Weighted Sit-ups"
+        case .vSit:            return "V-Sits"
+        case .bicycleCrunch:   return "Bicycle Crunches"
         case .jumpingJacks:    return "Jumping Jacks"
         case .pushUpHold:      return "Push-up Hold"
         case .deadHang:        return "Dead Hang"

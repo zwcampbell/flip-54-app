@@ -76,7 +76,7 @@ func movementPool(for suit: Suit, equipment: Equipment) -> [Exercise] {
         return pool
 
     case .diamonds:  // core
-        var pool: [Exercise] = [.sitUp, .russianTwist]
+        var pool: [Exercise] = [.sitUp, .russianTwist, .vSit, .bicycleCrunch]
         if equipment.hasWeights { pool.append(.weightedSitUp) }
         return pool
     }

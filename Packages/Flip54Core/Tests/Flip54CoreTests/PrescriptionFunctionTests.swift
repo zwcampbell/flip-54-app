@@ -152,7 +152,7 @@ struct PrescriptionFunctionTests {
     @Test("Diamonds (core) pool: bodyweight always; weights adds weighted sit-ups")
     func diamondsPool() {
         let bw = movementPool(for: .diamonds, equipment: .bodyWeightOnly)
-        #expect(bw == [.sitUp, .russianTwist])
+        #expect(bw == [.sitUp, .russianTwist, .vSit, .bicycleCrunch])
         let weighted = movementPool(for: .diamonds, equipment: .weightsOnly)
         #expect(weighted.contains(.weightedSitUp))
     }

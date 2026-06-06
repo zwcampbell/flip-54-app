@@ -343,6 +343,38 @@ enum FormGuideData {
                 ]
             )
 
+        case .vSit:
+            return FormGuide(
+                category: "Diamonds · Abs, Hip Flexors",
+                tempoLabel: "1s UP  ·  2s HOLD  ·  2s DOWN",
+                cues: [
+                    "Sit on the floor, knees bent, feet flat. Place hands beside your hips.",
+                    "Lean back slightly and lift both feet — keep a tall spine, not a rounded one.",
+                    "Straighten your legs to form a V with your torso. Arms reach forward for balance.",
+                    "Hold the top for 2 seconds, then lower both legs slowly back to the floor.",
+                ],
+                watch: [
+                    "Rounding the lower back — the V comes from your hip flexors, not a collapsed spine.",
+                    "Collapsing your chest to reach the hold — keep the torso upright and long.",
+                ]
+            )
+
+        case .bicycleCrunch:
+            return FormGuide(
+                category: "Diamonds · Obliques, Abs",
+                tempoLabel: "LEFT + RIGHT = 1 REP",
+                cues: [
+                    "Lie on your back, hands lightly behind your head, knees bent and feet lifted.",
+                    "Bring your right elbow toward your left knee while extending the right leg straight.",
+                    "Rotate smoothly to the other side — left elbow to right knee, left leg extends.",
+                    "Keep each rotation deliberate. One full cycle (both sides) = one rep.",
+                ],
+                watch: [
+                    "Pulling your neck with your hands — keep elbows wide and let the torso do the rotating.",
+                    "Rushing through reps — slow, controlled rotation targets the obliques; speed kills it.",
+                ]
+            )
+
         case .hollowBodyHold:
             return FormGuide(
                 category: "Diamonds · Abs, Hip Flexors, Lower Back",
