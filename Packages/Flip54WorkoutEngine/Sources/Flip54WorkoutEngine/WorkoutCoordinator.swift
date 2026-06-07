@@ -133,7 +133,7 @@ public final class WorkoutCoordinator {
 
         case .cardCompleting(let card):
             if case .cardFaceUp(_, let p) = from, case .reps(_, let count) = p {
-                session?.completeCurrentCard(reps: count, holdSeconds: nil)
+                session?.completeCurrentCard(reps: count, holdSeconds: nil, exercise: p.exercise)
             }
             persistSession()
 

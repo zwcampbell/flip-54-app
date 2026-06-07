@@ -388,6 +388,7 @@ struct WorkoutDetailView: View {
     @Environment(\.modelContext) private var modelContext
 
     @State private var showDeleteConfirmation = false
+    @State private var expandedSuits: Set<Suit> = []
 
     var body: some View {
         ZStack {
@@ -463,13 +464,34 @@ struct WorkoutDetailView: View {
 
             Divider().background(DS.Colors.border)
 
-            suitRow(.hearts,   label: "Lower Body", reps: workout.heartsReps)
+            HStack {
+                Text("REPS BY BODY FOCUS")
+                    .font(.custom("Oswald-SemiBold", size: 11))
+                    .foregroundStyle(DS.Colors.textTertiary)
+                    .tracking(1.2)
+                Spacer()
+                Text(allExpanded ? "Collapse All" : "Expand All")
+                    .font(.custom("Oswald-SemiBold", size: 11))
+                    .foregroundStyle(DS.Colors.gold)
+                    .tracking(1.2)
+                    .onTapGesture {
+                        HapticEngine.shared.play(.tap)
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            expandedSuits = allExpanded ? [] : Set(Suit.allCases)
+                        }
+                    }
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 12)
+
+            Divider().background(DS.Colors.borderSub)
+            expandableSuitSection(.hearts,   reps: workout.heartsReps)
             Divider().background(DS.Colors.borderSub).padding(.leading, 50)
-            suitRow(.spades,   label: "Upper Body", reps: workout.spadesReps)
+            expandableSuitSection(.spades,   reps: workout.spadesReps)
             Divider().background(DS.Colors.borderSub).padding(.leading, 50)
-            suitRow(.clubs,    label: "Total Body", reps: workout.clubsReps)
+            expandableSuitSection(.clubs,    reps: workout.clubsReps)
             Divider().background(DS.Colors.borderSub).padding(.leading, 50)
-            suitRow(.diamonds, label: "Core",       reps: workout.diamondsReps)
+            expandableSuitSection(.diamonds, reps: workout.diamondsReps)
 
             if workout.jumpingJacks > 0 {
                 Divider().background(DS.Colors.borderSub).padding(.leading, 50)
@@ -494,6 +516,70 @@ struct WorkoutDetailView: View {
         .background(DS.Colors.bgCard)
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .overlay(RoundedRectangle(cornerRadius: 20).strokeBorder(DS.Colors.border, lineWidth: 1))
+    }
+
+    private var allExpanded: Bool {
+        Suit.allCases.allSatisfy { expandedSuits.contains($0) }
+    }
+
+    @ViewBuilder
+    private func expandableSuitSection(_ suit: Suit, reps: Int) -> some View {
+        let isRed = suit == .hearts || suit == .diamonds
+        let isExpanded = expandedSuits.contains(suit)
+        let exReps = workout.repsByExercise
+            .filter { $0.key.bodyFocus == suit }
+            .sorted { $0.value > $1.value }
+
+        VStack(spacing: 0) {
+            Button {
+                HapticEngine.shared.play(.tap)
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    if expandedSuits.contains(suit) {
+                        expandedSuits.remove(suit)
+                    } else {
+                        expandedSuits.insert(suit)
+                    }
+                }
+            } label: {
+                HStack(spacing: 14) {
+                    Text(suit.suitCharacter)
+                        .font(.system(size: 16))
+                        .foregroundStyle(isRed ? DS.Colors.red : DS.Colors.textPrimary)
+                        .frame(width: 20)
+                    Text(suit.bodyFocusLabel)
+                        .font(.system(size: 13))
+                        .foregroundStyle(DS.Colors.textSecondary)
+                    Spacer()
+                    Text("\(reps)")
+                        .font(.custom("IBMPlexMono-Medium", size: 14))
+                        .foregroundStyle(DS.Colors.textPrimary)
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(DS.Colors.textTertiary)
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 13)
+            }
+            .buttonStyle(.plain)
+
+            if isExpanded {
+                ForEach(exReps, id: \.key) { exercise, count in
+                    HStack {
+                        Text(exercise.displayName)
+                            .font(.system(size: 12))
+                            .foregroundStyle(DS.Colors.textTertiary)
+                        Spacer()
+                        Text("\(count)")
+                            .font(.custom("IBMPlexMono-Medium", size: 13))
+                            .foregroundStyle(DS.Colors.textTertiary)
+                    }
+                    .padding(.leading, 54)
+                    .padding(.trailing, 20)
+                    .padding(.vertical, 9)
+                    .background(DS.Colors.bgRaised.opacity(0.5))
+                }
+            }
+        }
     }
 
     private func suitRow(_ suit: Suit?, label: String, reps: Int) -> some View {

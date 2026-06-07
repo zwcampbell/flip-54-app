@@ -218,7 +218,8 @@ struct ContentView: View {
             cardCount: data.cardCount,
             skipCount: data.skipCount,
             repsBySuit: data.repsBySuit,
-            jumpingJacks: data.jumpingJacks
+            jumpingJacks: data.jumpingJacks,
+            exerciseReps: data.exerciseReps
         )
         modelContext.insert(history)
         os_signpost(.begin, log: saveLog, name: "modelContext.save", "workout-history")
@@ -279,6 +280,7 @@ struct CompletedWorkoutData {
     let skipCount: Int
     let repsBySuit: [Suit: Int]
     let jumpingJacks: Int
+    let exerciseReps: [Exercise: Int]
 
     init(session: ActiveSession, completedAt: Date) {
         self.completedAt = completedAt
@@ -293,5 +295,6 @@ struct CompletedWorkoutData {
         self.repsBySuit = session.repsBySuit
         let suitReps = session.repsBySuit.values.reduce(0, +)
         self.jumpingJacks = session.totalRepsCompleted - suitReps
+        self.exerciseReps = session.exerciseReps
     }
 }

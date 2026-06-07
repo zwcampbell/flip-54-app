@@ -20,6 +20,16 @@ public final class WorkoutHistory {
     public var clubsReps: Int
     public var diamondsReps: Int
     public var jumpingJacks: Int
+    /// JSON-encoded [Exercise.rawValue: reps]. String keeps CloudKit compatibility.
+    public var exerciseRepsJson: String = "{}"
+
+    public var repsByExercise: [Exercise: Int] {
+        guard let data = exerciseRepsJson.data(using: .utf8),
+              let dict = try? JSONDecoder().decode([String: Int].self, from: data) else { return [:] }
+        return dict.reduce(into: [:]) { result, pair in
+            if let ex = Exercise(rawValue: pair.key) { result[ex] = pair.value }
+        }
+    }
 
     public init(
         id: UUID = UUID(),
@@ -32,7 +42,8 @@ public final class WorkoutHistory {
         cardCount: Int,
         skipCount: Int,
         repsBySuit: [Suit: Int],
-        jumpingJacks: Int
+        jumpingJacks: Int,
+        exerciseReps: [Exercise: Int] = [:]
     ) {
         self.id = id
         self.completedAt = completedAt
@@ -48,6 +59,8 @@ public final class WorkoutHistory {
         self.clubsReps = repsBySuit[.clubs] ?? 0
         self.diamondsReps = repsBySuit[.diamonds] ?? 0
         self.jumpingJacks = jumpingJacks
+        let dict = exerciseReps.reduce(into: [String: Int]()) { $0[$1.key.rawValue] = $1.value }
+        self.exerciseRepsJson = (try? String(data: JSONEncoder().encode(dict), encoding: .utf8)) ?? "{}"
     }
 
     public var repsBySuit: [Suit: Int] {

@@ -5,7 +5,13 @@ import Flip54Storage
 struct ProfileView: View {
     let history: [WorkoutHistory]
 
+    @State private var expandedSuits: Set<Suit> = []
+
     private var stats: LifetimeStats { LifetimeStats(history: history) }
+
+    private var allExpanded: Bool {
+        Suit.allCases.allSatisfy { expandedSuits.contains($0) }
+    }
 
     var body: some View {
         ZStack {
@@ -77,15 +83,35 @@ struct ProfileView: View {
 
     private var suitsSection: some View {
         VStack(spacing: 0) {
-            sectionHeader("REPS BY BODY FOCUS")
+            HStack {
+                Text("REPS BY BODY FOCUS")
+                    .font(.custom("Oswald-SemiBold", size: 11))
+                    .foregroundStyle(DS.Colors.textTertiary)
+                    .tracking(1.4)
+                Spacer()
+                Text(allExpanded ? "Collapse All" : "Expand All")
+                    .font(.custom("Oswald-SemiBold", size: 11))
+                    .foregroundStyle(DS.Colors.gold)
+                    .tracking(1.2)
+                    .onTapGesture {
+                        HapticEngine.shared.play(.tap)
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            expandedSuits = allExpanded ? [] : Set(Suit.allCases)
+                        }
+                    }
+            }
+            .padding(.horizontal, 24)
+            .padding(.top, 24)
+            .padding(.bottom, 8)
+
             VStack(spacing: 0) {
-                suitBar(.hearts,   label: "Lower Body",  reps: stats.repsByHeart)
+                expandableSuitBar(.hearts,   label: "Lower Body",  reps: stats.repsByHeart)
                 Divider().background(DS.Colors.borderSub).padding(.leading, 50)
-                suitBar(.spades,   label: "Upper Body",  reps: stats.repsBySpade)
+                expandableSuitBar(.spades,   label: "Upper Body",  reps: stats.repsBySpade)
                 Divider().background(DS.Colors.borderSub).padding(.leading, 50)
-                suitBar(.clubs,    label: "Total Body",  reps: stats.repsByClub)
+                expandableSuitBar(.clubs,    label: "Total Body",  reps: stats.repsByClub)
                 Divider().background(DS.Colors.borderSub).padding(.leading, 50)
-                suitBar(.diamonds, label: "Core",        reps: stats.repsByDiamond)
+                expandableSuitBar(.diamonds, label: "Core",        reps: stats.repsByDiamond)
                 if stats.jumpingJacks > 0 {
                     Divider().background(DS.Colors.borderSub).padding(.leading, 50)
                     suitBarNeutral("★", label: "Jumping Jacks", reps: stats.jumpingJacks, color: DS.Colors.gold)
@@ -95,6 +121,83 @@ struct ProfileView: View {
             .clipShape(RoundedRectangle(cornerRadius: 16))
             .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(DS.Colors.border, lineWidth: 1))
             .padding(.horizontal, 20)
+        }
+    }
+
+    @ViewBuilder
+    private func expandableSuitBar(_ suit: Suit, label: String, reps: Int) -> some View {
+        let isRed = suit == .hearts || suit == .diamonds
+        let color: Color = isRed ? DS.Colors.red : DS.Colors.textPrimary
+        let glyph = suit.suitCharacter
+        let isExpanded = expandedSuits.contains(suit)
+        let exReps = stats.repsByExercise
+            .filter { $0.key.bodyFocus == suit }
+            .sorted { $0.value > $1.value }
+        let maxReps = max(1, [stats.repsByHeart, stats.repsBySpade, stats.repsByClub, stats.repsByDiamond].max() ?? 1)
+        let pct = Double(reps) / Double(maxReps)
+
+        VStack(spacing: 0) {
+            Button {
+                HapticEngine.shared.play(.tap)
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    if expandedSuits.contains(suit) {
+                        expandedSuits.remove(suit)
+                    } else {
+                        expandedSuits.insert(suit)
+                    }
+                }
+            } label: {
+                HStack(alignment: .firstTextBaseline, spacing: 14) {
+                    Text(glyph)
+                        .font(.system(size: 16))
+                        .foregroundStyle(color)
+                        .frame(width: 20, alignment: .leading)
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack {
+                            Text(label)
+                                .font(.system(size: 13))
+                                .foregroundStyle(DS.Colors.textSecondary)
+                            Spacer()
+                            Text("\(reps)")
+                                .font(.custom("IBMPlexMono-Medium", size: 13))
+                                .foregroundStyle(DS.Colors.textPrimary)
+                            Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                                .font(.system(size: 10, weight: .semibold))
+                                .foregroundStyle(DS.Colors.textTertiary)
+                        }
+                        GeometryReader { geo in
+                            ZStack(alignment: .leading) {
+                                Capsule().fill(DS.Colors.bgRaised).frame(height: 4)
+                                Capsule().fill(color.opacity(0.7))
+                                    .frame(width: geo.size.width * pct, height: 4)
+                                    .animation(.easeOut(duration: 0.6), value: pct)
+                            }
+                        }
+                        .frame(height: 4)
+                    }
+                }
+                .padding(.horizontal, 18)
+                .padding(.vertical, 12)
+            }
+            .buttonStyle(.plain)
+
+            if isExpanded {
+                ForEach(exReps, id: \.key) { exercise, count in
+                    HStack {
+                        Text(exercise.displayName)
+                            .font(.system(size: 12))
+                            .foregroundStyle(DS.Colors.textTertiary)
+                        Spacer()
+                        Text("\(count)")
+                            .font(.custom("IBMPlexMono-Medium", size: 13))
+                            .foregroundStyle(DS.Colors.textTertiary)
+                    }
+                    .padding(.leading, 52)
+                    .padding(.trailing, 18)
+                    .padding(.vertical, 9)
+                    .background(DS.Colors.bgRaised.opacity(0.5))
+                }
+            }
         }
     }
 
@@ -173,6 +276,7 @@ struct LifetimeStats {
     let repsByClub: Int
     let repsByDiamond: Int
     let jumpingJacks: Int
+    let repsByExercise: [Exercise: Int]
 
     init(history: [WorkoutHistory]) {
         totalWorkouts = history.count
@@ -184,6 +288,13 @@ struct LifetimeStats {
         repsByClub    = history.reduce(0) { $0 + $1.clubsReps }
         repsByDiamond = history.reduce(0) { $0 + $1.diamondsReps }
         jumpingJacks  = history.reduce(0) { $0 + $1.jumpingJacks }
+        var exDict: [Exercise: Int] = [:]
+        for w in history {
+            for (ex, count) in w.repsByExercise {
+                exDict[ex, default: 0] += count
+            }
+        }
+        repsByExercise = exDict
 
         // Streak calculation — consecutive days with at least one workout
         let cal = Calendar.current
