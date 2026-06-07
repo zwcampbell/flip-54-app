@@ -17,6 +17,14 @@ public struct ActiveSession: Codable, Hashable, Sendable {
     public var skipCount: Int
     public var cardsCompleted: Int
     public var repsBySuit: [Suit: Int]
+    /// Keyed by Exercise.rawValue so the struct stays Codable without custom conformance.
+    public var repsByExerciseRaw: [String: Int]
+
+    public var exerciseReps: [Exercise: Int] {
+        repsByExerciseRaw.reduce(into: [:]) { result, pair in
+            if let ex = Exercise(rawValue: pair.key) { result[ex] = pair.value }
+        }
+    }
 
     public var holdStartedAt: Date?
     public var holdElapsed: TimeInterval
@@ -63,6 +71,7 @@ public struct ActiveSession: Codable, Hashable, Sendable {
             skipCount: 0,
             cardsCompleted: 0,
             repsBySuit: [:],
+            repsByExerciseRaw: [:],
             holdStartedAt: nil,
             holdElapsed: 0,
             pauseStartedAt: nil,
@@ -84,12 +93,15 @@ public struct ActiveSession: Codable, Hashable, Sendable {
         holdStartedAt = date
     }
 
-    public mutating func completeCurrentCard(reps: Int?, holdSeconds: Int?) {
+    public mutating func completeCurrentCard(reps: Int?, holdSeconds: Int?, exercise: Exercise? = nil) {
         guard let card = currentCard else { return }
         if let reps {
             totalRepsCompleted += reps
             if case .standard(let suit, _) = card {
                 repsBySuit[suit, default: 0] += reps
+            }
+            if let exercise {
+                repsByExerciseRaw[exercise.rawValue, default: 0] += reps
             }
         }
         if let secs = holdSeconds {
