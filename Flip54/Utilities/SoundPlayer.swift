@@ -68,6 +68,8 @@ enum UserDefaultsKeys {
     static let sfxEnabled = "sfxEnabled"
     static let sfxVolume  = "sfxVolume"    // 0.0 – 1.0
     static let hapticsEnabled = "hapticsEnabled"
+    /// Comma-separated Exercise rawValues the user has disabled, e.g. "pushUp,burpee"
+    static let disabledExercises = "disabledExercises"
 }
 
 // MARK: - Settings extension for sound toggles

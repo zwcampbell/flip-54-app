@@ -131,6 +131,12 @@ struct ContentView: View {
                     Label("Profile", systemImage: "person.fill")
                 }
                 .tag(2)
+
+            settingsTab
+                .tabItem {
+                    Label("Settings", systemImage: "gearshape")
+                }
+                .tag(3)
         }
         .tint(DS.Colors.gold)
         .onAppear { applyTabBarAppearance() }
@@ -167,7 +173,13 @@ struct ContentView: View {
     // MARK: - Profile tab
 
     private var profileTab: some View {
-        ProfileView(history: historyQuery, settings: settings)
+        ProfileView(history: historyQuery)
+    }
+
+    // MARK: - Settings tab
+
+    private var settingsTab: some View {
+        SettingsView(settings: settings)
     }
 
     // MARK: - Completion

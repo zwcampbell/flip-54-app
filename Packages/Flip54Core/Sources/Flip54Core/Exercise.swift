@@ -42,6 +42,38 @@ public enum Exercise: String, Codable, Hashable, Sendable {
         }
     }
 
+    /// The suit whose movement pool contains this exercise, nil for holds and conditioning.
+    public var bodyFocus: Suit? {
+        switch self {
+        case .bodyweightSquat, .lunge, .jumpingSquat, .gobletSquat:
+            return .hearts
+        case .pushUp, .hinduPushUp, .pullUp, .bicepCurl, .shoulderPress, .tricepExtension:
+            return .spades
+        case .burpee, .mountainClimber, .thruster:
+            return .clubs
+        case .sitUp, .russianTwist, .weightedSitUp, .vSit, .bicycleCrunch:
+            return .diamonds
+        default:
+            return nil
+        }
+    }
+
+    public var requiresWeights: Bool {
+        switch self {
+        case .gobletSquat, .bicepCurl, .shoulderPress, .tricepExtension, .thruster, .weightedSitUp:
+            return true
+        default:
+            return false
+        }
+    }
+
+    public var requiresPullUpBar: Bool {
+        switch self {
+        case .pullUp, .deadHang: return true
+        default: return false
+        }
+    }
+
     public var displayName: String {
         switch self {
         case .bodyweightSquat: return "Body-weight Squats"

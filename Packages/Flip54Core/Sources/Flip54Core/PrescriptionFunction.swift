@@ -11,10 +11,17 @@
 /// Within a suit, the specific exercise is picked from a pool that grows with
 /// the user's available equipment, indexed deterministically by rank so a
 /// workout features a varied mix while staying repeatable.
+/// Returns the exercises available for a suit given equipment and disabled preferences.
+/// Used by Settings UI to build the toggle list.
+public func exercisePool(for suit: Suit, equipment: Equipment) -> [Exercise] {
+    movementPool(for: suit, equipment: equipment)
+}
+
 public func prescription(
     for card: Card,
     equipment: Equipment,
-    difficulty: Difficulty
+    difficulty: Difficulty,
+    disabledExercises: Set<Exercise> = []
 ) -> Prescription {
     let multiplier = difficulty.multiplier
 
@@ -27,7 +34,7 @@ public func prescription(
         return .hold(exercise: aceExercise(for: suit, equipment: equipment), seconds: seconds)
 
     case .standard(let suit, let rank):
-        let exercise = movementExercise(for: suit, rank: rank, equipment: equipment)
+        let exercise = movementExercise(for: suit, rank: rank, equipment: equipment, disabledExercises: disabledExercises)
         let basePip = rank.pipValue ?? 10  // face cards = 10
         let count = roundUp(Double(basePip) * multiplier)
         return .reps(exercise: exercise, count: count)
@@ -45,8 +52,8 @@ func aceExercise(for suit: Suit, equipment: Equipment) -> Exercise {
     }
 }
 
-func movementExercise(for suit: Suit, rank: Rank, equipment: Equipment) -> Exercise {
-    let pool = movementPool(for: suit, equipment: equipment)
+func movementExercise(for suit: Suit, rank: Rank, equipment: Equipment, disabledExercises: Set<Exercise> = []) -> Exercise {
+    let pool = movementPool(for: suit, equipment: equipment, disabledExercises: disabledExercises)
     // Deterministic per-rank index so different cards in the same suit pick
     // different exercises from the pool.
     let idx = rankIndex(rank) % pool.count
@@ -55,12 +62,15 @@ func movementExercise(for suit: Suit, rank: Rank, equipment: Equipment) -> Exerc
 
 /// Body-weight is always present. Add weighted moves when the user has weights;
 /// add pull-ups when the user has a pull-up bar (upper body only).
-func movementPool(for suit: Suit, equipment: Equipment) -> [Exercise] {
+/// Disabled exercises are filtered out; if the entire pool would be removed,
+/// falls back to the full (unfiltered) pool so workouts are never empty.
+func movementPool(for suit: Suit, equipment: Equipment, disabledExercises: Set<Exercise> = []) -> [Exercise] {
+    let full: [Exercise]
     switch suit {
     case .hearts:  // lower body
         var pool: [Exercise] = [.bodyweightSquat, .lunge, .jumpingSquat]
         if equipment.hasWeights { pool.append(.gobletSquat) }
-        return pool
+        full = pool
 
     case .spades:  // upper body
         var pool: [Exercise] = [.pushUp, .hinduPushUp]
@@ -68,18 +78,22 @@ func movementPool(for suit: Suit, equipment: Equipment) -> [Exercise] {
             pool += [.bicepCurl, .shoulderPress, .tricepExtension]
         }
         if equipment.hasPullUpBar { pool.append(.pullUp) }
-        return pool
+        full = pool
 
     case .clubs:   // total body
         var pool: [Exercise] = [.burpee, .mountainClimber, .jumpingSquat]
         if equipment.hasWeights { pool.append(.thruster) }
-        return pool
+        full = pool
 
     case .diamonds:  // core
         var pool: [Exercise] = [.sitUp, .russianTwist, .vSit, .bicycleCrunch]
         if equipment.hasWeights { pool.append(.weightedSitUp) }
-        return pool
+        full = pool
     }
+
+    if disabledExercises.isEmpty { return full }
+    let filtered = full.filter { !disabledExercises.contains($0) }
+    return filtered.isEmpty ? full : filtered
 }
 
 /// Ordinal of a rank in the standard 2..A sequence, used for pool indexing.

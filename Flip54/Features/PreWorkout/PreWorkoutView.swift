@@ -16,6 +16,8 @@ struct PreWorkoutView: View {
     /// Called when the user taps "Start Tutorial" from the banner.
     var onStartTutorial: (() -> Void)? = nil
 
+    @AppStorage(UserDefaultsKeys.disabledExercises) private var disabledExercisesRaw: String = ""
+
     @State private var isShuffling = false
     @State private var shufflePhase: ShufflePhase = .idle
     @State private var showQuickRef = false
@@ -433,11 +435,13 @@ struct PreWorkoutView: View {
             Button {
                 HapticEngine.shared.play(.primary)
                 // Configure coordinator with current settings before shuffle
+                let disabled = Set(disabledExercisesRaw.split(separator: ",").compactMap { Exercise(rawValue: String($0)) })
                 coordinator.configure(
                     equipment: settings.equipment,
                     difficulty: settings.difficulty,
                     deckId: settings.equippedDeckId,
-                    useHalfDeck: settings.useHalfDeck
+                    useHalfDeck: settings.useHalfDeck,
+                    disabledExercises: disabled
                 )
                 coordinator.send(.shuffle)
             } label: {
