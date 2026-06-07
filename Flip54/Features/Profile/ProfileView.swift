@@ -1,13 +1,9 @@
 import SwiftUI
-import SwiftData
 import Flip54Core
 import Flip54Storage
 
 struct ProfileView: View {
     let history: [WorkoutHistory]
-    let settings: UserSettings
-
-    @State private var showSettings = false
 
     private var stats: LifetimeStats { LifetimeStats(history: history) }
 
@@ -20,14 +16,10 @@ struct ProfileView: View {
                     VStack(spacing: 0) {
                         statsSection
                         suitsSection
-                        settingsButton
                         Spacer(minLength: 60)
                     }
                 }
             }
-        }
-        .sheet(isPresented: $showSettings) {
-            SettingsSheet(settings: settings)
         }
     }
 
@@ -153,34 +145,6 @@ struct ProfileView: View {
         .padding(.vertical, 12)
     }
 
-    // MARK: - Settings button
-
-    private var settingsButton: some View {
-        Button {
-            HapticEngine.shared.play(.tap)
-            showSettings = true
-        } label: {
-            HStack {
-                Image(systemName: "gearshape")
-                    .foregroundStyle(DS.Colors.textSecondary)
-                Text("Settings")
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundStyle(DS.Colors.textSecondary)
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12))
-                    .foregroundStyle(DS.Colors.textTertiary)
-            }
-            .padding(.horizontal, 18)
-            .padding(.vertical, 16)
-            .background(DS.Colors.bgCard)
-            .clipShape(RoundedRectangle(cornerRadius: 14))
-            .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(DS.Colors.border, lineWidth: 1))
-            .padding(.horizontal, 20)
-            .padding(.top, 16)
-        }
-    }
-
     private func sectionHeader(_ text: String) -> some View {
         HStack {
             Text(text)
@@ -192,31 +156,6 @@ struct ProfileView: View {
         .padding(.horizontal, 24)
         .padding(.top, 24)
         .padding(.bottom, 8)
-    }
-}
-
-// MARK: - Settings sheet wrapper
-
-private struct SettingsSheet: View {
-    @Bindable var settings: UserSettings
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        ZStack {
-            DS.Colors.bg.ignoresSafeArea()
-            VStack(spacing: 0) {
-                HStack {
-                    Spacer()
-                    Button("Done") { dismiss() }
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(DS.Colors.gold)
-                        .padding(.horizontal, 24)
-                        .padding(.top, 16)
-                        .padding(.bottom, 8)
-                }
-                SettingsView(settings: settings)
-            }
-        }
     }
 }
 

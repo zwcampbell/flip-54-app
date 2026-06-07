@@ -13,6 +13,8 @@ public final class WorkoutCoordinator {
     public private(set) var isTutorial: Bool = false
     /// True when the next session should use the 27-card half deck.
     public private(set) var useHalfDeck: Bool = false
+    /// Exercises the user has opted out of; filtered from movement pools during prescription.
+    private var disabledExercises: Set<Exercise> = []
 
     private let store: ActiveSessionStore
     private let holdTimer: HoldTimer
@@ -59,7 +61,7 @@ public final class WorkoutCoordinator {
             s.flipNextCard()
             session = s
             guard let card = s.currentCard else { return state }
-            let p = prescription(for: card, equipment: s.equipment, difficulty: s.difficulty)
+            let p = prescription(for: card, equipment: s.equipment, difficulty: s.difficulty, disabledExercises: disabledExercises)
             return .cardFaceUp(card: card, prescription: p)
 
         case (.cardFaceUp(let card, _), .startHold) where card.isAce:
@@ -67,7 +69,7 @@ public final class WorkoutCoordinator {
 
         case (.holdStarting(let card), .startHold):
             guard let s = session else { return state }
-            let p = prescription(for: card, equipment: s.equipment, difficulty: s.difficulty)
+            let p = prescription(for: card, equipment: s.equipment, difficulty: s.difficulty, disabledExercises: disabledExercises)
             guard case .hold(_, let secs) = p else { return state }
             return .holding(card: card, startTime: Date(), durationSeconds: secs)
 
@@ -206,9 +208,10 @@ public final class WorkoutCoordinator {
         }
     }
 
-    public func configure(equipment: Equipment, difficulty: Difficulty, deckId: String, useHalfDeck: Bool = false) {
+    public func configure(equipment: Equipment, difficulty: Difficulty, deckId: String, useHalfDeck: Bool = false, disabledExercises: Set<Exercise> = []) {
         isTutorial = false
         self.useHalfDeck = useHalfDeck
+        self.disabledExercises = disabledExercises
         var rng = SystemRandomNumberGenerator()
         session = ActiveSession.start(
             deck: useHalfDeck ? Card.halfDeck() : Card.standardDeck(),

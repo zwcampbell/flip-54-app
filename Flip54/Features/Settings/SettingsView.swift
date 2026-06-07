@@ -7,9 +7,11 @@ struct SettingsView: View {
     @Bindable var settings: UserSettings
 
     // Sound + haptic controls backed by UserDefaults
-    @AppStorage(UserDefaultsKeys.sfxEnabled)      private var sfxEnabled: Bool  = true
-    @AppStorage(UserDefaultsKeys.hapticsEnabled)  private var hapticsEnabled: Bool = true
-    @AppStorage(UserDefaultsKeys.sfxVolume)       private var sfxVolume: Double = 1.0
+    @AppStorage(UserDefaultsKeys.sfxEnabled)         private var sfxEnabled: Bool   = true
+    @AppStorage(UserDefaultsKeys.hapticsEnabled)     private var hapticsEnabled: Bool = true
+    @AppStorage(UserDefaultsKeys.sfxVolume)          private var sfxVolume: Double  = 1.0
+    /// Comma-separated Exercise rawValues the user has disabled.
+    @AppStorage(UserDefaultsKeys.disabledExercises)  private var disabledExercisesRaw: String = ""
 
     var body: some View {
         ZStack {
@@ -20,6 +22,7 @@ struct SettingsView: View {
                     equipmentSection
                     deckSection
                     difficultySection
+                    workoutsSection
                     audioSection
                     Spacer(minLength: 60)
                 }
@@ -29,6 +32,7 @@ struct SettingsView: View {
         .sensoryFeedback(.impact(weight: .light), trigger: settings.hasWeights)
         .sensoryFeedback(.impact(weight: .light), trigger: settings.hasPullUpBar)
         .sensoryFeedback(.impact(weight: .light), trigger: settings.useHalfDeck)
+        .sensoryFeedback(.impact(weight: .light), trigger: disabledExercisesRaw)
         .sensoryFeedback(.impact(weight: .light), trigger: sfxEnabled)
         .sensoryFeedback(.impact(weight: .light), trigger: hapticsEnabled)
         // Difficulty selection — selection feedback on each row tap.
@@ -119,6 +123,109 @@ struct SettingsView: View {
             .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(DS.Colors.border, lineWidth: 1))
             .padding(.horizontal, 20)
         }
+    }
+
+    // MARK: - Exercises
+
+    private var workoutsSection: some View {
+        VStack(spacing: 0) {
+            sectionHeader("EXERCISES")
+            Text("Choose which exercises appear in your workouts. Disabled exercises are excluded from all flips.")
+                .font(.system(size: 12))
+                .foregroundStyle(DS.Colors.textTertiary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 24)
+                .padding(.bottom, 8)
+            VStack(spacing: 12) {
+                ForEach(Suit.allCases, id: \.self) { suit in
+                    exerciseGroupCard(for: suit)
+                }
+            }
+            .padding(.horizontal, 20)
+        }
+    }
+
+    private func exerciseGroupCard(for suit: Suit) -> some View {
+        // Always show the full possible roster so users can see and pre-configure
+        // equipment-gated exercises before enabling the equipment.
+        let fullPool = exercisePool(for: suit, equipment: .fullKit)
+        return VStack(spacing: 0) {
+            HStack(spacing: 8) {
+                Text(suit.suitCharacter)
+                    .font(.system(size: 14))
+                    .foregroundStyle(suit.color == .red ? DS.Colors.red : DS.Colors.textPrimary)
+                Text(suit.bodyFocusLabel.uppercased())
+                    .font(.custom("BarlowCondensed-ExtraBold", size: 15))
+                    .foregroundStyle(DS.Colors.textPrimary)
+                Spacer()
+            }
+            .padding(.horizontal, 18)
+            .padding(.top, 14)
+            .padding(.bottom, 10)
+
+            Rectangle()
+                .fill(DS.Colors.borderSub)
+                .frame(height: 1)
+
+            ForEach(fullPool, id: \.self) { exercise in
+                exerciseToggleRow(exercise, fullPool: fullPool)
+                if exercise != fullPool.last {
+                    divider
+                }
+            }
+        }
+        .background(DS.Colors.bgCard)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(DS.Colors.border, lineWidth: 1))
+    }
+
+    private func exerciseToggleRow(_ exercise: Exercise, fullPool: [Exercise]) -> some View {
+        let isEnabled = exerciseIsEnabled(exercise)
+        let isLast = isLastEnabled(exercise, in: fullPool)
+        return HStack(spacing: 14) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(exercise.displayName)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(isEnabled ? DS.Colors.textPrimary : DS.Colors.textTertiary)
+                if isLast {
+                    Text("At least one exercise required")
+                        .font(.system(size: 11))
+                        .foregroundStyle(DS.Colors.textTertiary)
+                }
+            }
+            Spacer()
+            if isLast {
+                Image(systemName: "lock.fill")
+                    .font(.system(size: 12))
+                    .foregroundStyle(DS.Colors.textTertiary)
+            }
+            Toggle("", isOn: exerciseEnabledBinding(exercise))
+                .labelsHidden()
+                .tint(DS.Colors.gold)
+                .disabled(isLast)
+        }
+        .padding(.horizontal, 18)
+        .padding(.vertical, 12)
+    }
+
+    private func exerciseIsEnabled(_ exercise: Exercise) -> Bool {
+        !disabledExercisesRaw.split(separator: ",").contains(Substring(exercise.rawValue))
+    }
+
+    private func exerciseEnabledBinding(_ exercise: Exercise) -> Binding<Bool> {
+        Binding(
+            get: { exerciseIsEnabled(exercise) },
+            set: { isOn in
+                var disabled = Set(disabledExercisesRaw.split(separator: ",").map(String.init))
+                if isOn { disabled.remove(exercise.rawValue) } else { disabled.insert(exercise.rawValue) }
+                disabledExercisesRaw = disabled.sorted().joined(separator: ",")
+            }
+        )
+    }
+
+    private func isLastEnabled(_ exercise: Exercise, in fullPool: [Exercise]) -> Bool {
+        guard exerciseIsEnabled(exercise) else { return false }
+        return fullPool.filter { exerciseIsEnabled($0) }.count == 1
     }
 
     // MARK: - Difficulty
