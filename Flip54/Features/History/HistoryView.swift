@@ -49,8 +49,7 @@ struct HistoryView: View {
 
     private var headerBar: some View {
         HStack {
-            Text("HISTORY")
-                .font(.custom("BarlowCondensed-ExtraBold", size: 32))
+            DS.Typography.display("HISTORY", size: 32)
                 .foregroundStyle(DS.Colors.textPrimary)
             Spacer()
             Button {
@@ -59,8 +58,7 @@ struct HistoryView: View {
                     displayMonth = Date()
                 }
             } label: {
-                Text("TODAY")
-                    .font(.custom("Oswald-SemiBold", size: 12))
+                DS.Typography.sub("TODAY", size: 12)
                     .foregroundStyle(isOnTodayMonth ? DS.Colors.textTertiary : DS.Colors.gold)
                     .tracking(1.2)
                     .padding(.horizontal, 14)
@@ -99,8 +97,7 @@ struct HistoryView: View {
 
                 Spacer()
 
-                Text(monthYearString(displayMonth))
-                    .font(.custom("Oswald-SemiBold", size: 16))
+                DS.Typography.sub(monthYearString(displayMonth), size: 16)
                     .foregroundStyle(DS.Colors.textPrimary)
                     .tracking(0.5)
 
@@ -128,8 +125,7 @@ struct HistoryView: View {
             // Day-of-week headers
             HStack(spacing: 0) {
                 ForEach(["Su","Mo","Tu","We","Th","Fr","Sa"], id: \.self) { d in
-                    Text(d)
-                        .font(.custom("Oswald-SemiBold", size: 11))
+                    DS.Typography.sub(d, size: 11)
                         .foregroundStyle(DS.Colors.textTertiary)
                         .tracking(0.5)
                         .frame(maxWidth: .infinity)
@@ -250,8 +246,7 @@ struct HistoryView: View {
 
             Spacer()
 
-            Text("PAGE \(recentPage + 1) OF \(recentPageCount)")
-                .font(.custom("Oswald-SemiBold", size: 11))
+            DS.Typography.sub("PAGE \(recentPage + 1) OF \(recentPageCount)", size: 11)
                 .foregroundStyle(DS.Colors.textTertiary)
                 .tracking(1.2)
 
@@ -279,12 +274,10 @@ struct HistoryView: View {
         HStack(spacing: 14) {
             // Date pill
             VStack(spacing: 0) {
-                Text(dayOfWeek(workout.completedAt))
-                    .font(.custom("Oswald-SemiBold", size: 10))
+                DS.Typography.sub(dayOfWeek(workout.completedAt), size: 10)
                     .foregroundStyle(DS.Colors.textTertiary)
                     .tracking(0.5)
-                Text("\(calendar.component(.day, from: workout.completedAt))")
-                    .font(.custom("BarlowCondensed-ExtraBold", size: 20))
+                DS.Typography.display("\(calendar.component(.day, from: workout.completedAt))", size: 20)
                     .foregroundStyle(DS.Colors.gold)
             }
             .frame(width: 36)
@@ -313,8 +306,7 @@ struct HistoryView: View {
             Text("♣")
                 .font(.system(size: 48))
                 .foregroundStyle(DS.Colors.textTertiary)
-            Text("No workouts yet")
-                .font(.custom("BarlowCondensed-ExtraBold", size: 24))
+            DS.Typography.display("No workouts yet", size: 24)
                 .foregroundStyle(DS.Colors.textSecondary)
             Text("Complete your first workout to see history here.")
                 .font(.system(size: 14))
@@ -327,8 +319,7 @@ struct HistoryView: View {
 
     private func sectionHeader(_ text: String) -> some View {
         HStack {
-            Text(text)
-                .font(.custom("Oswald-SemiBold", size: 11))
+            DS.Typography.sub(text, size: 11)
                 .foregroundStyle(DS.Colors.textTertiary)
                 .tracking(1.4)
             Spacer()
@@ -403,8 +394,7 @@ struct WorkoutDetailView: View {
                         .padding(.bottom, 20)
 
                     // Date headline
-                    Text(dateString(workout.completedAt).uppercased())
-                        .font(.custom("BarlowCondensed-ExtraBold", size: 28))
+                    DS.Typography.display(dateString(workout.completedAt).uppercased(), size: 28)
                         .foregroundStyle(DS.Colors.textPrimary)
                         .padding(.bottom, 4)
                     Text("\(workout.difficulty.displayName) · \(workout.deckId.capitalized) Deck")
@@ -439,8 +429,7 @@ struct WorkoutDetailView: View {
             HapticEngine.shared.play(.warning)
             showDeleteConfirmation = true
         } label: {
-            Text("DELETE WORKOUT")
-                .font(.custom("BarlowCondensed-ExtraBold", size: 22))
+            DS.Typography.display("DELETE WORKOUT", size: 22)
                 .foregroundStyle(DS.Colors.red)
                 .frame(maxWidth: .infinity)
                 .frame(height: 56)
@@ -465,13 +454,11 @@ struct WorkoutDetailView: View {
             Divider().background(DS.Colors.border)
 
             HStack {
-                Text("REPS BY BODY FOCUS")
-                    .font(.custom("Oswald-SemiBold", size: 11))
+                DS.Typography.sub("REPS BY BODY FOCUS", size: 11)
                     .foregroundStyle(DS.Colors.textTertiary)
                     .tracking(1.2)
                 Spacer()
-                Text(allExpanded ? "Collapse All" : "Expand All")
-                    .font(.custom("Oswald-SemiBold", size: 11))
+                DS.Typography.sub(allExpanded ? "Collapse All" : "Expand All", size: 11)
                     .foregroundStyle(DS.Colors.gold)
                     .tracking(1.2)
                     .onTapGesture {
@@ -505,8 +492,7 @@ struct WorkoutDetailView: View {
                         .font(.system(size: 13))
                         .foregroundStyle(DS.Colors.textTertiary)
                     Spacer()
-                    Text("\(workout.skipCount)")
-                        .font(.custom("IBMPlexMono-Medium", size: 14))
+                    DS.Typography.mono("\(workout.skipCount)", size: 14)
                         .foregroundStyle(DS.Colors.textTertiary)
                 }
                 .padding(.horizontal, 20)
@@ -550,8 +536,7 @@ struct WorkoutDetailView: View {
                         .font(.system(size: 13))
                         .foregroundStyle(DS.Colors.textSecondary)
                     Spacer()
-                    Text("\(reps)")
-                        .font(.custom("IBMPlexMono-Medium", size: 14))
+                    DS.Typography.mono("\(reps)", size: 14)
                         .foregroundStyle(DS.Colors.textPrimary)
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                         .font(.system(size: 10, weight: .semibold))
@@ -569,8 +554,7 @@ struct WorkoutDetailView: View {
                             .font(.system(size: 12))
                             .foregroundStyle(DS.Colors.textTertiary)
                         Spacer()
-                        Text("\(count)")
-                            .font(.custom("IBMPlexMono-Medium", size: 13))
+                        DS.Typography.mono("\(count)", size: 13)
                             .foregroundStyle(DS.Colors.textTertiary)
                     }
                     .padding(.leading, 54)
@@ -602,8 +586,7 @@ struct WorkoutDetailView: View {
                 .font(.system(size: 13))
                 .foregroundStyle(DS.Colors.textSecondary)
             Spacer()
-            Text("\(reps)")
-                .font(.custom("IBMPlexMono-Medium", size: 14))
+            DS.Typography.mono("\(reps)", size: 14)
                 .foregroundStyle(DS.Colors.textPrimary)
         }
         .padding(.horizontal, 20)
@@ -612,11 +595,9 @@ struct WorkoutDetailView: View {
 
     private func statCell(value: String, label: String) -> some View {
         VStack(spacing: 2) {
-            Text(value)
-                .font(.custom("BarlowCondensed-ExtraBold", size: 32))
+            DS.Typography.display(value, size: 32)
                 .foregroundStyle(DS.Colors.textPrimary)
-            Text(label.uppercased())
-                .font(.custom("Oswald-SemiBold", size: 10))
+            DS.Typography.sub(label.uppercased(), size: 10)
                 .foregroundStyle(DS.Colors.textTertiary)
                 .tracking(1)
         }

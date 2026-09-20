@@ -148,8 +148,7 @@ private struct OnboardingPageWrapper<Content: View>: View {
                 Spacer()
                 if let skip = onSkip {
                     Button(action: skip) {
-                        Text("SKIP")
-                            .font(.custom("Oswald-SemiBold", size: 12))
+                        DS.Typography.sub("SKIP", size: 12)
                             .foregroundStyle(DS.Colors.textTertiary)
                             .tracking(1.4)
                     }
@@ -166,8 +165,7 @@ private struct OnboardingPageWrapper<Content: View>: View {
             VStack(spacing: 14) {
                 dotsView
                 Button(action: onCTA) {
-                    Text(cta)
-                        .font(.custom("BarlowCondensed-ExtraBold", size: 26))
+                    DS.Typography.display(cta, size: 26)
                         .foregroundStyle(Color(hex: "#111111"))
                         .tracking(1.5)
                         .frame(maxWidth: .infinity)
@@ -178,8 +176,7 @@ private struct OnboardingPageWrapper<Content: View>: View {
                 }
                 if let sec = secondaryCTA, let secAction = onSecondaryCTA {
                     Button(action: secAction) {
-                        Text(sec)
-                            .font(.custom("Oswald-SemiBold", size: 13))
+                        DS.Typography.sub(sec, size: 13)
                             .foregroundStyle(DS.Colors.textTertiary)
                             .tracking(1.4)
                     }
@@ -244,8 +241,7 @@ private struct WelcomePage: View {
 
             // Headlines
             VStack(spacing: 12) {
-                Text("A WORKOUT IN\nEVERY SHUFFLE.")
-                    .font(.custom("BarlowCondensed-ExtraBold", size: 42))
+                DS.Typography.display("A WORKOUT IN\nEVERY SHUFFLE.", size: 42)
                     .foregroundStyle(DS.Colors.textPrimary)
                     .multilineTextAlignment(.center)
                     .tracking(0.5)
@@ -291,8 +287,7 @@ private struct HowItWorksPage: View {
         VStack(spacing: 28) {
             Spacer().frame(height: 20)
             VStack(spacing: 10) {
-                Text("EACH CARD IS\nAN EXERCISE.")
-                    .font(.custom("BarlowCondensed-ExtraBold", size: 38))
+                DS.Typography.display("EACH CARD IS\nAN EXERCISE.", size: 38)
                     .foregroundStyle(DS.Colors.textPrimary)
                     .multilineTextAlignment(.center)
                     .tracking(0.5)
@@ -318,8 +313,7 @@ private struct HowItWorksPage: View {
     private func slotCell(_ s: Slot) -> some View {
         VStack(spacing: 10) {
             SizedCardView(card: s.card, faceUp: true, width: 78)
-            Text(s.label)
-                .font(.custom("Oswald-SemiBold", size: 13))
+            DS.Typography.sub(s.label, size: 13)
                 .foregroundStyle(s.isRed ? DS.Colors.red : DS.Colors.textPrimary)
                 .tracking(1.0)
         }
@@ -358,8 +352,7 @@ private struct SpecialCardsPage: View {
     var body: some View {
         VStack(spacing: 24) {
             Spacer().frame(height: 20)
-            Text("THREE CARDS\nBEND THE RULES.")
-                .font(.custom("BarlowCondensed-ExtraBold", size: 38))
+            DS.Typography.display("THREE CARDS\nBEND THE RULES.", size: 38)
                 .foregroundStyle(DS.Colors.textPrimary)
                 .multilineTextAlignment(.center)
                 .tracking(0.5)
@@ -376,8 +369,7 @@ private struct SpecialCardsPage: View {
                 ForEach(rows.indices, id: \.self) { i in
                     let r = rows[i]
                     HStack(spacing: 12) {
-                        Text(r.label)
-                            .font(.custom("Oswald-SemiBold", size: 13))
+                        DS.Typography.sub(r.label, size: 13)
                             .foregroundStyle(r.color)
                             .tracking(0.4)
                             .frame(width: 96, alignment: .leading)
@@ -437,8 +429,7 @@ private struct SkippingPage: View {
             .clipped()
 
             VStack(spacing: 12) {
-                Text("SKIP IF\nYOU HAVE TO.")
-                    .font(.custom("BarlowCondensed-ExtraBold", size: 38))
+                DS.Typography.display("SKIP IF\nYOU HAVE TO.", size: 38)
                     .foregroundStyle(DS.Colors.textPrimary)
                     .multilineTextAlignment(.center)
                     .tracking(0.5)
@@ -486,8 +477,7 @@ private struct EquipmentPage: View {
             Spacer().frame(height: 20)
 
             VStack(alignment: .leading, spacing: 8) {
-                Text("WHAT DO\nYOU HAVE?")
-                    .font(.custom("BarlowCondensed-ExtraBold", size: 42))
+                DS.Typography.display("WHAT DO\nYOU HAVE?", size: 42)
                     .foregroundStyle(DS.Colors.textPrimary)
                     .tracking(0.5)
                     .lineSpacing(-4)
@@ -522,8 +512,7 @@ private struct EquipmentPage: View {
                 Text(icon)
                     .font(.system(size: 26))
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(label)
-                        .font(.custom("Oswald-SemiBold", size: 15))
+                    DS.Typography.sub(label, size: 15)
                         .foregroundStyle(isOn ? DS.Colors.gold : DS.Colors.textPrimary)
                     Text(sub)
                         .font(.system(size: 13))
@@ -583,8 +572,7 @@ private struct DifficultyPage: View {
             Spacer().frame(height: 20)
 
             VStack(alignment: .leading, spacing: 8) {
-                Text("HOW HARD?")
-                    .font(.custom("BarlowCondensed-ExtraBold", size: 42))
+                DS.Typography.display("HOW HARD?", size: 42)
                     .foregroundStyle(DS.Colors.textPrimary)
                     .tracking(0.5)
                 Text("Change this any time in Settings.")
@@ -603,8 +591,7 @@ private struct DifficultyPage: View {
                     } label: {
                         HStack {
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(o.label)
-                                    .font(.custom("BarlowCondensed-ExtraBold", size: 22))
+                                DS.Typography.display(o.label, size: 22)
                                     .foregroundStyle(selected ? o.color : DS.Colors.textPrimary)
                                     .tracking(1.0)
                                 Text(o.sub)
@@ -612,8 +599,7 @@ private struct DifficultyPage: View {
                                     .foregroundStyle(DS.Colors.textTertiary)
                             }
                             Spacer()
-                            Text(o.mult)
-                                .font(.custom("IBMPlexMono-Medium", size: 20))
+                            DS.Typography.mono(o.mult, size: 20)
                                 .foregroundStyle(selected ? o.color : DS.Colors.textTertiary)
                         }
                         .padding(.horizontal, 20)
@@ -656,8 +642,7 @@ private struct PickDeckPage: View {
         VStack(alignment: .leading, spacing: 0) {
             Spacer().frame(height: 20)
             VStack(alignment: .leading, spacing: 8) {
-                Text("CHOOSE YOUR\nSTARTER DECK.")
-                    .font(.custom("BarlowCondensed-ExtraBold", size: 38))
+                DS.Typography.display("CHOOSE YOUR\nSTARTER DECK.", size: 38)
                     .foregroundStyle(DS.Colors.textPrimary)
                     .tracking(0.5)
                     .lineSpacing(-4)
@@ -695,8 +680,7 @@ private struct PickDeckPage: View {
                     .padding(6)
                     .frame(width: 100, height: 140)
 
-                Text("54")
-                    .font(.custom("BarlowCondensed-ExtraBold", size: 16))
+                DS.Typography.display("54", size: 16)
                     .foregroundStyle(d.accent.opacity(0.6))
 
                 if !d.unlocked {
@@ -708,8 +692,7 @@ private struct PickDeckPage: View {
             }
             .frame(width: 100, height: 140)
 
-            Text(d.name)
-                .font(.custom("Oswald-SemiBold", size: 11))
+            DS.Typography.sub(d.name, size: 11)
                 .foregroundStyle(d.unlocked ? DS.Colors.gold : DS.Colors.textSecondary)
                 .tracking(1.2)
 

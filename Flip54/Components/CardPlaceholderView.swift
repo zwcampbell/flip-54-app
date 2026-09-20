@@ -53,8 +53,7 @@ struct CardPlaceholderView: View {
                 .frame(width: 72, height: 72)
 
             // "54" label
-            Text("54")
-                .font(.custom("BarlowCondensed-ExtraBold", size: 40))
+            DS.Typography.display("54", size: 40)
                 .foregroundStyle(DS.Colors.gold)
 
             // Corner dots
@@ -99,8 +98,7 @@ struct CardPlaceholderView: View {
                 Text("★")
                     .font(.system(size: 72))
                     .foregroundStyle(DS.Colors.gold)
-                Text("JOKER")
-                    .font(.custom("BarlowCondensed-ExtraBold", size: 22))
+                DS.Typography.display("JOKER", size: 22)
                     .foregroundStyle(DS.Colors.gold)
             }
         }
@@ -135,8 +133,7 @@ struct CardPlaceholderView: View {
 
     private func pipCorner(rank: Rank, glyph: String, inkColor: Color) -> some View {
         VStack(alignment: .center, spacing: -2) {
-            Text(rank.displaySymbol)
-                .font(.custom("BarlowCondensed-ExtraBold", size: 22))
+            DS.Typography.display(rank.displaySymbol, size: 22)
                 .foregroundStyle(inkColor)
             Text(glyph)
                 .font(.system(size: 16))
@@ -157,8 +154,7 @@ struct CardPlaceholderView: View {
                 Text(glyph)
                     .font(.system(size: 36))
                     .foregroundStyle(inkColor)
-                Text(rank.displaySymbol)
-                    .font(.custom("BarlowCondensed-ExtraBold", size: 40))
+                DS.Typography.display(rank.displaySymbol, size: 40)
                     .foregroundStyle(inkColor)
                 Text(glyph)
                     .font(.system(size: 36))

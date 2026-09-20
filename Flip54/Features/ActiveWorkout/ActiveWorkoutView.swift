@@ -155,8 +155,7 @@ struct ActiveWorkoutView: View {
                     .stroke(DS.Colors.success, style: StrokeStyle(lineWidth: 4, lineCap: .round))
                     .rotationEffect(.degrees(-90))
                     .animation(.easeInOut(duration: 0.4), value: done)
-                Text("\(done)")
-                    .font(.custom("IBMPlexMono-Medium", size: 12))
+                DS.Typography.mono("\(done)", size: 12)
                     .foregroundStyle(DS.Colors.textPrimary)
             }
             .frame(width: 52, height: 52)
@@ -165,12 +164,10 @@ struct ActiveWorkoutView: View {
 
             // Center: cards remaining
             VStack(spacing: 1) {
-                Text("CARDS REMAINING")
-                    .font(.custom("Oswald-SemiBold", size: 10))
+                DS.Typography.sub("CARDS REMAINING", size: 10)
                     .foregroundStyle(DS.Colors.textTertiary)
                     .tracking(1.2)
-                Text("\(cardsRemaining)")
-                    .font(.custom("BarlowCondensed-ExtraBold", size: 32))
+                DS.Typography.display("\(cardsRemaining)", size: 32)
                     .foregroundStyle(DS.Colors.textPrimary)
             }
 
@@ -375,16 +372,14 @@ struct ActiveWorkoutView: View {
     private var prescriptionArea: some View {
         switch coordinator.state {
         case .cardFaceDown:
-            Text("TAP TO FLIP")
-                .font(.custom("Oswald-SemiBold", size: 13))
+            DS.Typography.sub("TAP TO FLIP", size: 13)
                 .foregroundStyle(DS.Colors.textTertiary)
                 .tracking(1.4)
 
         case .cardFaceUp(_, let prescription):
             VStack(spacing: 8) {
                 HStack(spacing: 8) {
-                    Text(prescription.exercise.displayName.uppercased())
-                        .font(.custom("Oswald-SemiBold", size: 17))
+                    DS.Typography.sub(prescription.exercise.displayName.uppercased(), size: 17)
                         .foregroundStyle(DS.Colors.textSecondary)
                         .tracking(1.0)
                     Button {
@@ -400,8 +395,7 @@ struct ActiveWorkoutView: View {
                 if case .reps(let exercise, let count) = prescription {
                     let isRed = isRedCard
                     let isJoker = exercise == .jumpingJacks
-                    Text("\(count) reps")
-                        .font(.custom("BarlowCondensed-ExtraBold", size: 52))
+                    DS.Typography.display("\(count) reps", size: 52)
                         .foregroundStyle(isRed && !isJoker ? DS.Colors.red : DS.Colors.gold)
                 }
             }
@@ -508,8 +502,7 @@ struct ActiveWorkoutView: View {
 
     private var flipButton: some View {
         Button { handleFlipTap() } label: {
-            Text("FLIP CARD")
-                .font(.custom("BarlowCondensed-ExtraBold", size: 26))
+            DS.Typography.display("FLIP CARD", size: 26)
                 .foregroundStyle(DS.Colors.textPrimary)
                 .frame(maxWidth: .infinity)
                 .frame(height: 64)
@@ -520,8 +513,7 @@ struct ActiveWorkoutView: View {
     }
 
     private var holdingButton: some View {
-        Text("HOLDING…")
-            .font(.custom("BarlowCondensed-ExtraBold", size: 26))
+        DS.Typography.display("HOLDING…", size: 26)
             .foregroundStyle(Color(hex: "#111111"))
             .frame(maxWidth: .infinity)
             .frame(height: 64)
@@ -533,8 +525,7 @@ struct ActiveWorkoutView: View {
 
     private func primaryButton(label: String, enabled: Bool = true, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Text(label)
-                .font(.custom("BarlowCondensed-ExtraBold", size: 26))
+            DS.Typography.display(label, size: 26)
                 .foregroundStyle(Color(hex: "#111111"))
                 .frame(maxWidth: .infinity)
                 .frame(height: 64)
@@ -549,8 +540,7 @@ struct ActiveWorkoutView: View {
         Button {
             handleSkip()
         } label: {
-            Text("SKIP")
-                .font(.custom("Oswald-SemiBold", size: 14))
+            DS.Typography.sub("SKIP", size: 14)
                 .foregroundStyle(DS.Colors.textTertiary)
                 .tracking(1.2)
                 .frame(maxWidth: .infinity)
@@ -565,8 +555,7 @@ struct ActiveWorkoutView: View {
             Color.black.opacity(0.88)
                 .ignoresSafeArea()
             VStack(spacing: 40) {
-                Text("PAUSED")
-                    .font(.custom("BarlowCondensed-ExtraBold", size: 80))
+                DS.Typography.display("PAUSED", size: 80)
                     .foregroundStyle(DS.Colors.textPrimary)
                     .tracking(4)
 
@@ -575,8 +564,7 @@ struct ActiveWorkoutView: View {
                         haptic.play(.primary)
                         coordinator.send(.resume)
                     } label: {
-                        Text("RESUME")
-                            .font(.custom("BarlowCondensed-ExtraBold", size: 26))
+                        DS.Typography.display("RESUME", size: 26)
                             .foregroundStyle(Color(hex: "#111111"))
                             .frame(maxWidth: .infinity)
                             .frame(height: 64)
@@ -589,8 +577,7 @@ struct ActiveWorkoutView: View {
                         onEndEarly()
                         coordinator.endEarly()
                     } label: {
-                        Text("END EARLY")
-                            .font(.custom("BarlowCondensed-ExtraBold", size: 26))
+                        DS.Typography.display("END EARLY", size: 26)
                             .foregroundStyle(DS.Colors.red)
                             .frame(maxWidth: .infinity)
                             .frame(height: 64)
@@ -882,8 +869,7 @@ struct ActiveWorkoutView: View {
                         .foregroundStyle(DS.Colors.gold)
                         .frame(width: 28)
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(tip.title)
-                            .font(.custom("BarlowCondensed-ExtraBold", size: 18))
+                        DS.Typography.display(tip.title, size: 18)
                             .foregroundStyle(DS.Colors.textPrimary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .multilineTextAlignment(.leading)
@@ -893,8 +879,7 @@ struct ActiveWorkoutView: View {
                             .multilineTextAlignment(.leading)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .fixedSize(horizontal: false, vertical: true)
-                        Text("TAP TO DISMISS")
-                            .font(.custom("Oswald-SemiBold", size: 10))
+                        DS.Typography.sub("TAP TO DISMISS", size: 10)
                             .foregroundStyle(DS.Colors.textTertiary)
                             .tracking(1.2)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -1087,8 +1072,7 @@ private struct HoldTimerView: View {
                 .blendMode(.plusLighter)
                 .allowsHitTesting(false)
 
-            Text(timeStr)
-                .font(.custom("IBMPlexMono-Medium", size: 30))
+            DS.Typography.mono(timeStr, size: 30)
                 .foregroundStyle(color)
         }
         .frame(width: ringDiameter, height: ringDiameter)

@@ -37,8 +37,7 @@ struct QuickReferenceView: View {
     private var header: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text("QUICK REFERENCE")
-                    .font(.custom("BarlowCondensed-ExtraBold", size: 32))
+                DS.Typography.display("QUICK REFERENCE", size: 32)
                     .foregroundStyle(DS.Colors.textPrimary)
                 Text("Card values at a glance")
                     .font(.system(size: 14))
@@ -77,8 +76,7 @@ struct QuickReferenceView: View {
 
     private func valueRow(label: String, value: String, sub: String) -> some View {
         HStack(spacing: 0) {
-            Text(label)
-                .font(.custom("BarlowCondensed-ExtraBold", size: 20))
+            DS.Typography.display(label, size: 20)
                 .foregroundStyle(DS.Colors.gold)
                 .frame(width: 72, alignment: .leading)
             VStack(alignment: .leading, spacing: 2) {
@@ -139,8 +137,7 @@ struct QuickReferenceView: View {
 
     private func sectionLabel(_ text: String) -> some View {
         HStack {
-            Text(text)
-                .font(.custom("Oswald-SemiBold", size: 11))
+            DS.Typography.sub(text, size: 11)
                 .foregroundStyle(DS.Colors.textTertiary)
                 .tracking(1.4)
             Spacer()

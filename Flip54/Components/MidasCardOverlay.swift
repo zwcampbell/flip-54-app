@@ -141,8 +141,7 @@ struct MidasFaceView: View {
 
     private func cornerPip(flip: Bool, fontSize: CGFloat, pipSize: CGFloat) -> some View {
         VStack(alignment: .leading, spacing: -2) {
-            Text(rankText)
-                .font(.custom("BarlowCondensed-ExtraBold", size: fontSize))
+            DS.Typography.display(rankText, size: fontSize)
                 .foregroundStyle(MIDAS.goldDeep)
                 .lineLimit(1)
             if !suitGlyph.isEmpty {
@@ -185,8 +184,7 @@ struct MidasFaceView: View {
                     Text(glyph)
                         .font(.system(size: centerSize * 0.50))
                         .foregroundStyle(MIDAS.goldDeep)
-                    Text(rank.displaySymbol)
-                        .font(.custom("BarlowCondensed-ExtraBold", size: fontSize * 1.5))
+                    DS.Typography.display(rank.displaySymbol, size: fontSize * 1.5)
                         .foregroundStyle(MIDAS.goldDeep)
                     Text(glyph)
                         .font(.system(size: centerSize * 0.35))
@@ -405,8 +403,7 @@ struct MidasBackView: View {
             Circle()
                 .fill(MIDAS.gold)
                 .frame(width: medW, height: medW)
-            Text("54")
-                .font(.custom("BarlowCondensed-ExtraBold", size: medW * 0.42))
+            DS.Typography.display("54", size: medW * 0.42)
                 .foregroundStyle(MIDAS.goldDeep)
                 .letterSpacing(medW * 0.42 * 0.04)
         }

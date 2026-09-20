@@ -161,11 +161,9 @@ struct CompletionView: View {
 
     private func statCell(value: String, label: String) -> some View {
         VStack(spacing: 2) {
-            Text(value)
-                .font(.custom("BarlowCondensed-ExtraBold", size: 32))
+            DS.Typography.display(value, size: 32)
                 .foregroundStyle(DS.Colors.textPrimary)
-            Text(label.uppercased())
-                .font(.custom("Oswald-SemiBold", size: 10))
+            DS.Typography.sub(label.uppercased(), size: 10)
                 .foregroundStyle(DS.Colors.textTertiary)
                 .tracking(1)
         }
@@ -191,8 +189,7 @@ struct CompletionView: View {
                 .font(.system(size: 13))
                 .foregroundStyle(DS.Colors.textSecondary)
             Spacer()
-            Text("\(data.repsBySuit[suit] ?? 0)")
-                .font(.custom("IBMPlexMono-Medium", size: 14))
+            DS.Typography.mono("\(data.repsBySuit[suit] ?? 0)", size: 14)
                 .foregroundStyle(DS.Colors.textPrimary)
         }
         .padding(.horizontal, 20)
@@ -209,8 +206,7 @@ struct CompletionView: View {
                 .font(.system(size: 13))
                 .foregroundStyle(DS.Colors.textSecondary)
             Spacer()
-            Text("\(data.jumpingJacks)")
-                .font(.custom("IBMPlexMono-Medium", size: 14))
+            DS.Typography.mono("\(data.jumpingJacks)", size: 14)
                 .foregroundStyle(DS.Colors.textPrimary)
         }
         .padding(.horizontal, 20)
@@ -227,8 +223,7 @@ struct CompletionView: View {
                 HapticEngine.shared.play(.primary)
                 onDone()
             } label: {
-                Text("DONE")
-                    .font(.custom("BarlowCondensed-ExtraBold", size: 26))
+                DS.Typography.display("DONE", size: 26)
                     .foregroundStyle(Color(hex: "#111111"))
                     .frame(maxWidth: .infinity)
                     .frame(height: 64)
@@ -244,8 +239,7 @@ struct CompletionView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "square.and.arrow.up")
                         .font(.system(size: 15))
-                    Text("SHARE RESULT")
-                        .font(.custom("BarlowCondensed-ExtraBold", size: 20))
+                    DS.Typography.display("SHARE RESULT", size: 20)
                 }
                 .foregroundStyle(DS.Colors.textSecondary)
                 .frame(maxWidth: .infinity)

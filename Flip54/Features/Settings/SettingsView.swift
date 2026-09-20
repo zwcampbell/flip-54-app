@@ -43,8 +43,7 @@ struct SettingsView: View {
 
     private var header: some View {
         HStack {
-            Text("SETTINGS")
-                .font(.custom("BarlowCondensed-ExtraBold", size: 32))
+            DS.Typography.display("SETTINGS", size: 32)
                 .foregroundStyle(DS.Colors.textPrimary)
             Spacer()
         }
@@ -154,8 +153,7 @@ struct SettingsView: View {
                 Text(suit.suitCharacter)
                     .font(.system(size: 14))
                     .foregroundStyle(suit.color == .red ? DS.Colors.red : DS.Colors.textPrimary)
-                Text(suit.bodyFocusLabel.uppercased())
-                    .font(.custom("BarlowCondensed-ExtraBold", size: 15))
+                DS.Typography.display(suit.bodyFocusLabel.uppercased(), size: 15)
                     .foregroundStyle(DS.Colors.textPrimary)
                 Spacer()
             }
@@ -255,8 +253,7 @@ struct SettingsView: View {
         } label: {
             HStack(spacing: 14) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(level.displayName.uppercased())
-                        .font(.custom("BarlowCondensed-ExtraBold", size: 18))
+                    DS.Typography.display(level.displayName.uppercased(), size: 18)
                         .foregroundStyle(isSelected ? DS.Colors.gold : DS.Colors.textPrimary)
                     Text(level.description)
                         .font(.system(size: 12))
@@ -342,8 +339,7 @@ struct SettingsView: View {
 
     private func sectionHeader(_ text: String) -> some View {
         HStack {
-            Text(text)
-                .font(.custom("Oswald-SemiBold", size: 11))
+            DS.Typography.sub(text, size: 11)
                 .foregroundStyle(DS.Colors.textTertiary)
                 .tracking(1.4)
             Spacer()

@@ -40,8 +40,7 @@ struct ExerciseFigureView: View {
             Image(systemName: "figure.strengthtraining.traditional")
                 .font(.system(size: 36, weight: .thin))
                 .foregroundStyle(DS.Colors.textTertiary.opacity(0.4))
-            Text("DEMO FIGURE")
-                .font(.custom("IBMPlexMono-Medium", size: 10))
+            DS.Typography.mono("DEMO FIGURE", size: 10)
                 .foregroundStyle(DS.Colors.textTertiary.opacity(0.5))
                 .tracking(0.8)
         }
