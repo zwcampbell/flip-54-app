@@ -68,7 +68,8 @@ enum UserDefaultsKeys {
     static let sfxEnabled = "sfxEnabled"
     static let sfxVolume  = "sfxVolume"    // 0.0 – 1.0
     static let hapticsEnabled = "hapticsEnabled"
-    /// Comma-separated Exercise rawValues the user has disabled, e.g. "pushUp,burpee"
+    /// Legacy key, read only by ContentView's one-time migration into
+    /// UserSettings.disabledExercisesRaw. No longer written by the app.
     static let disabledExercises = "disabledExercises"
 }
 

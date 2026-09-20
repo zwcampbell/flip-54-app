@@ -10,8 +10,6 @@ struct SettingsView: View {
     @AppStorage(UserDefaultsKeys.sfxEnabled)         private var sfxEnabled: Bool   = true
     @AppStorage(UserDefaultsKeys.hapticsEnabled)     private var hapticsEnabled: Bool = true
     @AppStorage(UserDefaultsKeys.sfxVolume)          private var sfxVolume: Double  = 1.0
-    /// Comma-separated Exercise rawValues the user has disabled.
-    @AppStorage(UserDefaultsKeys.disabledExercises)  private var disabledExercisesRaw: String = ""
 
     var body: some View {
         ZStack {
@@ -32,7 +30,7 @@ struct SettingsView: View {
         .sensoryFeedback(.impact(weight: .light), trigger: settings.hasWeights)
         .sensoryFeedback(.impact(weight: .light), trigger: settings.hasPullUpBar)
         .sensoryFeedback(.impact(weight: .light), trigger: settings.useHalfDeck)
-        .sensoryFeedback(.impact(weight: .light), trigger: disabledExercisesRaw)
+        .sensoryFeedback(.impact(weight: .light), trigger: settings.disabledExercisesRaw)
         .sensoryFeedback(.impact(weight: .light), trigger: sfxEnabled)
         .sensoryFeedback(.impact(weight: .light), trigger: hapticsEnabled)
         // Difficulty selection — selection feedback on each row tap.
@@ -209,16 +207,16 @@ struct SettingsView: View {
     }
 
     private func exerciseIsEnabled(_ exercise: Exercise) -> Bool {
-        !disabledExercisesRaw.split(separator: ",").contains(Substring(exercise.rawValue))
+        !settings.disabledExercisesRaw.split(separator: ",").contains(Substring(exercise.rawValue))
     }
 
     private func exerciseEnabledBinding(_ exercise: Exercise) -> Binding<Bool> {
         Binding(
             get: { exerciseIsEnabled(exercise) },
             set: { isOn in
-                var disabled = Set(disabledExercisesRaw.split(separator: ",").map(String.init))
+                var disabled = Set(settings.disabledExercisesRaw.split(separator: ",").map(String.init))
                 if isOn { disabled.remove(exercise.rawValue) } else { disabled.insert(exercise.rawValue) }
-                disabledExercisesRaw = disabled.sorted().joined(separator: ",")
+                settings.disabledExercisesRaw = disabled.sorted().joined(separator: ",")
             }
         )
     }
