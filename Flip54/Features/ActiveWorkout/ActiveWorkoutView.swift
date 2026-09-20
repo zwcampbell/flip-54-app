@@ -412,8 +412,8 @@ struct ActiveWorkoutView: View {
             HoldTimerView(startTime: startTime, durationSeconds: durationSeconds)
                 .transition(.opacity)
 
-        case .holdStarting:
-            HoldTimerView(startTime: Date(), durationSeconds: 60)
+        case .holdStarting(let card):
+            HoldTimerView(startTime: Date(), durationSeconds: holdSeconds(for: card))
 
         case .holdComplete(_, let secs, let full):
             holdCompleteView(secondsHeld: secs, completedFully: full)
@@ -433,6 +433,22 @@ struct ActiveWorkoutView: View {
 
     private var isMidasDeck: Bool {
         coordinator.session?.deckId == "midas"
+    }
+
+    /// The real prescribed hold duration for an Ace card, used while the
+    /// `.holdStarting` transition is briefly on screen (before `.holding`
+    /// carries the authoritative durationSeconds). Falls back to 60s only if
+    /// there's no active session to derive it from, which shouldn't happen
+    /// in practice since holdStarting always follows a live session.
+    private func holdSeconds(for card: Card) -> Int {
+        guard let session = coordinator.session,
+              case .hold(_, let seconds) = prescription(
+                for: card,
+                equipment: session.equipment,
+                difficulty: session.difficulty
+              )
+        else { return 60 }
+        return seconds
     }
 
     // MARK: - Hold complete
