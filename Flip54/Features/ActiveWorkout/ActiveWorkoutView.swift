@@ -361,9 +361,13 @@ struct ActiveWorkoutView: View {
 
         return ZStack {
             // Render farthest-back layer first so closer ones overlap on top.
+            // Each layer steps further down-and-right than the one in front
+            // of it, so the stack actually reads as having depth instead of
+            // every layer rendering exactly on top of the others.
             ForEach((0..<3).reversed(), id: \.self) { idx in
                 if idx < layers {
                     CardView(card: dummyCard, faceUp: false, deckId: deckId)
+                        .offset(x: CGFloat(idx + 1) * 4, y: CGFloat(idx + 1) * 7)
                         .allowsHitTesting(false)
                 }
             }
