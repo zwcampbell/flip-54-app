@@ -8,6 +8,7 @@ struct HistoryView: View {
 
     @State private var displayMonth: Date = Date()
     @State private var selectedWorkout: WorkoutHistory?
+    @State private var selectedDay: DayWorkouts?
     @State private var recentPage: Int = 0
 
     private let recentPageSize = 5
@@ -42,6 +43,13 @@ struct HistoryView: View {
         }
         .sheet(item: $selectedWorkout) { workout in
             WorkoutDetailView(workout: workout)
+        }
+        .sheet(item: $selectedDay) { day in
+            DayWorkoutsPickerView(day: day.day, workouts: day.workouts) { workout in
+                selectedDay = nil
+                selectedWorkout = workout
+            }
+            .presentationDetents([.medium])
         }
     }
 
@@ -166,9 +174,12 @@ struct HistoryView: View {
             let dayNum = calendar.component(.day, from: day)
 
             Button {
-                if let first = workoutsOnDay.first {
-                    HapticEngine.shared.play(.tap)
-                    selectedWorkout = first
+                guard !workoutsOnDay.isEmpty else { return }
+                HapticEngine.shared.play(.tap)
+                if workoutsOnDay.count == 1 {
+                    selectedWorkout = workoutsOnDay[0]
+                } else {
+                    selectedDay = DayWorkouts(day: day, workouts: workoutsOnDay)
                 }
             } label: {
                 ZStack {
@@ -185,6 +196,12 @@ struct HistoryView: View {
                             isToday    ? DS.Colors.gold          :
                                          DS.Colors.textSecondary
                         )
+                    if workoutsOnDay.count > 1 {
+                        Circle()
+                            .fill(Color(hex: "#111111"))
+                            .frame(width: 4, height: 4)
+                            .offset(y: 11)
+                    }
                 }
                 .frame(height: 36)
             }
@@ -626,6 +643,106 @@ struct WorkoutDetailView: View {
     private func dateString(_ date: Date) -> String {
         let fmt = DateFormatter()
         fmt.dateFormat = "EEEE, MMM d"
+        return fmt.string(from: date)
+    }
+
+    private func durationString(_ ti: TimeInterval) -> String {
+        let total = Int(ti)
+        let m = total / 60
+        let s = total % 60
+        let sStr = s < 10 ? "0\(s)" : "\(s)"
+        return "\(m):\(sStr)"
+    }
+}
+
+// MARK: - Multi-workout day picker
+
+/// A calendar day with more than one completed workout — tapping such a day
+/// presents this picker instead of jumping straight to a single detail
+/// sheet, since `workoutsOnDay.first` would otherwise make every workout
+/// after the first on that day unreachable from the calendar.
+private struct DayWorkouts: Identifiable {
+    let day: Date
+    let workouts: [WorkoutHistory]
+    var id: Date { day }
+}
+
+private struct DayWorkoutsPickerView: View {
+    let day: Date
+    let workouts: [WorkoutHistory]
+    let onSelect: (WorkoutHistory) -> Void
+
+    var body: some View {
+        ZStack {
+            DS.Colors.bg.ignoresSafeArea()
+            VStack(spacing: 0) {
+                Capsule()
+                    .fill(DS.Colors.border)
+                    .frame(width: 40, height: 4)
+                    .padding(.top, 14)
+                    .padding(.bottom, 20)
+
+                Text(dateString.uppercased())
+                    .font(.custom("BarlowCondensed-ExtraBold", size: 24))
+                    .foregroundStyle(DS.Colors.textPrimary)
+                    .padding(.bottom, 4)
+                Text("\(workouts.count) workouts this day")
+                    .font(.system(size: 13))
+                    .foregroundStyle(DS.Colors.textTertiary)
+                    .padding(.bottom, 20)
+
+                VStack(spacing: 0) {
+                    ForEach(Array(workouts.enumerated()), id: \.element.id) { idx, workout in
+                        Button {
+                            HapticEngine.shared.play(.tap)
+                            onSelect(workout)
+                        } label: {
+                            HStack(spacing: 14) {
+                                Text(timeString(workout.completedAt))
+                                    .font(.custom("IBMPlexMono-Medium", size: 13))
+                                    .foregroundStyle(DS.Colors.gold)
+                                    .frame(width: 68, alignment: .leading)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("\(workout.totalReps) reps · \(workout.cardCount) cards")
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .foregroundStyle(DS.Colors.textPrimary)
+                                    Text("\(durationString(workout.duration)) · \(workout.difficulty.displayName)")
+                                        .font(.system(size: 12))
+                                        .foregroundStyle(DS.Colors.textTertiary)
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(DS.Colors.textTertiary)
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 14)
+                        }
+                        .buttonStyle(.plain)
+                        if idx != workouts.count - 1 {
+                            Divider().background(DS.Colors.borderSub).padding(.leading, 16)
+                        }
+                    }
+                }
+                .background(DS.Colors.bgCard)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(DS.Colors.border, lineWidth: 1))
+                .padding(.horizontal, 24)
+
+                Spacer()
+            }
+        }
+    }
+
+    private var dateString: String {
+        let fmt = DateFormatter()
+        fmt.dateFormat = "EEEE, MMM d"
+        return fmt.string(from: day)
+    }
+
+    private func timeString(_ date: Date) -> String {
+        let fmt = DateFormatter()
+        fmt.dateFormat = "h:mm a"
         return fmt.string(from: date)
     }
 
