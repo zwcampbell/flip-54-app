@@ -126,11 +126,11 @@ struct CompletionView: View {
         VStack(spacing: 0) {
             // Top row: totalReps, cards, time
             HStack {
-                statCell(value: "\(data.totalReps)", label: "Total Reps")
+                StatCell(value: "\(data.totalReps)", label: "Total Reps")
                 Divider().background(DS.Colors.border).frame(height: 44)
-                statCell(value: "\(data.cardCount)", label: "Cards")
+                StatCell(value: "\(data.cardCount)", label: "Cards")
                 Divider().background(DS.Colors.border).frame(height: 44)
-                statCell(value: durationString, label: "Time")
+                StatCell(value: durationString, label: "Time")
             }
             .padding(.vertical, 16)
 
@@ -159,33 +159,11 @@ struct CompletionView: View {
         .padding(.horizontal, 20)
     }
 
-    private func statCell(value: String, label: String) -> some View {
-        VStack(spacing: 2) {
-            Text(value)
-                .font(.custom("BarlowCondensed-ExtraBold", size: 32))
-                .foregroundStyle(DS.Colors.textPrimary)
-            Text(label.uppercased())
-                .font(.custom("Oswald-SemiBold", size: 10))
-                .foregroundStyle(DS.Colors.textTertiary)
-                .tracking(1)
-        }
-        .frame(maxWidth: .infinity)
-    }
-
     private func suitRow(suit: Suit, label: String) -> some View {
-        let isRed = suit == .hearts || suit == .diamonds
-        let glyph: String
-        switch suit {
-        case .hearts:   glyph = "♥"
-        case .spades:   glyph = "♠"
-        case .clubs:    glyph = "♣"
-        case .diamonds: glyph = "♦"
-        }
-
-        return HStack(spacing: 14) {
-            Text(glyph)
+        HStack(spacing: 14) {
+            Text(suit.suitCharacter)
                 .font(.system(size: 16))
-                .foregroundStyle(isRed ? DS.Colors.red : DS.Colors.textPrimary)
+                .foregroundStyle(suit.color == .red ? DS.Colors.red : DS.Colors.textPrimary)
                 .frame(width: 20)
             Text(label)
                 .font(.system(size: 13))
