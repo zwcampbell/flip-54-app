@@ -196,7 +196,10 @@ public final class WorkoutCoordinator {
 
     // MARK: - Resume support
 
-    public func restoreIfNeeded(equipment: Equipment, difficulty: Difficulty, deckId: String) {
+    /// Restores the persisted session as-is; equipment, difficulty, and deck
+    /// are carried on the ActiveSession itself, not re-derived from the
+    /// caller's current settings.
+    public func restoreIfNeeded() {
         if let saved = store.load(), !saved.isComplete,
            Date().timeIntervalSince(saved.startedAt) < 86400 {
             isTutorial = false  // Persisted sessions are never tutorials.
