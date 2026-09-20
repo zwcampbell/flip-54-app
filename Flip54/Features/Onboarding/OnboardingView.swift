@@ -646,10 +646,14 @@ private struct PickDeckPage: View {
         let lockText: String?
     }
 
+    // Mirrors DeckCatalog.all (PreWorkoutView.swift) — this page is a static
+    // preview shown once during onboarding, so it's not worth wiring up a
+    // live @Query here, but the names and thresholds should stay in sync
+    // with the real catalog.
     private let decks: [Deck] = [
-        Deck(name: "Standard",    bg: Color(hex: "#1A1A22"), accent: Color(hex: "#9D9DAA"), unlocked: true,  lockText: nil),
-        Deck(name: "Holographic", bg: Color(hex: "#180E28"), accent: Color(hex: "#8B5CF6"), unlocked: false, lockText: "3 workouts"),
-        Deck(name: "Midas",       bg: Color(hex: "#1A1508"), accent: DS.Colors.gold,        unlocked: false, lockText: "10 workouts"),
+        Deck(name: "Standard", bg: Color(hex: "#1A1A22"), accent: Color(hex: "#9D9DAA"), unlocked: true,  lockText: nil),
+        Deck(name: "Midas",    bg: Color(hex: "#1A1508"), accent: DS.Colors.gold,        unlocked: false, lockText: "10 workouts"),
+        Deck(name: "Masonic",  bg: Color(hex: "#141414"), accent: Color(hex: "#9D9DAA"), unlocked: false, lockText: "Coming soon"),
     ]
 
     var body: some View {

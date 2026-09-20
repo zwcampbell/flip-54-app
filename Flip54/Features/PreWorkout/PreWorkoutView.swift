@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 import Flip54Core
 import Flip54Storage
 import Flip54WorkoutEngine
@@ -466,15 +467,16 @@ struct PreWorkoutView: View {
 struct DeckStyle: Identifiable, Hashable {
     let id: String  // matches UserSettings.equippedDeckId
     let displayName: String
-    let isUnlocked: Bool
-    let unlockHint: String?
+    /// Completed workouts required to unlock. 0 = unlocked from install.
+    /// nil = not yet available to unlock at all (no art shipped for it yet).
+    let unlockThreshold: Int?
 }
 
 enum DeckCatalog {
     static let all: [DeckStyle] = [
-        DeckStyle(id: "standard", displayName: "Standard", isUnlocked: true,  unlockHint: nil),
-        DeckStyle(id: "midas",    displayName: "Midas",    isUnlocked: true,  unlockHint: nil),
-        DeckStyle(id: "masonic",  displayName: "Masonic",  isUnlocked: false, unlockHint: "Coming soon"),
+        DeckStyle(id: "standard", displayName: "Standard", unlockThreshold: 0),
+        DeckStyle(id: "midas",    displayName: "Midas",    unlockThreshold: 10),
+        DeckStyle(id: "masonic",  displayName: "Masonic",  unlockThreshold: nil),
     ]
 
     static func style(forId id: String) -> DeckStyle {
@@ -487,6 +489,12 @@ enum DeckCatalog {
 private struct DeckPickerPopover: View {
     @Bindable var settings: UserSettings
     @Binding var isPresented: Bool
+
+    // Live unlock state: a deck stays unlocked once earned (DeckInventory),
+    // even if the user later deletes history that would put them back under
+    // the threshold. See ContentView.syncDeckUnlocks for how rows are awarded.
+    @Query private var deckInventory: [DeckInventory]
+    @Query private var history: [WorkoutHistory]
 
     var body: some View {
         VStack(spacing: 0) {
@@ -505,7 +513,23 @@ private struct DeckPickerPopover: View {
         .presentationBackground(DS.Colors.bgCard)
     }
 
+    private func isUnlocked(_ style: DeckStyle) -> Bool {
+        guard let threshold = style.unlockThreshold else { return false }
+        if threshold <= 0 { return true }
+        return deckInventory.first(where: { $0.deckId == style.id })?.isUnlocked ?? false
+    }
+
+    /// Locked-state subtitle: progress toward the threshold, or "Coming
+    /// soon" for a deck with no unlock path yet.
+    private func unlockHint(_ style: DeckStyle) -> String? {
+        guard let threshold = style.unlockThreshold else { return "Coming soon" }
+        guard threshold > 0, !isUnlocked(style) else { return nil }
+        let remaining = max(0, threshold - history.count)
+        return remaining == 1 ? "1 more workout" : "\(remaining) more workouts"
+    }
+
     private func deckRow(_ style: DeckStyle) -> some View {
+        let unlocked = isUnlocked(style)
         let isSelected = settings.equippedDeckId == style.id
         return Button {
             HapticEngine.shared.play(.selection)
@@ -513,14 +537,14 @@ private struct DeckPickerPopover: View {
             isPresented = false
         } label: {
             HStack(spacing: 14) {
-                deckBackIcon(style)
+                deckBackIcon(style, unlocked: unlocked)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(style.displayName)
                         .font(.custom("BarlowCondensed-ExtraBold", size: 18))
-                        .foregroundStyle(style.isUnlocked ? DS.Colors.textPrimary : DS.Colors.textTertiary)
+                        .foregroundStyle(unlocked ? DS.Colors.textPrimary : DS.Colors.textTertiary)
                         .tracking(0.5)
-                    if let hint = style.unlockHint {
+                    if let hint = unlockHint(style) {
                         Text(hint.uppercased())
                             .font(.custom("Oswald-SemiBold", size: 10))
                             .foregroundStyle(DS.Colors.textTertiary)
@@ -535,7 +559,7 @@ private struct DeckPickerPopover: View {
 
                 Spacer(minLength: 12)
 
-                if isSelected && style.isUnlocked {
+                if isSelected && unlocked {
                     Image(systemName: "checkmark")
                         .font(.system(size: 14, weight: .bold))
                         .foregroundStyle(DS.Colors.gold)
@@ -544,11 +568,11 @@ private struct DeckPickerPopover: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
         }
-        .disabled(!style.isUnlocked)
+        .disabled(!unlocked)
     }
 
     @ViewBuilder
-    private func deckBackIcon(_ style: DeckStyle) -> some View {
+    private func deckBackIcon(_ style: DeckStyle, unlocked: Bool) -> some View {
         ZStack {
             if style.id == "midas" {
                 MidasBackView(width: 44, height: 60)
@@ -576,7 +600,7 @@ private struct DeckPickerPopover: View {
                 .clipShape(RoundedRectangle(cornerRadius: 6))
             }
 
-            if !style.isUnlocked {
+            if !unlocked {
                 Color.black.opacity(0.55)
                     .frame(width: 44, height: 60)
                     .clipShape(RoundedRectangle(cornerRadius: 6))
