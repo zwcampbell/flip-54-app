@@ -219,7 +219,17 @@ struct CompletionView: View {
 
     // MARK: - Action buttons
 
-    @State private var showSharePlaceholder = false
+    private var shareText: String {
+        var lines = [
+            "Just cleared the deck on Flip 54 🎉",
+            "\(data.totalReps) reps · \(data.cardCount) cards · \(durationString)",
+            "\(data.difficulty.displayName) difficulty"
+        ]
+        if data.jumpingJacks > 0 {
+            lines.append("+ \(data.jumpingJacks) jumping jacks")
+        }
+        return lines.joined(separator: "\n")
+    }
 
     private var actionButtons: some View {
         VStack(spacing: 12) {
@@ -237,10 +247,7 @@ struct CompletionView: View {
                     .shadow(color: DS.Colors.gold.opacity(0.25), radius: 12)
             }
 
-            Button {
-                HapticEngine.shared.play(.tap)
-                showSharePlaceholder = true
-            } label: {
+            ShareLink(item: shareText) {
                 HStack(spacing: 8) {
                     Image(systemName: "square.and.arrow.up")
                         .font(.system(size: 15))
@@ -254,17 +261,15 @@ struct CompletionView: View {
                 .clipShape(Capsule())
                 .overlay(Capsule().strokeBorder(DS.Colors.border, lineWidth: 1.5))
             }
+            .simultaneousGesture(TapGesture().onEnded {
+                HapticEngine.shared.play(.tap)
+            })
         }
         .opacity(show ? 1 : 0)
         .animation(.easeOut(duration: 0.4).delay(0.5), value: show)
         .padding(.horizontal, 24)
         .padding(.top, 20)
         .padding(.bottom, 48)
-        .alert("Share coming soon", isPresented: $showSharePlaceholder) {
-            Button("OK", role: .cancel) { }
-        } message: {
-            Text("Full share card with your stats is coming in a future update.")
-        }
     }
 
     // MARK: - Helpers
