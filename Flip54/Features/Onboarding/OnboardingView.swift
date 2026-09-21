@@ -565,17 +565,22 @@ private struct DifficultyPage: View {
     private struct Opt {
         let level: Difficulty
         let label: String
-        let mult: String
         let sub: String
         let color: Color
     }
 
     private var opts: [Opt] {
         [
-            Opt(level: .beginner, label: "BEGINNER", mult: "0.75×", sub: "Build the habit.", color: DS.Colors.success),
-            Opt(level: .standard, label: "STANDARD", mult: "1.00×", sub: "As prescribed.",   color: DS.Colors.gold),
-            Opt(level: .advanced, label: "ADVANCED", mult: "1.25×", sub: "Push it.",         color: DS.Colors.red),
+            Opt(level: .beginner, label: "BEGINNER", sub: "Build the habit.", color: DS.Colors.success),
+            Opt(level: .standard, label: "STANDARD", sub: "As prescribed.",   color: DS.Colors.gold),
+            Opt(level: .advanced, label: "ADVANCED", sub: "Push it.",         color: DS.Colors.red),
         ]
+    }
+
+    /// Real multiplier from Flip54Core — the single source of truth, so this
+    /// page can never drift out of sync with the actual prescription math.
+    private func multString(_ level: Difficulty) -> String {
+        String(format: "%.1f×", level.multiplier)
     }
 
     var body: some View {
@@ -612,7 +617,7 @@ private struct DifficultyPage: View {
                                     .foregroundStyle(DS.Colors.textTertiary)
                             }
                             Spacer()
-                            Text(o.mult)
+                            Text(multString(o.level))
                                 .font(.custom("IBMPlexMono-Medium", size: 20))
                                 .foregroundStyle(selected ? o.color : DS.Colors.textTertiary)
                         }
