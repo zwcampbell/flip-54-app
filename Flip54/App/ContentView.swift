@@ -83,7 +83,10 @@ struct ContentView: View {
         .animation(.easeInOut(duration: 0.35), value: showOnboarding)
         .animation(.easeInOut(duration: 0.22), value: showCompletion)
         .animation(.easeInOut(duration: 0.22), value: isActiveWorkout)
-        .onAppear { checkForResume() }
+        .onAppear {
+            migrateDisabledExercisesIfNeeded()
+            checkForResume()
+        }
         .onChange(of: isActiveWorkout) { wasActive, isActive in
             // When leaving an active workout (e.g., End Early), surface the
             // resume banner if a session is still persisted.
@@ -225,6 +228,22 @@ struct ContentView: View {
         os_signpost(.begin, log: saveLog, name: "modelContext.save", "workout-history")
         try? modelContext.save()
         os_signpost(.end, log: saveLog, name: "modelContext.save", "workout-history")
+    }
+
+    // MARK: - One-time settings migration
+
+    /// Disabled-exercise toggles used to live in raw UserDefaults; they now
+    /// live on UserSettings alongside the rest of the workout configuration.
+    /// Copy any pre-existing value over exactly once so upgrading users don't
+    /// lose their exercise toggles.
+    private func migrateDisabledExercisesIfNeeded() {
+        let migrationFlagKey = "hasMigratedDisabledExercisesToSwiftData"
+        guard !UserDefaults.standard.bool(forKey: migrationFlagKey) else { return }
+        if let legacy = UserDefaults.standard.string(forKey: UserDefaultsKeys.disabledExercises),
+           !legacy.isEmpty {
+            settings.disabledExercisesRaw = legacy
+        }
+        UserDefaults.standard.set(true, forKey: migrationFlagKey)
     }
 
     // MARK: - Resume support
