@@ -12,6 +12,7 @@ struct ContentView: View {
     @Query private var settingsQuery: [UserSettings]
     @Query(sort: \WorkoutHistory.completedAt, order: .reverse) private var historyQuery: [WorkoutHistory]
     @Query private var onboardingQuery: [OnboardingState]
+    @Query private var deckInventoryQuery: [DeckInventory]
 
     @State private var coordinator = WorkoutCoordinator()
     @State private var completedData: CompletedWorkoutData?
@@ -86,6 +87,10 @@ struct ContentView: View {
         .onAppear {
             migrateDisabledExercisesIfNeeded()
             checkForResume()
+            // Backfills unlocks for anyone who already qualified before this
+            // shipped, and covers the (unlikely) case a prior award attempt
+            // didn't persist.
+            syncDeckUnlocks()
         }
         .onChange(of: isActiveWorkout) { wasActive, isActive in
             // When leaving an active workout (e.g., End Early), surface the
@@ -228,6 +233,35 @@ struct ContentView: View {
         os_signpost(.begin, log: saveLog, name: "modelContext.save", "workout-history")
         try? modelContext.save()
         os_signpost(.end, log: saveLog, name: "modelContext.save", "workout-history")
+        syncDeckUnlocks()
+    }
+
+    // MARK: - Deck unlocks
+
+    /// Awards any deck whose unlock threshold is now met a persisted
+    /// DeckInventory row. Unlocking is one-way and sticky: once earned, a
+    /// deck stays unlocked even if the user later deletes workout history
+    /// that would otherwise put them back under the threshold.
+    private func syncDeckUnlocks() {
+        let totalWorkouts = (try? modelContext.fetchCount(FetchDescriptor<WorkoutHistory>())) ?? historyQuery.count
+        // Read the raw query rather than the `settings` convenience getter,
+        // which inserts a default UserSettings as a side effect — harmless
+        // normally, but not something this background sync should trigger.
+        let equippedDeckId = settingsQuery.first?.equippedDeckId
+        for style in DeckCatalog.all {
+            guard let threshold = style.unlockThreshold, threshold > 0 else { continue }
+            // Grandfather in a deck the user already has equipped, so
+            // introducing or raising a threshold never locks someone out of
+            // what they're already using.
+            let qualifies = totalWorkouts >= threshold || equippedDeckId == style.id
+            guard qualifies else { continue }
+            if let existing = deckInventoryQuery.first(where: { $0.deckId == style.id }) {
+                if existing.unlockedAt == nil { existing.unlockedAt = Date() }
+            } else {
+                modelContext.insert(DeckInventory(deckId: style.id, unlockedAt: Date()))
+            }
+        }
+        try? modelContext.save()
     }
 
     // MARK: - One-time settings migration
