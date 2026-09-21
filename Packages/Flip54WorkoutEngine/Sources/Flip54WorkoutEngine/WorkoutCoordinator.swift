@@ -1,6 +1,9 @@
 import Foundation
+import os
 import Flip54Core
 import Flip54Storage
+
+private let sessionStoreLog = Logger(subsystem: "com.flip54.app", category: "ActiveSessionStore")
 
 /// Owns the workout state machine. All mutations go through `send(_:)`.
 /// Persists the active session on every state change.
@@ -186,7 +189,14 @@ public final class WorkoutCoordinator {
 
     private func persistSession() {
         guard !isTutorial, let s = session else { return }
-        try? store.save(s)
+        do {
+            try store.save(s)
+        } catch {
+            // A failed write here means resume-after-relaunch silently loses
+            // this session's progress. Not fatal to the in-progress workout,
+            // but worth being able to see in logs instead of vanishing.
+            sessionStoreLog.error("Failed to persist active session: \(error.localizedDescription, privacy: .public)")
+        }
     }
 
     private func isPaused(_ state: WorkoutState) -> Bool {
@@ -262,7 +272,11 @@ public final class WorkoutCoordinator {
         if !isTutorial, let s = session {
             // Make sure the latest paused session is on disk before we drop
             // our in-memory reference, so the resume banner can find it.
-            try? store.save(s)
+            do {
+                try store.save(s)
+            } catch {
+                sessionStoreLog.error("Failed to persist session on endEarly: \(error.localizedDescription, privacy: .public)")
+            }
         }
         session = nil
         isTutorial = false
