@@ -28,6 +28,7 @@
 		74FE86AAEE03A9CD31F607B2 /* MidasImpactView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DEB8D41E86483258DAAB20F /* MidasImpactView.swift */; };
 		7E3FDDD6F934762A428B88EC /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A24DD0F3DDE3CD532E4F7B /* ProfileView.swift */; };
 		86786B8D37B71797D0525F8B /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B95F95B2A017F274DA35B4A2 /* SettingsView.swift */; };
+		93312D2C95BF3B2B5D61315E /* StatComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21EFA91D9FE51A95099542C9 /* StatComponents.swift */; };
 		9A06BE069CB319704BD09C35 /* AccessibilityHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20C3BAE428A6C45455C0FBC /* AccessibilityHelpers.swift */; };
 		9C973F526285EC2405E8DB23 /* Flip54Core in Frameworks */ = {isa = PBXBuildFile; productRef = B2272B8D6AB1191879B2C915 /* Flip54Core */; };
 		9F74E2E6B610D17F1B239643 /* CardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C22DB04AA5EF70E9C1363F2 /* CardView.swift */; };
@@ -51,6 +52,7 @@
 /* Begin PBXFileReference section */
 		03B32E61425323337974D8A3 /* completion.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = completion.mp3; sourceTree = "<group>"; };
 		055BD321D3DEC4795309186E /* DS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DS.swift; sourceTree = "<group>"; };
+		21EFA91D9FE51A95099542C9 /* StatComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatComponents.swift; sourceTree = "<group>"; };
 		28F0CE3652748EEEE3EC94AC /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		29940533C1D4EF8AF42FE6A1 /* Flip54Storage */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Flip54Storage; path = Packages/Flip54Storage; sourceTree = SOURCE_ROOT; };
 		3187C0598BD56969203B2016 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
@@ -297,6 +299,7 @@
 				5C22DB04AA5EF70E9C1363F2 /* CardView.swift */,
 				721FCE0A4A92F61561184ABA /* MidasCardOverlay.swift */,
 				6DEB8D41E86483258DAAB20F /* MidasImpactView.swift */,
+				21EFA91D9FE51A95099542C9 /* StatComponents.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -437,6 +440,7 @@
 				C57A83174BA8A91D0C3DEAD6 /* QuickReferenceView.swift in Sources */,
 				86786B8D37B71797D0525F8B /* SettingsView.swift in Sources */,
 				316F18EC99B3479FD2D05760 /* SoundPlayer.swift in Sources */,
+				93312D2C95BF3B2B5D61315E /* StatComponents.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
