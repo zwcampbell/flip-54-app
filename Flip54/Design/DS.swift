@@ -25,7 +25,9 @@ enum DS {
 
     enum Typography {
         // Display — Barlow Condensed ExtraBold (maps to Futura Extra Bold Condensed in spec)
-        static func display(_ text: String, size: CGFloat = 50) -> some View {
+        // Returns `Text` (not `some View`) so callers can still chain Text-only
+        // modifiers like `.tracking`/`letterSpacing`, as MidasBackView does.
+        static func display(_ text: String, size: CGFloat = 50) -> Text {
             Text(text)
                 .font(.custom("BarlowCondensed-ExtraBold", size: size))
         }
