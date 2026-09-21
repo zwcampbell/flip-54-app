@@ -48,7 +48,7 @@ struct ProfileView: View {
 
     private var statsSection: some View {
         VStack(spacing: 0) {
-            sectionHeader("LIFETIME STATS")
+            SectionHeader(title: "LIFETIME STATS")
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 1) {
                 statTile(value: "\(stats.totalWorkouts)", label: "Workouts")
                 statTile(value: "\(stats.totalReps)", label: "Total Reps")
@@ -65,18 +65,9 @@ struct ProfileView: View {
     }
 
     private func statTile(value: String, label: String) -> some View {
-        VStack(spacing: 4) {
-            Text(value)
-                .font(.custom("BarlowCondensed-ExtraBold", size: 36))
-                .foregroundStyle(DS.Colors.textPrimary)
-            Text(label.uppercased())
-                .font(.custom("Oswald-SemiBold", size: 10))
-                .foregroundStyle(DS.Colors.textTertiary)
-                .tracking(1)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 20)
-        .background(DS.Colors.bgCard)
+        StatCell(value: value, label: label, valueSize: 36, spacing: 4)
+            .padding(.vertical, 20)
+            .background(DS.Colors.bgCard)
     }
 
     // MARK: - Per-suit breakdown
@@ -126,8 +117,7 @@ struct ProfileView: View {
 
     @ViewBuilder
     private func expandableSuitBar(_ suit: Suit, label: String, reps: Int) -> some View {
-        let isRed = suit == .hearts || suit == .diamonds
-        let color: Color = isRed ? DS.Colors.red : DS.Colors.textPrimary
+        let color: Color = suit.color == .red ? DS.Colors.red : DS.Colors.textPrimary
         let glyph = suit.suitCharacter
         let isExpanded = expandedSuits.contains(suit)
         let exReps = stats.repsByExercise
@@ -201,19 +191,6 @@ struct ProfileView: View {
         }
     }
 
-    private func suitBar(_ suit: Suit, label: String, reps: Int) -> some View {
-        let isRed = suit == .hearts || suit == .diamonds
-        let color: Color = isRed ? DS.Colors.red : DS.Colors.textPrimary
-        let glyph: String
-        switch suit {
-        case .hearts:   glyph = "♥"
-        case .spades:   glyph = "♠"
-        case .clubs:    glyph = "♣"
-        case .diamonds: glyph = "♦"
-        }
-        return suitBarNeutral(glyph, label: label, reps: reps, color: color)
-    }
-
     private func suitBarNeutral(_ glyph: String, label: String, reps: Int, color: Color) -> some View {
         let maxReps = max(1, [stats.repsByHeart, stats.repsBySpade, stats.repsByClub, stats.repsByDiamond, stats.jumpingJacks].max() ?? 1)
         let pct = Double(reps) / Double(maxReps)
@@ -246,19 +223,6 @@ struct ProfileView: View {
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 12)
-    }
-
-    private func sectionHeader(_ text: String) -> some View {
-        HStack {
-            Text(text)
-                .font(.custom("Oswald-SemiBold", size: 11))
-                .foregroundStyle(DS.Colors.textTertiary)
-                .tracking(1.4)
-            Spacer()
-        }
-        .padding(.horizontal, 24)
-        .padding(.top, 24)
-        .padding(.bottom, 8)
     }
 }
 

@@ -218,7 +218,7 @@ struct HistoryView: View {
             if history.isEmpty {
                 emptyState
             } else {
-                sectionHeader("RECENT")
+                SectionHeader(title: "RECENT")
                 let pageItems = recentPageWorkouts
                 let lastID = pageItems.last?.id
                 VStack(spacing: 0) {
@@ -342,19 +342,6 @@ struct HistoryView: View {
         .padding(.horizontal, 40)
     }
 
-    private func sectionHeader(_ text: String) -> some View {
-        HStack {
-            Text(text)
-                .font(.custom("Oswald-SemiBold", size: 11))
-                .foregroundStyle(DS.Colors.textTertiary)
-                .tracking(1.4)
-            Spacer()
-        }
-        .padding(.horizontal, 24)
-        .padding(.top, 24)
-        .padding(.bottom, 8)
-    }
-
     // MARK: - Calendar helpers
 
     private func monthDays(for month: Date) -> [Date?] {
@@ -471,11 +458,11 @@ struct WorkoutDetailView: View {
         VStack(spacing: 0) {
             // Top row
             HStack {
-                statCell(value: "\(workout.totalReps)", label: "Total Reps")
+                StatCell(value: "\(workout.totalReps)", label: "Total Reps")
                 Divider().frame(height: 44).background(DS.Colors.border)
-                statCell(value: "\(workout.cardCount)", label: "Cards")
+                StatCell(value: "\(workout.cardCount)", label: "Cards")
                 Divider().frame(height: 44).background(DS.Colors.border)
-                statCell(value: durationString(workout.duration), label: "Time")
+                StatCell(value: durationString(workout.duration), label: "Time")
             }
             .padding(.vertical, 16)
 
@@ -512,7 +499,7 @@ struct WorkoutDetailView: View {
 
             if workout.jumpingJacks > 0 {
                 Divider().background(DS.Colors.borderSub).padding(.leading, 50)
-                suitRow(nil, label: "Jumping Jacks", reps: workout.jumpingJacks)
+                neutralRow("★", label: "Jumping Jacks", reps: workout.jumpingJacks, color: DS.Colors.gold)
             }
 
             if workout.skipCount > 0 {
@@ -541,7 +528,7 @@ struct WorkoutDetailView: View {
 
     @ViewBuilder
     private func expandableSuitSection(_ suit: Suit, reps: Int) -> some View {
-        let isRed = suit == .hearts || suit == .diamonds
+        let isRed = suit.color == .red
         let isExpanded = expandedSuits.contains(suit)
         let exReps = workout.repsByExercise
             .filter { $0.key.bodyFocus == suit }
@@ -599,21 +586,15 @@ struct WorkoutDetailView: View {
         }
     }
 
-    private func suitRow(_ suit: Suit?, label: String, reps: Int) -> some View {
-        let isRed = suit == .hearts || suit == .diamonds
-        let glyph: String
-        switch suit {
-        case .hearts:   glyph = "♥"
-        case .spades:   glyph = "♠"
-        case .clubs:    glyph = "♣"
-        case .diamonds: glyph = "♦"
-        case .none:     glyph = "★"
-        }
-
-        return HStack(spacing: 14) {
+    /// Non-suit stat row (currently only Jumping Jacks). `suitRow`/
+    /// `expandableSuitSection` above cover the four real suits; this was
+    /// previously a Suit?-taking function whose non-nil branches were never
+    /// actually called.
+    private func neutralRow(_ glyph: String, label: String, reps: Int, color: Color) -> some View {
+        HStack(spacing: 14) {
             Text(glyph)
                 .font(.system(size: 16))
-                .foregroundStyle(isRed ? DS.Colors.red : suit == nil ? DS.Colors.gold : DS.Colors.textPrimary)
+                .foregroundStyle(color)
                 .frame(width: 20)
             Text(label)
                 .font(.system(size: 13))
@@ -625,19 +606,6 @@ struct WorkoutDetailView: View {
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 13)
-    }
-
-    private func statCell(value: String, label: String) -> some View {
-        VStack(spacing: 2) {
-            Text(value)
-                .font(.custom("BarlowCondensed-ExtraBold", size: 32))
-                .foregroundStyle(DS.Colors.textPrimary)
-            Text(label.uppercased())
-                .font(.custom("Oswald-SemiBold", size: 10))
-                .foregroundStyle(DS.Colors.textTertiary)
-                .tracking(1)
-        }
-        .frame(maxWidth: .infinity)
     }
 
     private func dateString(_ date: Date) -> String {
