@@ -240,11 +240,7 @@ struct ContentView: View {
 
     private func resumeSession() {
         showResumeBanner = false
-        coordinator.restoreIfNeeded(
-            equipment: settings.equipment,
-            difficulty: settings.difficulty,
-            deckId: settings.equippedDeckId
-        )
+        coordinator.restoreIfNeeded()
     }
 
     private func dismissResume() {
