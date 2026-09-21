@@ -33,8 +33,7 @@ struct ProfileView: View {
 
     private var headerBar: some View {
         HStack {
-            Text("PROFILE")
-                .font(.custom("BarlowCondensed-ExtraBold", size: 32))
+            DS.Typography.display("PROFILE", size: 32)
                 .foregroundStyle(DS.Colors.textPrimary)
             Spacer()
         }
@@ -75,13 +74,11 @@ struct ProfileView: View {
     private var suitsSection: some View {
         VStack(spacing: 0) {
             HStack {
-                Text("REPS BY BODY FOCUS")
-                    .font(.custom("Oswald-SemiBold", size: 11))
+                DS.Typography.sub("REPS BY BODY FOCUS", size: 11)
                     .foregroundStyle(DS.Colors.textTertiary)
                     .tracking(1.4)
                 Spacer()
-                Text(allExpanded ? "Collapse All" : "Expand All")
-                    .font(.custom("Oswald-SemiBold", size: 11))
+                DS.Typography.sub(allExpanded ? "Collapse All" : "Expand All", size: 11)
                     .foregroundStyle(DS.Colors.gold)
                     .tracking(1.2)
                     .onTapGesture {
@@ -148,8 +145,7 @@ struct ProfileView: View {
                                 .font(.system(size: 13))
                                 .foregroundStyle(DS.Colors.textSecondary)
                             Spacer()
-                            Text("\(reps)")
-                                .font(.custom("IBMPlexMono-Medium", size: 13))
+                            DS.Typography.mono("\(reps)", size: 13)
                                 .foregroundStyle(DS.Colors.textPrimary)
                             Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                                 .font(.system(size: 10, weight: .semibold))
@@ -178,8 +174,7 @@ struct ProfileView: View {
                             .font(.system(size: 12))
                             .foregroundStyle(DS.Colors.textTertiary)
                         Spacer()
-                        Text("\(count)")
-                            .font(.custom("IBMPlexMono-Medium", size: 13))
+                        DS.Typography.mono("\(count)", size: 13)
                             .foregroundStyle(DS.Colors.textTertiary)
                     }
                     .padding(.leading, 52)
@@ -206,8 +201,7 @@ struct ProfileView: View {
                         .font(.system(size: 13))
                         .foregroundStyle(DS.Colors.textSecondary)
                     Spacer()
-                    Text("\(reps)")
-                        .font(.custom("IBMPlexMono-Medium", size: 13))
+                    DS.Typography.mono("\(reps)", size: 13)
                         .foregroundStyle(DS.Colors.textPrimary)
                 }
                 GeometryReader { geo in

@@ -38,12 +38,10 @@ struct FormGuideView: View {
             closeButton
             Spacer()
             VStack(spacing: 3) {
-                Text("FORM GUIDE")
-                    .font(.custom("Oswald-SemiBold", size: 10))
+                DS.Typography.sub("FORM GUIDE", size: 10)
                     .foregroundStyle(DS.Colors.textTertiary)
                     .tracking(1.8)
-                Text(exercise.displayName.uppercased())
-                    .font(.custom("BarlowCondensed-ExtraBold", size: 26))
+                DS.Typography.display(exercise.displayName.uppercased(), size: 26)
                     .foregroundStyle(DS.Colors.textPrimary)
                     .tracking(0.5)
                     .lineLimit(1)
@@ -105,8 +103,7 @@ struct FormGuideView: View {
                 .frame(height: 200)
 
             // Category chip
-            Text(guide.category)
-                .font(.custom("IBMPlexMono-Medium", size: 10))
+            DS.Typography.mono(guide.category, size: 10)
                 .foregroundStyle(DS.Colors.textTertiary)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 5)
@@ -119,8 +116,7 @@ struct FormGuideView: View {
                 Circle()
                     .fill(DS.Colors.gold)
                     .frame(width: 8, height: 8)
-                Text("LOOP")
-                    .font(.custom("IBMPlexMono-Medium", size: 10))
+                DS.Typography.mono("LOOP", size: 10)
                     .foregroundStyle(DS.Colors.textPrimary)
                     .tracking(0.5)
             }
@@ -145,8 +141,7 @@ struct FormGuideView: View {
     // MARK: - Tempo line
 
     private var tempoLine: some View {
-        Text("// \(guide.tempoLabel)")
-            .font(.custom("IBMPlexMono-Medium", size: 10))
+        DS.Typography.mono("// \(guide.tempoLabel)", size: 10)
             .foregroundStyle(DS.Colors.textTertiary)
             .tracking(0.5)
             .padding(.horizontal, 22)
@@ -170,8 +165,7 @@ struct FormGuideView: View {
 
     private func cueRow(number: Int, text: String) -> some View {
         HStack(alignment: .top, spacing: 14) {
-            Text(String(format: "%02d", number))
-                .font(.custom("IBMPlexMono-Medium", size: 13))
+            DS.Typography.mono(String(format: "%02d", number), size: 13)
                 .foregroundStyle(DS.Colors.gold)
                 .frame(width: 26, alignment: .leading)
                 .padding(.top, 1)
@@ -238,8 +232,7 @@ struct FormGuideView: View {
                 HapticEngine.shared.play(.tap)
                 dismiss()
             } label: {
-                Text("BACK TO WORKOUT")
-                    .font(.custom("BarlowCondensed-ExtraBold", size: 22))
+                DS.Typography.display("BACK TO WORKOUT", size: 22)
                     .foregroundStyle(DS.Colors.textPrimary)
                     .tracking(0.8)
                     .frame(maxWidth: .infinity)
@@ -257,8 +250,7 @@ struct FormGuideView: View {
     // MARK: - Helpers
 
     private func sectionLabel(_ text: String) -> some View {
-        Text(text)
-            .font(.custom("Oswald-SemiBold", size: 11))
+        DS.Typography.sub(text, size: 11)
             .foregroundStyle(DS.Colors.textTertiary)
             .tracking(1.6)
             .padding(.bottom, 12)

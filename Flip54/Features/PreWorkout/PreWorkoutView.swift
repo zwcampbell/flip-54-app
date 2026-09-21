@@ -339,8 +339,7 @@ struct PreWorkoutView: View {
                 .strokeBorder(DS.Colors.gold.opacity(0.4), lineWidth: 1.5)
                 .frame(width: 56, height: 56)
 
-            Text("54")
-                .font(.custom("BarlowCondensed-ExtraBold", size: 32))
+            DS.Typography.display("54", size: 32)
                 .foregroundStyle(DS.Colors.gold)
 
             fanCornerDots
@@ -385,8 +384,7 @@ struct PreWorkoutView: View {
 
     private func settingColumn(label: String, value: String) -> some View {
         VStack(spacing: 6) {
-            Text(label)
-                .font(.custom("Oswald-SemiBold", size: 10))
+            DS.Typography.sub(label, size: 10)
                 .foregroundStyle(DS.Colors.textTertiary)
                 .tracking(1.4)
             settingPill(text: value)
@@ -398,8 +396,7 @@ struct PreWorkoutView: View {
             HapticEngine.shared.play(.tap)
             showSettings = true
         } label: {
-            Text(text)
-                .font(.custom("BarlowCondensed-ExtraBold", size: 22))
+            DS.Typography.display(text, size: 22)
                 .foregroundStyle(DS.Colors.textPrimary)
                 .tracking(1.4)
                 .lineLimit(1)
@@ -443,8 +440,7 @@ struct PreWorkoutView: View {
                 )
                 coordinator.send(.shuffle)
             } label: {
-                Text(isShufflingState ? "SHUFFLING…" : "START")
-                    .font(.custom("BarlowCondensed-ExtraBold", size: 26))
+                DS.Typography.display(isShufflingState ? "SHUFFLING…" : "START", size: 26)
                     .foregroundStyle(Color(hex: "#111111"))
                     .frame(maxWidth: .infinity)
                     .frame(height: 58)
@@ -537,18 +533,15 @@ private struct DeckPickerPopover: View {
                 deckBackIcon(style, unlocked: unlocked)
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(style.displayName)
-                        .font(.custom("BarlowCondensed-ExtraBold", size: 18))
+                    DS.Typography.display(style.displayName, size: 18)
                         .foregroundStyle(unlocked ? DS.Colors.textPrimary : DS.Colors.textTertiary)
                         .tracking(0.5)
                     if let hint = unlockHint(style) {
-                        Text(hint.uppercased())
-                            .font(.custom("Oswald-SemiBold", size: 10))
+                        DS.Typography.sub(hint.uppercased(), size: 10)
                             .foregroundStyle(DS.Colors.textTertiary)
                             .tracking(1.2)
                     } else if isSelected {
-                        Text("EQUIPPED")
-                            .font(.custom("Oswald-SemiBold", size: 10))
+                        DS.Typography.sub("EQUIPPED", size: 10)
                             .foregroundStyle(DS.Colors.gold)
                             .tracking(1.2)
                     }
@@ -589,8 +582,7 @@ private struct DeckPickerPopover: View {
                     Circle()
                         .strokeBorder(DS.Colors.gold.opacity(0.4), lineWidth: 1)
                         .frame(width: 18, height: 18)
-                    Text("54")
-                        .font(.custom("BarlowCondensed-ExtraBold", size: 10))
+                    DS.Typography.display("54", size: 10)
                         .foregroundStyle(DS.Colors.gold)
                 }
                 .frame(width: 44, height: 60)
