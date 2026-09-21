@@ -296,34 +296,41 @@ struct LifetimeStats {
         }
         repsByExercise = exDict
 
-        // Streak calculation — consecutive days with at least one workout
+        // Streak calculation — consecutive days with at least one workout.
         let cal = Calendar.current
-        let workoutDays = Set(history.map { cal.startOfDay(for: $0.completedAt) }).sorted(by: >)
-        var cur = 0, best = 0
-        var check = cal.startOfDay(for: Date())
-        for day in workoutDays {
-            if cal.isDate(day, equalTo: check, toGranularity: .day) {
-                cur += 1
-                best = max(best, cur)
-                check = cal.date(byAdding: .day, value: -1, to: check) ?? check
-            } else if day < check {
-                break
-            }
+        let workoutDaySet = Set(history.map { cal.startOfDay(for: $0.completedAt) })
+        let today = cal.startOfDay(for: Date())
+
+        // Current streak: walk backward from today. If today has no workout
+        // yet, start from yesterday instead of resetting to zero — the
+        // streak should survive until the current day actually ends without
+        // a workout, not the instant midnight passes.
+        var cur = 0
+        var cursor = workoutDaySet.contains(today)
+            ? today
+            : (cal.date(byAdding: .day, value: -1, to: today) ?? today)
+        while workoutDaySet.contains(cursor) {
+            cur += 1
+            cursor = cal.date(byAdding: .day, value: -1, to: cursor) ?? cursor
         }
         currentStreak = cur
-        // Longest streak (full pass)
-        var longestPass = 0, streak = 0
-        var prev: Date? = nil
-        for day in workoutDays.sorted() {
-            if let p = prev, cal.dateComponents([.day], from: p, to: day).day == 1 {
+
+        // Longest streak ever: single forward pass over consecutive-day runs.
+        // This already covers the trailing run current streak measures, so
+        // no separate reconciliation is needed.
+        var longest = 0
+        var streak = 0
+        var prevDay: Date? = nil
+        for day in workoutDaySet.sorted() {
+            if let prev = prevDay, cal.dateComponents([.day], from: prev, to: day).day == 1 {
                 streak += 1
             } else {
                 streak = 1
             }
-            longestPass = max(longestPass, streak)
-            prev = day
+            longest = max(longest, streak)
+            prevDay = day
         }
-        longestStreak = max(longestPass, best)
+        longestStreak = longest
     }
 
     var totalTimeString: String {
