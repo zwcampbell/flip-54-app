@@ -114,6 +114,34 @@ struct WorkoutCoordinatorTests {
         #expect(coord.state == .idle)
     }
 
+    @Test("endEarly keeps the session resumable by default")
+    func endEarlyKeepsSession() {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("flip54_coord_test_\(UUID().uuidString).json")
+        let store = ActiveSessionStore(url: url)
+        let coord = WorkoutCoordinator(store: store)
+        coord.send(.shuffle)
+        coord.send(.shuffleComplete)
+        #expect(store.load() != nil)
+        coord.endEarly()
+        #expect(coord.state == .idle)
+        #expect(store.load() != nil)
+    }
+
+    @Test("endEarly(discardSession:) clears the persisted session")
+    func endEarlyDiscardsSession() {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("flip54_coord_test_\(UUID().uuidString).json")
+        let store = ActiveSessionStore(url: url)
+        let coord = WorkoutCoordinator(store: store)
+        coord.send(.shuffle)
+        coord.send(.shuffleComplete)
+        #expect(store.load() != nil)
+        coord.endEarly(discardSession: true)
+        #expect(coord.state == .idle)
+        #expect(store.load() == nil)
+    }
+
     @Test("workout completes after all cards marked done")
     func workoutCompletion() {
         let coord = makeCoordinator()
