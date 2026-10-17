@@ -62,7 +62,7 @@ struct QuickReferenceView: View {
             VStack(spacing: 0) {
                 valueRow(label: "2 – 10",    value: "Face value",  sub: "e.g. 7♣ = 7 reps")
                 divider
-                valueRow(label: "J, Q, K",   value: "10 reps",    sub: "Face cards always count as 10")
+                valueRow(label: "J, Q, K",   value: "10 reps",    sub: "Scaled by difficulty: 5 / 10 / 20")
                 divider
                 valueRow(label: "Ace",       value: "Hold",        sub: "Timed position hold")
                 divider

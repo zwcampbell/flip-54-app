@@ -344,9 +344,9 @@ private struct SpecialCardsPage: View {
     ]
 
     private let rows: [Row] = [
-        Row(label: "Aces",       color: DS.Colors.red,            body: "1-minute hold. Suit-specific form."),
-        Row(label: "Face Cards", color: DS.Colors.textSecondary,  body: "10 reps each, every time."),
-        Row(label: "Jokers",     color: DS.Colors.gold,           body: "40 jumping jacks. Always."),
+        Row(label: "Aces",       color: DS.Colors.red,            body: "Timed hold — 60s on Standard. Suit-specific form."),
+        Row(label: "Face Cards", color: DS.Colors.textSecondary,  body: "10 reps on Standard, scaled by difficulty."),
+        Row(label: "Jokers",     color: DS.Colors.gold,           body: "40 jumping jacks on Standard, scaled by difficulty."),
     ]
 
     var body: some View {
