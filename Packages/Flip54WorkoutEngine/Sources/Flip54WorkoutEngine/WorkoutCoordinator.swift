@@ -257,8 +257,9 @@ public final class WorkoutCoordinator {
             difficulty: .beginner,  // reduced reps for tutorial
             rng: &rng
         )
-        // Tutorial deck is already in the desired order — override the shuffled pile
-        session?.drawPile = tutorialCards
+        // Tutorial deck is already in the desired order — override the shuffled pile.
+        // flipNextCard draws from the end of drawPile, so reverse to play index 0 first.
+        session?.drawPile = tutorialCards.reversed()
         session?.currentCard = nil
     }
 
