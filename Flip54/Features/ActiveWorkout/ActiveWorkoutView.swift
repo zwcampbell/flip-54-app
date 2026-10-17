@@ -77,9 +77,6 @@ struct ActiveWorkoutView: View {
             if isPaused {
                 pauseOverlay
             }
-            if let tip = activeTooltip {
-                tooltipOverlay(tip)
-            }
                 // Full-screen shockwave rings + dust puffs
             if let date = midasImpactDate {
                 MidasImpactView(
@@ -212,6 +209,8 @@ struct ActiveWorkoutView: View {
 
     // MARK: - Card area
 
+    private let prescriptionHeight: CGFloat = 130
+
     private var cardArea: some View {
         VStack(spacing: 20) {
             // Card + deck-stack indicator behind it
@@ -295,9 +294,18 @@ struct ActiveWorkoutView: View {
 
             // Prescription / prompt
             prescriptionArea
-                .frame(height: 130)
+                .frame(height: prescriptionHeight)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity)
+        // Tooltips sit over the lower part of the card, above the prescription,
+        // so they never cover the primary DONE / START HOLD button below.
+        .overlay(alignment: .bottom) {
+            if let tip = activeTooltip {
+                tooltipOverlay(tip)
+                    .padding(.bottom, prescriptionHeight + 20 + 12)
+            }
+        }
+        .frame(maxHeight: .infinity)
         .padding(.horizontal, DS.Layout.horizontalMargin)
     }
 
@@ -905,46 +913,40 @@ struct ActiveWorkoutView: View {
 
     @ViewBuilder
     private func tooltipOverlay(_ tip: TooltipKind) -> some View {
-        VStack {
-            Spacer()
-            Button(action: dismissTooltip) {
-                HStack(alignment: .top, spacing: 14) {
-                    Image(systemName: "info.circle.fill")
-                        .font(.system(size: 22))
-                        .foregroundStyle(DS.Colors.gold)
-                        .frame(width: 28)
-                    VStack(alignment: .leading, spacing: 4) {
-                        DS.Typography.display(tip.title, size: 18)
-                            .foregroundStyle(DS.Colors.textPrimary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .multilineTextAlignment(.leading)
-                        Text(tip.body)
-                            .font(.system(size: 13))
-                            .foregroundStyle(DS.Colors.textSecondary)
-                            .multilineTextAlignment(.leading)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .fixedSize(horizontal: false, vertical: true)
-                        DS.Typography.sub("TAP TO DISMISS", size: 10)
-                            .foregroundStyle(DS.Colors.textTertiary)
-                            .tracking(1.2)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.top, 2)
-                    }
+        Button(action: dismissTooltip) {
+            HStack(alignment: .top, spacing: 14) {
+                Image(systemName: "info.circle.fill")
+                    .font(.system(size: 22))
+                    .foregroundStyle(DS.Colors.gold)
+                    .frame(width: 28)
+                VStack(alignment: .leading, spacing: 4) {
+                    DS.Typography.display(tip.title, size: 18)
+                        .foregroundStyle(DS.Colors.textPrimary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .multilineTextAlignment(.leading)
+                    Text(tip.body)
+                        .font(.system(size: 13))
+                        .foregroundStyle(DS.Colors.textSecondary)
+                        .multilineTextAlignment(.leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                    DS.Typography.sub("TAP TO DISMISS", size: 10)
+                        .foregroundStyle(DS.Colors.textTertiary)
+                        .tracking(1.2)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.top, 2)
                 }
-                .padding(18)
-                .background(DS.Colors.bgCard)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .strokeBorder(DS.Colors.gold.opacity(0.5), lineWidth: 1)
-                )
-                .padding(.horizontal, 20)
-                .padding(.bottom, 130)
             }
-            .buttonStyle(.plain)
+            .padding(18)
+            .background(DS.Colors.bgCard)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .strokeBorder(DS.Colors.gold.opacity(0.5), lineWidth: 1)
+            )
         }
+        .buttonStyle(.plain)
         .transition(.scale(scale: 0.9, anchor: .bottom).combined(with: .opacity))
-        .ignoresSafeArea(edges: .bottom)
     }
 }
 
