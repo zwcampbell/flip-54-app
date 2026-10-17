@@ -88,6 +88,14 @@ struct ActiveWorkoutView: View {
         .onChange(of: coordinator.state) { _, newState in
             handleStateChange(newState)
         }
+        // Holds run up to two minutes with no touches, so the auto-lock timer
+        // would otherwise dim and lock the screen mid-hold. Released while
+        // paused and whenever this view leaves the screen.
+        .onAppear { UIApplication.shared.isIdleTimerDisabled = !isPaused }
+        .onChange(of: isPaused) { _, paused in
+            UIApplication.shared.isIdleTimerDisabled = !paused
+        }
+        .onDisappear { UIApplication.shared.isIdleTimerDisabled = false }
         .sheet(item: $formGuideItem) { item in
             FormGuideView(exercise: item.exercise)
                 .presentationDetents([.large])
