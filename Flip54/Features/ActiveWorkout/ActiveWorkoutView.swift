@@ -615,7 +615,7 @@ struct ActiveWorkoutView: View {
         }
         .transition(.opacity)
         .animation(.easeInOut(duration: 0.2), value: isPaused)
-        .confirmationDialog("End workout early?", isPresented: $showEndEarlyConfirm, titleVisibility: .visible) {
+        .alert("End workout early?", isPresented: $showEndEarlyConfirm) {
             Button("End Workout", role: .destructive) {
                 let recorded = onEndEarly()
                 coordinator.endEarly(discardSession: recorded)
