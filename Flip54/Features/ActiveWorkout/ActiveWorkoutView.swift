@@ -8,7 +8,9 @@ struct ActiveWorkoutView: View {
     let onWorkoutComplete: () -> Void
     /// Called immediately before `coordinator.endEarly()` so the caller can
     /// snapshot and save partial history while the session is still in memory.
-    var onEndEarly: () -> Void = {}
+    /// Returns true when the partial workout was recorded in history, in which
+    /// case the persisted session is discarded rather than left resumable.
+    var onEndEarly: () -> Bool = { false }
     /// Pass the live OnboardingState to enable first-time contextual tooltips.
     /// Nil disables all tooltips.
     var onboardingState: OnboardingState? = nil
@@ -34,6 +36,9 @@ struct ActiveWorkoutView: View {
 
     // Form guide sheet — uses .sheet(item:) so the exercise is available immediately on first present
     @State private var formGuideItem: FormGuideSheetItem? = nil
+
+    // End Early confirmation (ending is destructive, so it takes a second tap)
+    @State private var showEndEarlyConfirm = false
 
     // Midas deck gilding + fall animation
     private enum MidasPhase: Equatable { case idle, gilding, gilded, falling }
@@ -602,8 +607,7 @@ struct ActiveWorkoutView: View {
 
                     Button {
                         haptic.play(.warning)
-                        onEndEarly()
-                        coordinator.endEarly()
+                        showEndEarlyConfirm = true
                     } label: {
                         DS.Typography.display("END EARLY", size: 26)
                             .foregroundStyle(DS.Colors.red)
@@ -619,6 +623,19 @@ struct ActiveWorkoutView: View {
         }
         .transition(.opacity)
         .animation(.easeInOut(duration: 0.2), value: isPaused)
+        .alert("End workout early?", isPresented: $showEndEarlyConfirm) {
+            Button("End Workout", role: .destructive) {
+                let recorded = onEndEarly()
+                coordinator.endEarly(discardSession: recorded)
+            }
+            Button("Keep Going", role: .cancel) {}
+        } message: {
+            if !coordinator.isTutorial && cardsCompleted > 0 {
+                Text("Your \(cardsCompleted) completed \(cardsCompleted == 1 ? "card" : "cards") will be saved to History.")
+            } else {
+                Text("Nothing has been completed yet, so this workout won't be saved to History.")
+            }
+        }
     }
 
     // MARK: - Actions

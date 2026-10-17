@@ -207,12 +207,16 @@ struct ContentView: View {
         }
     }
 
-    private func captureEarlyHistory() {
+    /// Records a partially completed workout in history. Returns true when a
+    /// history entry was written so the caller can drop the persisted session
+    /// instead of offering to resume (and later re-log) the same workout.
+    private func captureEarlyHistory() -> Bool {
         guard !coordinator.isTutorial,
               let session = coordinator.session,
-              session.cardsCompleted > 0 else { return }
+              session.cardsCompleted > 0 else { return false }
         let data = CompletedWorkoutData(session: session, completedAt: Date())
         saveHistory(data)
+        return true
     }
 
     private func saveHistory(_ data: CompletedWorkoutData) {

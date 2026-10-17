@@ -266,10 +266,16 @@ public final class WorkoutCoordinator {
     /// the session is left persisted in `ActiveSessionStore` so the home
     /// screen's resume banner can pick it back up. For tutorials the on-disk
     /// store is untouched (tutorials never persist) so any prior real workout
-    /// session remains resumable. No history record is written.
-    public func endEarly() {
+    /// session remains resumable. No history record is written here.
+    ///
+    /// Pass `discardSession: true` when the caller has already recorded the
+    /// partial workout in history, so it can't also be resumed and finished a
+    /// second time (which would log the same workout twice).
+    public func endEarly(discardSession: Bool = false) {
         holdTimer.cancel()
-        if !isTutorial, let s = session {
+        if !isTutorial, discardSession {
+            store.clear()
+        } else if !isTutorial, let s = session {
             // Make sure the latest paused session is on disk before we drop
             // our in-memory reference, so the resume banner can find it.
             do {
