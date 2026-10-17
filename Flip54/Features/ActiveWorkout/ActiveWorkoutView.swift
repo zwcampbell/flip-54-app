@@ -950,11 +950,11 @@ private enum TooltipKind {
         case .ace:
             return "Aces trigger a timed hold. Hit START HOLD, hold the position until the timer runs out."
         case .faceCard:
-            return "Jacks, Queens, and Kings always count as 10 reps, regardless of difficulty."
+            return "Jacks, Queens, and Kings count as 10 reps on Standard — 5 on Beginner, 20 on Advanced."
         case .joker:
-            return "Both Jokers give you Jumping Jacks — the number of reps matches your difficulty setting."
+            return "Jokers give you Jumping Jacks — 40 on Standard, scaled by your difficulty setting."
         case .skip:
-            return "Tap Skip below to pass on a card. Skipped cards are counted but not in your rep total."
+            return "Tap Skip below to pass on a card. It goes to the bottom of the deck, so you'll draw it again before the deck is cleared."
         }
     }
 }
