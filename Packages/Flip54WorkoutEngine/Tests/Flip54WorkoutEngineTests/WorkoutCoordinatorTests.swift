@@ -154,4 +154,38 @@ struct WorkoutCoordinatorTests {
         coord.send(.advanceComplete)
         #expect(coord.state == .workoutComplete)
     }
+
+    @Test("tutorial deck plays in documented order, starting with the 7 of hearts")
+    func tutorialDeckOrder() {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("flip54_coord_test_\(UUID().uuidString).json")
+        let coord = WorkoutCoordinator(store: ActiveSessionStore(url: url))
+        coord.configureTutorial(equipment: .bodyWeightOnly, difficulty: .standard)
+        coord.send(.shuffle)
+        coord.send(.shuffleComplete)
+
+        let expected: [Card] = [
+            .standard(suit: .hearts,   rank: .seven),
+            .standard(suit: .spades,   rank: .king),
+            .standard(suit: .clubs,    rank: .ace),
+            .standard(suit: .diamonds, rank: .five),
+            .joker(variant: .red),
+        ]
+        var flipped: [Card] = []
+        for _ in expected {
+            coord.send(.flipCard)
+            guard case .cardFaceUp(let card, _) = coord.state else {
+                Issue.record("Expected cardFaceUp, got \(coord.state)")
+                return
+            }
+            flipped.append(card)
+            if card.isAce {
+                coord.send(.skip)
+            } else {
+                coord.send(.markDone(reps: 1, holdSeconds: nil))
+            }
+            coord.send(.advanceComplete)
+        }
+        #expect(flipped == expected)
+    }
 }
