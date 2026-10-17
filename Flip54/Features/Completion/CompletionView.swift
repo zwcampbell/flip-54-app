@@ -102,7 +102,7 @@ struct CompletionView: View {
             .foregroundStyle(DS.Colors.textPrimary)
             .lineSpacing(-4)
 
-            Text("54 cards. Every single one.")
+            Text("\(data.cardCount) cards. Every single one.")
                 .font(.system(size: 15))
                 .foregroundStyle(DS.Colors.textSecondary)
         }
