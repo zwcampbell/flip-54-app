@@ -58,49 +58,60 @@ struct PreWorkoutView: View {
             PreWorkoutSettingsSheet(settings: settings)
         }
         .onChange(of: coordinator.state) { _, newState in
-            if case .shuffling = newState {
-                isShuffling = true
-                // Phase 1: spread out (0-150ms)
-                withAnimation(.spring(response: 0.28, dampingFraction: 0.65)) {
-                    shufflePhase = .spread
-                }
-                Task { @MainActor in
-                    try? await Task.sleep(for: .milliseconds(150))
-                    // Phase 2: scatter — cards explode to random positions
-                    // (150-650ms). Re-roll offsets so every shuffle looks
-                    // different.
-                    scatterOffsets = makeScatterOffsets()
-                    withAnimation(.spring(response: 0.45, dampingFraction: 0.55)) {
-                        shufflePhase = .scatter
-                    }
-                    HapticEngine.shared.play(.shuffle)
-                    SoundPlayer.shared.play(.deckRiffle)
-                    try? await Task.sleep(for: .milliseconds(280))
-                    // Mid-scatter: re-roll for a second burst of chaos
-                    scatterOffsets = makeScatterOffsets()
-                    withAnimation(.spring(response: 0.32, dampingFraction: 0.55)) {
-                        // Force re-evaluation of currentOffset by toggling phase
-                        // through a temporary spread back into scatter.
-                        shufflePhase = .spread
-                    }
-                    try? await Task.sleep(for: .milliseconds(80))
-                    withAnimation(.spring(response: 0.36, dampingFraction: 0.55)) {
-                        shufflePhase = .scatter
-                    }
-                    try? await Task.sleep(for: .milliseconds(220))
-                    // Phase 3: collapse to stack
-                    withAnimation(.spring(response: 0.38, dampingFraction: 0.78)) {
-                        shufflePhase = .collapse
-                    }
-                    try? await Task.sleep(for: .milliseconds(220))
-                    coordinator.send(.shuffleComplete)
-                    // Reset fan after transition to active workout
-                    try? await Task.sleep(for: .milliseconds(400))
-                    withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
-                        shufflePhase = .idle
-                        isShuffling = false
-                    }
-                }
+            if case .shuffling = newState { startShuffleAnimation() }
+        }
+        .onAppear {
+            if isShufflingState, !isShuffling { startShuffleAnimation() }
+        }
+    }
+
+    // MARK: - Shuffle animation
+
+    /// Runs the shuffle animation, then tells the coordinator it's done. Called
+    /// both when the state changes to `.shuffling` while this view is on screen
+    /// and on appear, because the onboarding tutorial sends `.shuffle` before
+    /// this view exists and `onChange` would never see that transition.
+    private func startShuffleAnimation() {
+        isShuffling = true
+        // Phase 1: spread out (0-150ms)
+        withAnimation(.spring(response: 0.28, dampingFraction: 0.65)) {
+            shufflePhase = .spread
+        }
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(150))
+            // Phase 2: scatter — cards explode to random positions
+            // (150-650ms). Re-roll offsets so every shuffle looks
+            // different.
+            scatterOffsets = makeScatterOffsets()
+            withAnimation(.spring(response: 0.45, dampingFraction: 0.55)) {
+                shufflePhase = .scatter
+            }
+            HapticEngine.shared.play(.shuffle)
+            SoundPlayer.shared.play(.deckRiffle)
+            try? await Task.sleep(for: .milliseconds(280))
+            // Mid-scatter: re-roll for a second burst of chaos
+            scatterOffsets = makeScatterOffsets()
+            withAnimation(.spring(response: 0.32, dampingFraction: 0.55)) {
+                // Force re-evaluation of currentOffset by toggling phase
+                // through a temporary spread back into scatter.
+                shufflePhase = .spread
+            }
+            try? await Task.sleep(for: .milliseconds(80))
+            withAnimation(.spring(response: 0.36, dampingFraction: 0.55)) {
+                shufflePhase = .scatter
+            }
+            try? await Task.sleep(for: .milliseconds(220))
+            // Phase 3: collapse to stack
+            withAnimation(.spring(response: 0.38, dampingFraction: 0.78)) {
+                shufflePhase = .collapse
+            }
+            try? await Task.sleep(for: .milliseconds(220))
+            coordinator.send(.shuffleComplete)
+            // Reset fan after transition to active workout
+            try? await Task.sleep(for: .milliseconds(400))
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                shufflePhase = .idle
+                isShuffling = false
             }
         }
     }
