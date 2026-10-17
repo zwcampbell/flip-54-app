@@ -466,8 +466,8 @@ struct ActiveWorkoutView: View {
                 equipment: session.equipment,
                 difficulty: session.difficulty
               )
-        else { return 60 }
-        return seconds
+        else { return coordinator.effectiveHoldSeconds(prescribed: 60) }
+        return coordinator.effectiveHoldSeconds(prescribed: seconds)
     }
 
     // MARK: - Hold complete

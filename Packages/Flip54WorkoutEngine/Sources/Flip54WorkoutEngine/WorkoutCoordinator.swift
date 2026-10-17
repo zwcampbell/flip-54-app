@@ -19,6 +19,16 @@ public final class WorkoutCoordinator {
     /// Exercises the user has opted out of; filtered from movement pools during prescription.
     private var disabledExercises: Set<Exercise> = []
 
+    /// Ace holds in the tutorial are shortened to this so the walkthrough
+    /// doesn't make a new user stare at a 30-second countdown.
+    public static let tutorialHoldSeconds = 5
+
+    /// The hold length actually used for an Ace: the prescribed seconds, or
+    /// the short tutorial length when running a tutorial flip.
+    public func effectiveHoldSeconds(prescribed: Int) -> Int {
+        isTutorial ? Self.tutorialHoldSeconds : prescribed
+    }
+
     private let store: ActiveSessionStore
     private let holdTimer: HoldTimer
 
@@ -74,7 +84,7 @@ public final class WorkoutCoordinator {
             guard let s = session else { return state }
             let p = prescription(for: card, equipment: s.equipment, difficulty: s.difficulty, disabledExercises: disabledExercises)
             guard case .hold(_, let secs) = p else { return state }
-            return .holding(card: card, startTime: Date(), durationSeconds: secs)
+            return .holding(card: card, startTime: Date(), durationSeconds: effectiveHoldSeconds(prescribed: secs))
 
         case (.cardFaceUp(let card, _), .markDone(let reps, let secs)):
             return .cardCompleting(card: card)

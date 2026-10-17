@@ -188,4 +188,37 @@ struct WorkoutCoordinatorTests {
         }
         #expect(flipped == expected)
     }
+
+    /// Flips a lone Ace of clubs and starts its hold, returning the hold
+    /// length the coordinator committed to.
+    private func startAceHold(_ coord: WorkoutCoordinator) -> Int? {
+        coord.send(.shuffle)
+        coord.send(.shuffleComplete)
+        coord._seedDrawPile([.standard(suit: .clubs, rank: .ace)])
+        coord.send(.flipCard)
+        coord.send(.startHold)   // cardFaceUp → holdStarting
+        coord.send(.startHold)   // holdStarting → holding
+        defer { coord.endEarly() }
+        guard case .holding(_, _, let seconds) = coord.state else { return nil }
+        return seconds
+    }
+
+    @Test("tutorial Ace hold is shortened to 5 seconds")
+    func tutorialHoldIsShort() {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("flip54_coord_test_\(UUID().uuidString).json")
+        let coord = WorkoutCoordinator(store: ActiveSessionStore(url: url))
+        coord.configureTutorial(equipment: .bodyWeightOnly, difficulty: .standard)
+        #expect(startAceHold(coord) == WorkoutCoordinator.tutorialHoldSeconds)
+        #expect(WorkoutCoordinator.tutorialHoldSeconds == 5)
+    }
+
+    @Test("real workout Ace hold keeps its prescribed length")
+    func realHoldIsUnchanged() {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("flip54_coord_test_\(UUID().uuidString).json")
+        let coord = WorkoutCoordinator(store: ActiveSessionStore(url: url))
+        coord.configure(equipment: .bodyWeightOnly, difficulty: .standard, deckId: "standard")
+        #expect(startAceHold(coord) == 60)
+    }
 }
