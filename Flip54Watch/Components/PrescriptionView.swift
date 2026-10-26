@@ -4,16 +4,27 @@ import Flip54DesignSystem
 
 /// The flipped card beside what to do with it ("7 REPS" or "HOLD 1:00"),
 /// with the exercise name underneath.
+///
+/// While a card is being flipped it sits alone in the centre (`showsTarget`
+/// false); turning `showsTarget` on inside an animation glides it left and
+/// fades the reps in behind it.
 struct PrescriptionView: View {
     let card: Card
     let prescription: Prescription
+    var showsTarget = true
+    /// Horizontal scale of the card, for the flip's squash (1 = flat on).
+    var cardSquash: CGFloat = 1
 
     var body: some View {
         VStack(spacing: 10) {
             HStack(spacing: 13) {
                 WatchCardFace(card: card)
-                target
-                    .frame(minWidth: 48, alignment: .leading)
+                    .scaleEffect(x: cardSquash, y: 1)
+                if showsTarget {
+                    target
+                        .frame(minWidth: 48, alignment: .leading)
+                        .transition(.opacity.animation(.easeOut(duration: 0.2).delay(0.12)))
+                }
             }
             Text(prescription.exercise.displayName.uppercased())
                 .font(WatchType.sub(15))
@@ -22,6 +33,7 @@ struct PrescriptionView: View {
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
                 .minimumScaleFactor(0.75)
+                .opacity(showsTarget ? 1 : 0)
         }
         .accessibilityElement(children: .combine)
     }

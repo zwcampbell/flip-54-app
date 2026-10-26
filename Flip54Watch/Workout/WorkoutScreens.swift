@@ -50,13 +50,25 @@ struct WorkoutScreen: View {
 
 struct CardPage: View {
     @Environment(WatchWorkoutModel.self) private var model
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    /// Horizontal scale of the card during a flip: the back narrows to its
+    /// edge (1 → 0), swaps to the face, and the face widens back (0 → 1).
+    /// A squash rather than a 3D turn, since watchOS doesn't draw views
+    /// mid-way through a perspective rotation.
+    @State private var flipSquash: CGFloat = 1
+    @State private var isFlipping = false
+    /// False while the freshly flipped card is still centred and turning.
+    @State private var showsTarget = true
+
+    /// Face-down card is drawn larger than the face-up one; it shrinks to the
+    /// face's size while turning so the swap at edge-on doesn't jump.
+    private static let backToFaceScale = 66.0 / 75.0
 
     var body: some View {
         VStack(spacing: 6) {
             Spacer(minLength: 0)
             content
-                .transition(.asymmetric(insertion: .scale(scale: 0.9).combined(with: .opacity),
-                                        removal: .opacity))
             Spacer(minLength: 0)
             actionButton
         }
@@ -75,46 +87,102 @@ struct CardPage: View {
                     .font(WatchType.sub(11)).tracking(1)
                     .foregroundStyle(DS.Colors.textSecondary)
             }
+            .transition(.opacity)
         case .cardFaceDown:
             VStack(spacing: 8) {
                 WatchCardBack()
+                    .scaleEffect(flipSquash < 1 ? Self.backToFaceScale : 1)
+                    .scaleEffect(x: flipSquash, y: 1)
                 if let session = model.session {
                     Text("CARD \(session.cardsCompleted + 1) OF \(session.deckSize)")
                         .font(WatchType.sub(11)).tracking(1)
                         .foregroundStyle(DS.Colors.textSecondary)
+                        .opacity(flipSquash < 1 ? 0 : 1)
                 }
             }
-            .id("back")
+            // The next card deals in; the flip swap below runs without animation.
+            .transition(.asymmetric(insertion: .scale(scale: 0.92).combined(with: .opacity), removal: .identity))
         case .cardFaceUp(let card, let prescription):
-            PrescriptionView(card: card, prescription: prescription)
-                .id(card)
-        case .holdStarting(let card), .cardCompleting(let card), .cardSkipping(let card):
-            // Brief in-between states: keep the card on screen while it leaves.
-            WatchCardFace(card: card).opacity(0.5).id(card)
+            PrescriptionView(card: card, prescription: prescription, showsTarget: showsTarget,
+                             cardSquash: flipSquash)
+                .transition(.identity)
+        case .cardCompleting(let card):
+            leaving(card, completed: true).modifier(FlyOff(toRight: true)).transition(.identity)
+        case .cardSkipping(let card):
+            leaving(card, completed: false).modifier(FlyOff(toRight: false)).transition(.identity)
+        case .holdStarting(let card):
+            PrescriptionView(card: card, prescription: currentPrescription(card))
         case .holding(let card, let start, let duration):
             HoldingView(card: card, start: start, duration: duration)
+                .transition(.opacity)
         case .holdComplete(let card, let held, _):
-            VStack(spacing: 8) {
-                HoldCompleteBadge(diameter: 86)
-                VStack(spacing: 3) {
-                    Text("HOLD COMPLETE")
-                        .font(WatchType.sub(15)).tracking(0.75)
-                        .foregroundStyle(DS.Colors.textPrimary)
-                    Text("\(watchClock(held)) · \(holdName(for: card))")
-                        .font(WatchType.body(11))
-                        .foregroundStyle(DS.Colors.textSecondary)
-                }
-            }
+            holdComplete(card: card, held: held)
+                .transition(.opacity)
         default:
             EmptyView()
+        }
+    }
+
+    /// What slides off when a card is finished or skipped: whatever was showing for it.
+    /// A completed Ace was last showing Hold complete.
+    @ViewBuilder private func leaving(_ card: Card, completed: Bool) -> some View {
+        if card.isAce && completed {
+            holdComplete(card: card, held: 0, showsDetail: false)
+        } else {
+            PrescriptionView(card: card, prescription: currentPrescription(card))
+        }
+    }
+
+    private func holdComplete(card: Card, held: Int, showsDetail: Bool = true) -> some View {
+        VStack(spacing: 8) {
+            HoldCompleteBadge(diameter: 86)
+            VStack(spacing: 3) {
+                Text("HOLD COMPLETE")
+                    .font(WatchType.sub(15)).tracking(0.75)
+                    .foregroundStyle(DS.Colors.textPrimary)
+                Text("\(watchClock(held)) · \(holdName(for: card))")
+                    .font(WatchType.body(11))
+                    .foregroundStyle(DS.Colors.textSecondary)
+                    .opacity(showsDetail ? 1 : 0)
+            }
+        }
+    }
+
+    // MARK: Flip
+
+    private func flip() {
+        guard !isFlipping, case .cardFaceDown = model.state else { return }
+        if reduceMotion {
+            model.flip()
+            return
+        }
+        showsTarget = false
+        isFlipping = true
+        Task { @MainActor in
+            // Started from the task rather than the button action: on watchOS an
+            // animation begun inside this button's action is dropped.
+            withAnimation(.easeIn(duration: 0.16)) { flipSquash = 0.02 }
+            try? await Task.sleep(for: .milliseconds(160))
+            // Edge-on: swap the back for the face without animating the swap.
+            var swap = Transaction()
+            swap.disablesAnimations = true
+            withTransaction(swap) { model.flip() }
+            // Let the face render once at edge-on so it has a width to grow from.
+            try? await Task.sleep(for: .milliseconds(20))
+            withAnimation(.easeOut(duration: 0.2)) { flipSquash = 1 }
+            try? await Task.sleep(for: .milliseconds(260))
+            // Glide the card left; the reps fade in behind it.
+            withAnimation(.spring(duration: 0.35, bounce: 0.12)) { showsTarget = true }
+            isFlipping = false
         }
     }
 
     @ViewBuilder private var actionButton: some View {
         switch model.state {
         case .cardFaceDown:
-            WatchActionButton(title: "Flip") { model.flip() }
+            WatchActionButton(title: "Flip") { flip() }
                 .handGestureShortcut(.primaryAction)
+                .disabled(isFlipping)
         case .cardFaceUp(_, let prescription):
             WatchActionButton(title: prescription.isHold ? "Start hold" : "Done") { model.done() }
                 .handGestureShortcut(.primaryAction)
@@ -127,10 +195,31 @@ struct CardPage: View {
         }
     }
 
+    private func currentPrescription(_ card: Card) -> Prescription {
+        let session = model.session
+        return prescription(for: card, equipment: session?.equipment ?? .bodyWeightOnly,
+                            difficulty: session?.difficulty ?? .standard)
+    }
+
     private func holdName(for card: Card) -> String {
-        guard let session = model.session else { return "" }
-        return prescription(for: card, equipment: session.equipment, difficulty: session.difficulty)
-            .exercise.displayName
+        currentPrescription(card).exercise.displayName
+    }
+}
+
+/// Sends a finished card off the side of the screen: right for Done, left for Skip.
+/// Runs a little under the model's 300 ms advance delay.
+private struct FlyOff: ViewModifier {
+    let toRight: Bool
+    @State private var gone = false
+
+    func body(content: Content) -> some View {
+        content
+            .offset(x: gone ? (toRight ? 230 : -230) : 0, y: gone ? 14 : 0)
+            .rotationEffect(.degrees(gone ? (toRight ? 14 : -14) : 0))
+            .opacity(gone ? 0 : 1)
+            .onAppear {
+                withAnimation(.easeIn(duration: 0.26)) { gone = true }
+            }
     }
 }
 
