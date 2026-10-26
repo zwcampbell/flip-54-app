@@ -729,7 +729,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Flip54/Flip54.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "Apple Distribution";
+				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = LP5448PXCB;
 				INFOPLIST_FILE = Flip54/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
@@ -738,6 +739,7 @@
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.flip54.app;
+				PROVISIONING_PROFILE_SPECIFIER = "Flip 54 App Store";
 				SDKROOT = iphoneos;
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -856,6 +858,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = Flip54WatchWidgets/Flip54WatchWidgets.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Distribution";
+				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = LP5448PXCB;
 				INFOPLIST_FILE = Flip54WatchWidgets/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -864,6 +868,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.flip54.app.watchkitapp.widgets;
+				PROVISIONING_PROFILE_SPECIFIER = "Flip 54 Watch Widgets App Store";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 4;
@@ -891,9 +896,12 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Flip54Watch/Flip54Watch.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Distribution";
+				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = LP5448PXCB;
 				INFOPLIST_FILE = Flip54Watch/Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.flip54.app.watchkitapp;
+				PROVISIONING_PROFILE_SPECIFIER = "Flip 54 Watch App Store";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 4;

@@ -49,6 +49,13 @@ targets:
         SUPPORTS_MACCATALYST: NO
         SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
         SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: NO
+      # Release (archive) signs manually: the team has no registered devices,
+      # so automatic signing can't make profiles. Debug stays automatic.
+      configs:
+        Release:
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY: Apple Distribution
+          PROVISIONING_PROFILE_SPECIFIER: Flip 54 App Store
     info:
       path: Flip54/Info.plist
       properties:
@@ -94,6 +101,13 @@ targets:
         DEVELOPMENT_TEAM: LP5448PXCB
         TARGETED_DEVICE_FAMILY: "4"
         SKIP_INSTALL: YES
+      # Release (archive) signs manually: the team has no registered devices,
+      # so automatic signing can't make profiles. Debug stays automatic.
+      configs:
+        Release:
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY: Apple Distribution
+          PROVISIONING_PROFILE_SPECIFIER: Flip 54 Watch App Store
     info:
       path: Flip54Watch/Info.plist
       properties:
@@ -140,6 +154,13 @@ targets:
         DEVELOPMENT_TEAM: LP5448PXCB
         TARGETED_DEVICE_FAMILY: "4"
         SKIP_INSTALL: YES
+      # Release (archive) signs manually: the team has no registered devices,
+      # so automatic signing can't make profiles. Debug stays automatic.
+      configs:
+        Release:
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY: Apple Distribution
+          PROVISIONING_PROFILE_SPECIFIER: Flip 54 Watch Widgets App Store
     info:
       path: Flip54WatchWidgets/Info.plist
       properties:

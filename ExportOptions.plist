@@ -16,6 +16,10 @@
     <dict>
         <key>com.flip54.app</key>
         <string>Flip 54 App Store</string>
+        <key>com.flip54.app.watchkitapp</key>
+        <string>Flip 54 Watch App Store</string>
+        <key>com.flip54.app.watchkitapp.widgets</key>
+        <string>Flip 54 Watch Widgets App Store</string>
     </dict>
 </dict>
 </plist>
