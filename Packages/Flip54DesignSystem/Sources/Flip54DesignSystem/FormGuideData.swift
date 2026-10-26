@@ -4,15 +4,15 @@ import Flip54Core
 // Flip54Core/Exercise.swift, a corresponding entry MUST be added or removed
 // here. The compiler will warn if any switch cases are missing.
 
-struct FormGuide {
-    let category: String
-    let tempoLabel: String
-    let cues: [String]
-    let watch: [String]
+public struct FormGuide: Sendable {
+    public let category: String
+    public let tempoLabel: String
+    public let cues: [String]
+    public let watch: [String]
 }
 
-enum FormGuideData {
-    static func guide(for exercise: Exercise) -> FormGuide {
+public enum FormGuideData {
+    public static func guide(for exercise: Exercise) -> FormGuide {
         switch exercise {
 
         // MARK: - Lower Body (Hearts ♥)

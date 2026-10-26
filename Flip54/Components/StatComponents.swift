@@ -1,4 +1,5 @@
 import SwiftUI
+import Flip54DesignSystem
 
 /// A single stat value + label, e.g. "42 / TOTAL REPS". Shared across
 /// CompletionView, HistoryView's workout detail sheet, and ProfileView,

@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 import os.signpost
 import Flip54Core
+import Flip54DesignSystem
 import Flip54Storage
 import Flip54WorkoutEngine
 
