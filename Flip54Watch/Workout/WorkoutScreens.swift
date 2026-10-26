@@ -65,15 +65,28 @@ struct CardPage: View {
     /// face's size while turning so the swap at edge-on doesn't jump.
     private static let backToFaceScale = 66.0 / 75.0
 
+    /// After a flip, taps are ignored this long so a quick double tap can't
+    /// flip a card and mark it done before it's been read.
+    private static let postFlipLock: Duration = .milliseconds(350)
+
+    /// The whole page is the control: tap to flip, tap again when done. It's a
+    /// real (plain) button so Double Tap and VoiceOver still reach it.
     var body: some View {
-        VStack(spacing: 6) {
-            Spacer(minLength: 0)
-            content
-            Spacer(minLength: 0)
-            actionButton
+        Button(action: primaryAction) {
+            VStack(spacing: 6) {
+                Spacer(minLength: 0)
+                content
+                Spacer(minLength: 0)
+                tapHint
+            }
+            .padding(.horizontal, WatchLayout.edge)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
+        .handGestureShortcut(.primaryAction)
+        .accessibilityHint(hintText ?? "")
         .animation(.easeOut(duration: 0.22), value: model.state)
-        .padding(.horizontal, WatchLayout.edge)
         .ignoresSafeArea(edges: .bottom)
         .background(Color.black)
     }
@@ -152,12 +165,16 @@ struct CardPage: View {
 
     private func flip() {
         guard !isFlipping, case .cardFaceDown = model.state else { return }
+        isFlipping = true
         if reduceMotion {
             model.flip()
+            Task { @MainActor in
+                try? await Task.sleep(for: Self.postFlipLock)
+                isFlipping = false
+            }
             return
         }
         showsTarget = false
-        isFlipping = true
         Task { @MainActor in
             // Started from the task rather than the button action: on watchOS an
             // animation begun inside this button's action is dropped.
@@ -173,26 +190,52 @@ struct CardPage: View {
             try? await Task.sleep(for: .milliseconds(260))
             // Glide the card left; the reps fade in behind it.
             withAnimation(.spring(duration: 0.35, bounce: 0.12)) { showsTarget = true }
+            try? await Task.sleep(for: Self.postFlipLock)
             isFlipping = false
         }
     }
 
-    @ViewBuilder private var actionButton: some View {
+    // MARK: Tap
+
+    private func primaryAction() {
+        guard !isFlipping else { return }
         switch model.state {
         case .cardFaceDown:
-            WatchActionButton(title: "Flip") { flip() }
-                .handGestureShortcut(.primaryAction)
-                .disabled(isFlipping)
-        case .cardFaceUp(_, let prescription):
-            WatchActionButton(title: prescription.isHold ? "Start hold" : "Done") { model.done() }
-                .handGestureShortcut(.primaryAction)
-        case .holdComplete:
-            WatchActionButton(title: "Done") { model.done() }
-                .handGestureShortcut(.primaryAction)
+            flip()
+        case .cardFaceUp, .holdComplete:
+            model.done()
         default:
-            // Keep the layout steady while there's nothing to press.
-            Color.clear.frame(height: WatchLayout.buttonHeight)
+            break  // Shuffling, holding or a card leaving: nothing to do yet.
         }
+    }
+
+    /// What a tap will do right now, or nil when it does nothing.
+    private var hintText: String? {
+        switch model.state {
+        case .cardFaceDown: "Tap to flip"
+        case .cardFaceUp(_, let prescription): prescription.isHold ? "Tap to start hold" : "Tap when done"
+        case .holdComplete: "Tap to continue"
+        default: nil
+        }
+    }
+
+    /// Small prompt where the action button used to be. Kept at a fixed height
+    /// so the card doesn't shift as the prompt comes and goes.
+    private var tapHint: some View {
+        HStack(spacing: 4) {
+            if let hintText {
+                Image(systemName: "hand.tap.fill")
+                    .font(.system(size: 11))
+                Text(hintText.uppercased())
+                    .font(WatchType.sub(11))
+                    .tracking(1)
+            }
+        }
+        .foregroundStyle(DS.Colors.gold)
+        .opacity(isFlipping ? 0 : 1)
+        .frame(height: 22)
+        .padding(.bottom, 10)
+        .accessibilityHidden(true)
     }
 
     private func currentPrescription(_ card: Card) -> Prescription {
