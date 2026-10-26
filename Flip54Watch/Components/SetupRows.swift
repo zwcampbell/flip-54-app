@@ -68,36 +68,48 @@ struct SetupRow: View {
 
     var body: some View {
         Button(action: action) {
-            HStack {
-                VStack(alignment: .leading, spacing: 2.5) {
-                    Text(label)
-                        .font(WatchType.body(9.5))
-                        .foregroundStyle(DS.Colors.textSecondary)
-                    HStack(alignment: .firstTextBaseline, spacing: 5) {
-                        Text(value.uppercased())
-                            .font(WatchType.sub(13))
-                            .tracking(0.5)
-                            .foregroundStyle(DS.Colors.textPrimary)
-                        if let detail {
-                            Text(detail)
-                                .font(WatchType.mono(10))
-                                .foregroundStyle(DS.Colors.gold)
-                        }
-                    }
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-                }
-                Spacer(minLength: 4)
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundStyle(DS.Colors.textSecondary)
-            }
-            .padding(.leading, 12)
-            .padding(.trailing, 9)
-            .frame(height: 44)
-            .background(RoundedRectangle(cornerRadius: WatchLayout.rowRadius, style: .continuous).fill(DS.Colors.bgCard))
+            SetupRowLabel(label: label, value: value, detail: detail)
         }
         .buttonStyle(.plain)
+    }
+}
+
+/// The look of a `SetupRow`, for use as a `NavigationLink` label.
+struct SetupRowLabel: View {
+    let label: String
+    let value: String
+    var detail: String?
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 2.5) {
+                Text(label)
+                    .font(WatchType.body(9.5))
+                    .foregroundStyle(DS.Colors.textSecondary)
+                HStack(alignment: .firstTextBaseline, spacing: 5) {
+                    Text(value.uppercased())
+                        .font(WatchType.sub(13))
+                        .tracking(0.5)
+                        .foregroundStyle(DS.Colors.textPrimary)
+                    if let detail {
+                        Text(detail)
+                            .font(WatchType.mono(10))
+                            .foregroundStyle(DS.Colors.gold)
+                    }
+                }
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+            }
+            Spacer(minLength: 4)
+            Image(systemName: "chevron.right")
+                .font(.system(size: 11, weight: .bold))
+                .foregroundStyle(DS.Colors.textSecondary)
+        }
+        .padding(.leading, 12)
+        .padding(.trailing, 9)
+        .frame(height: 44)
+        .background(RoundedRectangle(cornerRadius: WatchLayout.rowRadius, style: .continuous).fill(DS.Colors.bgCard))
+        .contentShape(Rectangle())
     }
 }
 

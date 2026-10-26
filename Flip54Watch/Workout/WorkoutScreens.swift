@@ -1,0 +1,312 @@
+import SwiftUI
+import WatchKit
+import Flip54Core
+import Flip54DesignSystem
+import Flip54Storage
+import Flip54WorkoutEngine
+
+/// The running workout: Controls ← Card → Now Playing, swiped sideways.
+struct WorkoutScreen: View {
+    @Environment(WatchWorkoutModel.self) private var model
+    @State private var page = Page.card
+    @State private var showProgress = false
+
+    enum Page: Hashable { case controls, card, nowPlaying }
+
+    var body: some View {
+        NavigationStack {
+            TabView(selection: $page) {
+                ControlsPage(onAction: { page = .card })
+                    .tag(Page.controls)
+                CardPage()
+                    .tag(Page.card)
+                NowPlayingView()
+                    .tag(Page.nowPlaying)
+            }
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            .background(Color.black)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    if let session = model.session {
+                        Button { showProgress = true } label: {
+                            CardsLeftHeader(remaining: session.cardsRemaining, total: session.deckSize)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityHint("Shows workout progress")
+                    }
+                }
+            }
+            .overlay(alignment: .top) {
+                WatchPageDots(count: 3, selected: [Page.controls, .card, .nowPlaying].firstIndex(of: page) ?? 1)
+                    .padding(.top, 2)
+                    .ignoresSafeArea()
+            }
+            .sheet(isPresented: $showProgress) { ProgressSheet() }
+        }
+    }
+}
+
+// MARK: - Card page
+
+struct CardPage: View {
+    @Environment(WatchWorkoutModel.self) private var model
+
+    var body: some View {
+        VStack(spacing: 6) {
+            Spacer(minLength: 0)
+            content
+                .transition(.asymmetric(insertion: .scale(scale: 0.9).combined(with: .opacity),
+                                        removal: .opacity))
+            Spacer(minLength: 0)
+            actionButton
+        }
+        .animation(.easeOut(duration: 0.22), value: model.state)
+        .padding(.horizontal, WatchLayout.edge)
+        .ignoresSafeArea(edges: .bottom)
+        .background(Color.black)
+    }
+
+    @ViewBuilder private var content: some View {
+        switch model.state {
+        case .shuffling:
+            VStack(spacing: 8) {
+                WatchDeckFan().frame(height: 80)
+                Text("SHUFFLING")
+                    .font(WatchType.sub(11)).tracking(1)
+                    .foregroundStyle(DS.Colors.textSecondary)
+            }
+        case .cardFaceDown:
+            VStack(spacing: 8) {
+                WatchCardBack()
+                if let session = model.session {
+                    Text("CARD \(session.cardsCompleted + 1) OF \(session.deckSize)")
+                        .font(WatchType.sub(11)).tracking(1)
+                        .foregroundStyle(DS.Colors.textSecondary)
+                }
+            }
+            .id("back")
+        case .cardFaceUp(let card, let prescription):
+            PrescriptionView(card: card, prescription: prescription)
+                .id(card)
+        case .holdStarting(let card), .cardCompleting(let card), .cardSkipping(let card):
+            // Brief in-between states: keep the card on screen while it leaves.
+            WatchCardFace(card: card).opacity(0.5).id(card)
+        case .holding(let card, let start, let duration):
+            HoldingView(card: card, start: start, duration: duration)
+        case .holdComplete(let card, let held, _):
+            VStack(spacing: 8) {
+                HoldCompleteBadge(diameter: 86)
+                VStack(spacing: 3) {
+                    Text("HOLD COMPLETE")
+                        .font(WatchType.sub(15)).tracking(0.75)
+                        .foregroundStyle(DS.Colors.textPrimary)
+                    Text("\(watchClock(held)) · \(holdName(for: card))")
+                        .font(WatchType.body(11))
+                        .foregroundStyle(DS.Colors.textSecondary)
+                }
+            }
+        default:
+            EmptyView()
+        }
+    }
+
+    @ViewBuilder private var actionButton: some View {
+        switch model.state {
+        case .cardFaceDown:
+            WatchActionButton(title: "Flip") { model.flip() }
+                .handGestureShortcut(.primaryAction)
+        case .cardFaceUp(_, let prescription):
+            WatchActionButton(title: prescription.isHold ? "Start hold" : "Done") { model.done() }
+                .handGestureShortcut(.primaryAction)
+        case .holdComplete:
+            WatchActionButton(title: "Done") { model.done() }
+                .handGestureShortcut(.primaryAction)
+        default:
+            // Keep the layout steady while there's nothing to press.
+            Color.clear.frame(height: WatchLayout.buttonHeight)
+        }
+    }
+
+    private func holdName(for card: Card) -> String {
+        guard let session = model.session else { return "" }
+        return prescription(for: card, equipment: session.equipment, difficulty: session.difficulty)
+            .exercise.displayName
+    }
+}
+
+/// Ace hold in progress: countdown ring, exercise name, "Hold steady".
+private struct HoldingView: View {
+    @Environment(WatchWorkoutModel.self) private var model
+    let card: Card
+    let start: Date
+    let duration: Int
+
+    var body: some View {
+        TimelineView(.periodic(from: start, by: 1)) { context in
+            let remaining = max(0, duration - Int(context.date.timeIntervalSince(start)))
+            VStack(spacing: 6) {
+                HoldTimerRing(remaining: remaining, total: duration, diameter: 118)
+                VStack(spacing: 2) {
+                    Text(exerciseName.uppercased())
+                        .font(WatchType.sub(13)).tracking(0.5)
+                        .foregroundStyle(DS.Colors.textPrimary)
+                    Text("HOLD STEADY")
+                        .font(WatchType.sub(10)).tracking(1)
+                        .foregroundStyle(DS.Colors.gold)
+                }
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+            }
+        }
+    }
+
+    private var exerciseName: String {
+        guard let session = model.session else { return "" }
+        return prescription(for: card, equipment: session.equipment, difficulty: session.difficulty)
+            .exercise.displayName
+    }
+}
+
+// MARK: - Controls page
+
+struct ControlsPage: View {
+    @Environment(WatchWorkoutModel.self) private var model
+    /// Called after an action that should bring the card page back.
+    let onAction: () -> Void
+    @State private var confirmEnd = false
+    @State private var showGuide = false
+
+    var body: some View {
+        Grid(horizontalSpacing: 6, verticalSpacing: 8) {
+            GridRow {
+                ControlTile(title: "End", systemImage: "xmark", tone: .destructive) { confirmEnd = true }
+                ControlTile(title: "Pause", systemImage: "pause.fill", tone: .gold) { model.pause() }
+            }
+            GridRow {
+                ControlTile(title: "Skip", systemImage: "forward.end.fill") {
+                    model.skip()
+                    onAction()
+                }
+                .disabled(!canSkip)
+                .opacity(canSkip ? 1 : 0.4)
+                ControlTile(title: "Guide", systemImage: "questionmark.circle") { showGuide = true }
+                    .disabled(currentExercise == nil)
+                    .opacity(currentExercise == nil ? 0.4 : 1)
+            }
+        }
+        .padding(.horizontal, WatchLayout.edge)
+        .background(Color.black)
+        .confirmationDialog("End workout?", isPresented: $confirmEnd) {
+            Button("End workout", role: .destructive) { model.end() }
+            Button("Keep going", role: .cancel) {}
+        } message: {
+            Text(endMessage)
+        }
+        .sheet(isPresented: $showGuide) {
+            if let currentExercise { GuideSheet(exercise: currentExercise) }
+        }
+    }
+
+    private var canSkip: Bool {
+        switch model.state {
+        case .cardFaceUp, .holding: true
+        default: false
+        }
+    }
+
+    private var currentExercise: Exercise? {
+        switch model.state {
+        case .cardFaceUp(_, let prescription): return prescription.exercise
+        case .holding(let card, _, _), .holdComplete(let card, _, _):
+            guard let session = model.session else { return nil }
+            return prescription(for: card, equipment: session.equipment, difficulty: session.difficulty).exercise
+        default: return nil
+        }
+    }
+
+    private var endMessage: String {
+        let done = model.session?.cardsCompleted ?? 0
+        return done > 0
+            ? "You've done \(done) \(done == 1 ? "card" : "cards"). You'll see a summary."
+            : "Nothing's been done yet."
+    }
+}
+
+// MARK: - Sheets
+
+/// Swipe-up page in the design; opened by tapping the cards-left header.
+struct ProgressSheet: View {
+    @Environment(WatchWorkoutModel.self) private var model
+
+    var body: some View {
+        if let session = model.session {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(alignment: .lastTextBaseline, spacing: 6) {
+                        Text("\(session.totalRepsCompleted)")
+                            .font(WatchType.display(64))
+                            .foregroundStyle(DS.Colors.textPrimary)
+                        Text("REPS")
+                            .font(WatchType.sub(13)).tracking(1.5)
+                            .foregroundStyle(DS.Colors.textSecondary)
+                    }
+                    DeckProgressTicks(flipped: session.cardsCompleted, total: session.deckSize)
+                    TimelineView(.periodic(from: .now, by: 1)) { context in
+                        HStack(alignment: .firstTextBaseline) {
+                            stat("\(session.cardsCompleted)", "OF \(session.deckSize)")
+                            Spacer()
+                            stat(watchClock(Int(WatchWorkoutModel.activeDuration(of: session, at: context.date))), "TIME")
+                        }
+                    }
+                    WatchInfoRow("Deck", value: "\(session.difficulty.displayName) · \(session.deckSize < 54 ? "Half" : "Full")")
+                }
+                .padding(.horizontal, WatchLayout.edge)
+            }
+            .background(Color.black)
+        }
+    }
+
+    private func stat(_ value: String, _ label: String) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 4) {
+            Text(value).font(WatchType.mono(17)).foregroundStyle(DS.Colors.textPrimary)
+            Text(label).font(WatchType.sub(10)).tracking(1).foregroundStyle(DS.Colors.textSecondary)
+        }
+    }
+}
+
+/// Form cues for the current exercise, from the shared form-guide copy.
+struct GuideSheet: View {
+    let exercise: Exercise
+
+    var body: some View {
+        let guide = FormGuideData.guide(for: exercise)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(exercise.displayName.uppercased())
+                    .font(WatchType.sub(15)).tracking(0.5)
+                    .foregroundStyle(DS.Colors.textPrimary)
+                Text(guide.tempoLabel)
+                    .font(WatchType.mono(11))
+                    .foregroundStyle(DS.Colors.gold)
+                ForEach(guide.cues, id: \.self) { cue in
+                    Label(cue, systemImage: "checkmark")
+                        .font(WatchType.body(11))
+                        .foregroundStyle(DS.Colors.textPrimary)
+                }
+                if !guide.watch.isEmpty {
+                    Text("WATCH FOR")
+                        .font(WatchType.sub(10)).tracking(1)
+                        .foregroundStyle(DS.Colors.textSecondary)
+                        .padding(.top, 4)
+                    ForEach(guide.watch, id: \.self) { item in
+                        Label(item, systemImage: "exclamationmark.triangle")
+                            .font(WatchType.body(11))
+                            .foregroundStyle(DS.Colors.textSecondary)
+                    }
+                }
+            }
+            .padding(.horizontal, WatchLayout.edge)
+        }
+        .background(Color.black)
+    }
+}
