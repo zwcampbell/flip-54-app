@@ -72,6 +72,14 @@ struct SummaryScreen: View {
                     WatchInfoRow(label: "Difficulty") {
                         Text(multiplier(summary.difficulty)).font(WatchType.mono(12))
                     }
+                    WatchInfoRow(label: "Avg heart rate") {
+                        Text(model.recorder.averageHeartRate.map { "\(Int($0.rounded())) bpm" } ?? "--")
+                            .font(WatchType.mono(12))
+                    }
+                    WatchInfoRow(label: "Active calories") {
+                        Text("\(Int(model.recorder.activeCalories.rounded()))").font(WatchType.mono(12))
+                    }
+                    WatchInfoRow(label: "Apple Health") { healthStatus }
                 }
                 WatchActionButton(title: "Done") { model.finish() }
                     .handGestureShortcut(.primaryAction)
@@ -83,11 +91,26 @@ struct SummaryScreen: View {
                 .ignoresSafeArea()
         )
     }
+
+    /// Saving finishes after the summary appears, so this reads the recorder live.
+    @ViewBuilder private var healthStatus: some View {
+        switch model.recorder.saveState {
+        case .saved:
+            Label("Saved", systemImage: "checkmark")
+                .foregroundStyle(DS.Colors.success)
+        case .saving, .idle:
+            Text("Saving…")
+                .foregroundStyle(DS.Colors.textSecondary)
+        case .failed, .unavailable:
+            Text("Not saved")
+                .foregroundStyle(DS.Colors.textSecondary)
+        }
+    }
 }
 
 #Preview("Summary") {
     SummaryScreen(summary: .preview)
-        .environment(WatchWorkoutModel())
+        .environment(WatchWorkoutModel(recorder: NoopWorkoutRecorder()))
 }
 
 extension WatchWorkoutSummary {

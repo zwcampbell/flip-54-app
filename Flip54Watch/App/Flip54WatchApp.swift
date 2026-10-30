@@ -4,12 +4,12 @@ import Flip54WorkoutEngine
 
 @main
 struct Flip54WatchApp: App {
-    @State private var model = WatchWorkoutModel()
+    @WKApplicationDelegateAdaptor private var delegate: WatchAppDelegate
 
     var body: some Scene {
         WindowGroup {
             WatchRootView()
-                .environment(model)
+                .environment(delegate.model)
         }
     }
 }
@@ -43,5 +43,5 @@ struct WatchRootView: View {
 
 #Preview {
     WatchRootView()
-        .environment(WatchWorkoutModel())
+        .environment(WatchWorkoutModel(recorder: NoopWorkoutRecorder()))
 }

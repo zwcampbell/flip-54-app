@@ -92,6 +92,8 @@ struct WatchWorkoutSummary: Equatable {
 final class WatchWorkoutModel {
     let coordinator: WorkoutCoordinator
     let settings: WatchSettings
+    /// Runs the Apple Health workout session alongside the deck.
+    let recorder: WorkoutRecorder
     /// Set when a workout finishes or is ended with cards done; cleared by Done.
     private(set) var summary: WatchWorkoutSummary?
 
@@ -99,10 +101,16 @@ final class WatchWorkoutModel {
     private static let advanceDelay: Duration = .milliseconds(300)
     private static let shuffleDelay: Duration = .milliseconds(900)
 
-    init(coordinator: WorkoutCoordinator = WorkoutCoordinator(), settings: WatchSettings = WatchSettings()) {
+    init(coordinator: WorkoutCoordinator = WorkoutCoordinator(),
+         settings: WatchSettings = WatchSettings(),
+         recorder: WorkoutRecorder = HealthKitWorkoutRecorder()) {
         self.coordinator = coordinator
         self.settings = settings
+        self.recorder = recorder
         coordinator.restoreIfNeeded()
+        recorder.onExternalPauseChange = { [weak self] paused in
+            self?.sessionPausedExternally(paused)
+        }
     }
 
     var state: WorkoutState { coordinator.state }
@@ -132,6 +140,8 @@ final class WatchWorkoutModel {
             ])
         }
         #endif
+        let startedAt = session?.startedAt ?? .now
+        Task { await recorder.start(at: startedAt) }
         play(.start)
     }
 
@@ -170,21 +180,50 @@ final class WatchWorkoutModel {
 
     func pause() {
         coordinator.send(.pause)
+        recorder.pause()
         play(.stop)
     }
 
     func resume() {
         coordinator.send(.resume)
+        recorder.resume()
         play(.start)
     }
 
-    /// Ends the workout now. Shows a summary when at least one card was done.
+    /// Ends the workout now. Shows a summary when at least one card was done,
+    /// and saves to Health only then; an untouched deck is discarded.
     func end() {
-        if let session, session.cardsCompleted > 0 {
-            summary = WatchWorkoutSummary(session: session, endedEarly: true)
+        if let session {
+            let hasProgress = session.cardsCompleted > 0
+            if hasProgress {
+                summary = WatchWorkoutSummary(session: session, endedEarly: true)
+            }
+            finishRecording(session, save: hasProgress)
         }
         coordinator.endEarly(discardSession: true)
         play(.stop)
+    }
+
+    /// watchOS paused or resumed the Health session itself (e.g. from the
+    /// system workout controls): keep the deck in step.
+    private func sessionPausedExternally(_ paused: Bool) {
+        if paused, !isPaused {
+            coordinator.send(.pause)
+        } else if !paused, isPaused {
+            coordinator.send(.resume)
+        }
+    }
+
+    private var isPaused: Bool {
+        if case .paused = state { return true }
+        return false
+    }
+
+    private func finishRecording(_ session: ActiveSession, save: Bool) {
+        let totals = WorkoutTotals(reps: session.totalRepsCompleted,
+                                   cards: session.cardsCompleted,
+                                   deckSize: session.deckSize)
+        Task { await recorder.finish(at: .now, save: save, totals: totals) }
     }
 
     /// Leaves the summary and returns to Start.
@@ -210,7 +249,10 @@ final class WatchWorkoutModel {
         case .holdComplete(_, _, let completedFully):
             if completedFully { play(.success) }
         case .workoutComplete:
-            if let session { summary = WatchWorkoutSummary(session: session, endedEarly: false) }
+            if let session {
+                summary = WatchWorkoutSummary(session: session, endedEarly: false)
+                finishRecording(session, save: true)
+            }
             play(.success)
         default:
             break

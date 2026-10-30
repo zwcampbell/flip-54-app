@@ -390,6 +390,17 @@ struct ProgressSheet: View {
                             stat(watchClock(Int(WatchWorkoutModel.activeDuration(of: session, at: context.date))), "TIME")
                         }
                     }
+                    HStack(alignment: .firstTextBaseline) {
+                        HStack(alignment: .firstTextBaseline, spacing: 4) {
+                            Image(systemName: "heart.fill")
+                                .font(.system(size: 12))
+                                .foregroundStyle(DS.Colors.red)
+                            stat(model.recorder.heartRate.map { "\(Int($0.rounded()))" } ?? "--", "BPM")
+                        }
+                        Spacer()
+                        stat("\(Int(model.recorder.activeCalories.rounded()))", "CAL")
+                    }
+                    .accessibilityElement(children: .combine)
                     WatchInfoRow("Deck", value: "\(session.difficulty.displayName) · \(session.deckSize < 54 ? "Half" : "Full")")
                 }
                 .padding(.horizontal, WatchLayout.edge)
