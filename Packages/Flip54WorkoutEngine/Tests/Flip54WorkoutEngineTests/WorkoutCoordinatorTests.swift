@@ -213,6 +213,30 @@ struct WorkoutCoordinatorTests {
         #expect(WorkoutCoordinator.tutorialHoldSeconds == 5)
     }
 
+    @Test("a hold that runs out counts its full length")
+    func expiredHoldCountsFullLength() {
+        let coord = makeCoordinator()
+        coord.send(.shuffle)
+        coord.send(.shuffleComplete)
+        coord._seedDrawPile([.standard(suit: .clubs, rank: .ace)])
+        coord.send(.flipCard)
+        coord.send(.startHold)
+        coord.send(.startHold)
+        defer { coord.endEarly() }
+        guard case .holding(_, _, let duration) = coord.state else {
+            Issue.record("expected .holding, got \(coord.state)")
+            return
+        }
+        coord.send(.holdTimerExpired)
+        guard case .holdComplete(_, let held, let completedFully) = coord.state else {
+            Issue.record("expected .holdComplete, got \(coord.state)")
+            return
+        }
+        #expect(held == duration)
+        #expect(completedFully)
+        #expect(coord.session?.holdSecondsCompleted == duration)
+    }
+
     @Test("real workout Ace hold keeps its prescribed length")
     func realHoldIsUnchanged() {
         let url = FileManager.default.temporaryDirectory
