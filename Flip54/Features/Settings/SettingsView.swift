@@ -11,6 +11,8 @@ struct SettingsView: View {
     @AppStorage(UserDefaultsKeys.hapticsEnabled)     private var hapticsEnabled: Bool = true
     @AppStorage(UserDefaultsKeys.sfxVolume)          private var sfxVolume: Double  = 1.0
 
+    @Environment(\.openURL) private var openURL
+
     var body: some View {
         ZStack {
             DS.Colors.bg.ignoresSafeArea()
@@ -22,6 +24,7 @@ struct SettingsView: View {
                     difficultySection
                     workoutsSection
                     audioSection
+                    supportSection
                     Spacer(minLength: 60)
                 }
             }
@@ -333,6 +336,73 @@ struct SettingsView: View {
         }
     }
 
+    // MARK: - Support
+
+    // App Review 3.2.2(iv): Flip 54 isn't an Apple-approved nonprofit, so donations
+    // must be collected outside the app. Both links open in Safari.
+    private var supportSection: some View {
+        VStack(spacing: 0) {
+            sectionHeader("SUPPORT THE ROW")
+            VStack(alignment: .leading, spacing: 14) {
+                Image("KLCLogo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 160)
+                    .frame(maxWidth: .infinity)
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("The Kenneth Lambert Collective")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(DS.Colors.textPrimary)
+                    Text("A 501(c)(3) nonprofit")
+                        .font(.system(size: 12))
+                        .foregroundStyle(DS.Colors.textTertiary)
+                }
+                Text("In December 2027 Kenneth Lambert rows 3,000 miles solo across the Atlantic to raise $2.5 million for the Masonic Home for Children at Oxford and the Central Children's Home of North Carolina.")
+                    .font(.system(size: 12))
+                    .foregroundStyle(DS.Colors.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Button {
+                    openURL(Donation.donateURL)
+                } label: {
+                    HStack(spacing: 6) {
+                        DS.Typography.display("DONATE", size: 16)
+                        Image(systemName: "arrow.up.right")
+                            .font(.system(size: 12, weight: .bold))
+                    }
+                    .foregroundStyle(DS.Colors.bg)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(DS.Colors.gold)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+                .accessibilityHint("Opens the Collective's GoFundMe donation page in Safari")
+                Button {
+                    openURL(Donation.websiteURL)
+                } label: {
+                    HStack(spacing: 6) {
+                        Text("Follow the row at iamkennethlambert.com")
+                            .font(.system(size: 13, weight: .semibold))
+                        Image(systemName: "arrow.up.right")
+                            .font(.system(size: 10, weight: .bold))
+                    }
+                    .foregroundStyle(DS.Colors.gold)
+                    .frame(maxWidth: .infinity)
+                }
+                .accessibilityHint("Opens Kenneth Lambert's website in Safari")
+                Text("Donations are tax-deductible and go directly to the Collective through GoFundMe, outside Flip 54.")
+                    .font(.system(size: 11))
+                    .foregroundStyle(DS.Colors.textTertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(18)
+            .background(DS.Colors.bgCard)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(DS.Colors.border, lineWidth: 1))
+            .padding(.horizontal, 20)
+        }
+    }
+
     // MARK: - Helpers
 
     private func sectionHeader(_ text: String) -> some View {
@@ -353,6 +423,15 @@ struct SettingsView: View {
             .frame(height: 1)
             .padding(.leading, 60)
     }
+}
+
+// MARK: - Donation
+
+/// The Kenneth Lambert Collective (EIN 39-4037971), a 501(c)(3) in Charlotte, NC.
+enum Donation {
+    /// The Collective's verified GoFundMe charity page, straight to the donation form.
+    static let donateURL = URL(string: "https://www.gofundme.com/charity/the-kenneth-lambert-collective/donate")!
+    static let websiteURL = URL(string: "https://iamkennethlambert.com")!
 }
 
 // MARK: - Difficulty helpers
