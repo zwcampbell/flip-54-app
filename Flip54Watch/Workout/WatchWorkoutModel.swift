@@ -96,6 +96,9 @@ final class WatchWorkoutModel {
     let recorder: WorkoutRecorder
     /// Set when a workout finishes or is ended with cards done; cleared by Done.
     private(set) var summary: WatchWorkoutSummary?
+    /// True while an Ace hold is paused by tapping its timer. The hold stays on
+    /// the card page instead of the Paused screen.
+    private(set) var isHoldPausedByTap = false
 
     /// How long the card-exit and shuffle beats last before the engine advances.
     private static let advanceDelay: Duration = .milliseconds(300)
@@ -178,13 +181,30 @@ final class WatchWorkoutModel {
         play(.directionDown)
     }
 
+    /// Tapping the hold timer pauses the hold (and the workout) in place, and
+    /// tapping again resumes it.
+    func toggleHoldPause() {
+        if isHoldPausedByTap {
+            resume()
+        } else if case .holding = state {
+            pause()
+            isHoldPausedByTap = true
+        }
+    }
+
     func pause() {
+        // Pause while a hold is tap-paused: move it to the full Paused screen.
+        if isHoldPausedByTap {
+            isHoldPausedByTap = false
+            return
+        }
         coordinator.send(.pause)
         recorder.pause()
         play(.stop)
     }
 
     func resume() {
+        isHoldPausedByTap = false
         coordinator.send(.resume)
         recorder.resume()
         play(.start)
@@ -193,6 +213,7 @@ final class WatchWorkoutModel {
     /// Ends the workout now. Shows a summary when at least one card was done,
     /// and saves to Health only then; an untouched deck is discarded.
     func end() {
+        isHoldPausedByTap = false
         if let session {
             let hasProgress = session.cardsCompleted > 0
             if hasProgress {
@@ -210,6 +231,7 @@ final class WatchWorkoutModel {
         if paused, !isPaused {
             coordinator.send(.pause)
         } else if !paused, isPaused {
+            isHoldPausedByTap = false
             coordinator.send(.resume)
         }
     }

@@ -451,6 +451,18 @@ struct PreWorkoutView: View {
                     disabledExercises: settings.disabledExercises
                 )
                 coordinator.send(.shuffle)
+                #if DEBUG
+                // `-testDeck YES` at launch plays a short deck that opens on an
+                // Ace, matching the watch's debug deck, so holds are quick to reach.
+                if UserDefaults.standard.bool(forKey: "testDeck") {
+                    // flipNextCard draws from the end, so this plays A♣, 7♥, K♠.
+                    coordinator._seedDrawPile([
+                        .standard(suit: .spades, rank: .king),
+                        .standard(suit: .hearts, rank: .seven),
+                        .standard(suit: .clubs, rank: .ace),
+                    ])
+                }
+                #endif
             } label: {
                 DS.Typography.display(isShufflingState ? "SHUFFLING…" : "START", size: 26)
                     .foregroundStyle(Color(hex: "#111111"))

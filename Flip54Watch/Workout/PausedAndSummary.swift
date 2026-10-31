@@ -90,6 +90,11 @@ struct SummaryScreen: View {
             RadialGradient(colors: [DS.Colors.goldSoft, .black], center: .top, startRadius: 0, endRadius: 160)
                 .ignoresSafeArea()
         )
+        .overlay {
+            if !summary.endedEarly {
+                WatchConfetti().ignoresSafeArea()
+            }
+        }
     }
 
     /// Saving finishes after the summary appears, so this reads the recorder live.

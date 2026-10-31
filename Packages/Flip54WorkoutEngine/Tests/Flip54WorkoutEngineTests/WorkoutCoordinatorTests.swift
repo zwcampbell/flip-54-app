@@ -237,6 +237,33 @@ struct WorkoutCoordinatorTests {
         #expect(coord.session?.holdSecondsCompleted == duration)
     }
 
+    @Test("pausing mid-hold keeps the hold, and resuming picks up where it left off")
+    func pauseAndResumeHold() async throws {
+        let coord = makeCoordinator()
+        coord.send(.shuffle)
+        coord.send(.shuffleComplete)
+        coord._seedDrawPile([.standard(suit: .clubs, rank: .ace)])
+        coord.send(.flipCard)
+        coord.send(.startHold)
+        coord.send(.startHold)
+        defer { coord.endEarly() }
+        try await Task.sleep(for: .milliseconds(1100))
+        coord.send(.pause)
+        guard let paused = coord.state.pausedHold else {
+            Issue.record("expected a paused hold, got \(coord.state)")
+            return
+        }
+        #expect(paused.card == .standard(suit: .clubs, rank: .ace))
+        let elapsed = coord.session?.holdElapsed ?? 0
+        #expect(elapsed >= 1)
+        coord.send(.resume)
+        guard case .holding(_, let start, _) = coord.state else {
+            Issue.record("expected .holding, got \(coord.state)")
+            return
+        }
+        #expect(abs(Date().timeIntervalSince(start) - elapsed) < 0.2)
+    }
+
     @Test("real workout Ace hold keeps its prescribed length")
     func realHoldIsUnchanged() {
         let url = FileManager.default.temporaryDirectory

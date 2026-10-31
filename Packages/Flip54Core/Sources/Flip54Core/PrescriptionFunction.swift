@@ -81,7 +81,8 @@ func movementPool(for suit: Suit, equipment: Equipment, disabledExercises: Set<E
         full = pool
 
     case .clubs:   // total body
-        var pool: [Exercise] = [.burpee, .mountainClimber, .jumpingSquat]
+        // Jumping squats are a lower-body move; they live in the Hearts pool only.
+        var pool: [Exercise] = [.burpee, .mountainClimber]
         if equipment.hasWeights { pool.append(.thruster) }
         full = pool
 

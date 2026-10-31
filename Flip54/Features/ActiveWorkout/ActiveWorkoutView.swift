@@ -41,6 +41,10 @@ struct ActiveWorkoutView: View {
     // End Early confirmation (ending is destructive, so it takes a second tap)
     @State private var showEndEarlyConfirm = false
 
+    // True while an Ace hold is paused by tapping its timer: the hold stays on
+    // screen, frozen, instead of the full-screen pause overlay.
+    @State private var isHoldPausedByTap = false
+
     // Midas deck gilding + fall animation
     private enum MidasPhase: Equatable { case idle, gilding, gilded, falling }
     @State private var midasPhase:         MidasPhase = .idle
@@ -75,7 +79,7 @@ struct ActiveWorkoutView: View {
             }
             // Phone-thud shake — applied to the whole UI during impact
             .offset(midasPhoneOffset)
-            if isPaused {
+            if isPaused && !isHoldPausedByTap {
                 pauseOverlay
             }
                 // Full-screen shockwave rings + dust puffs
@@ -97,6 +101,7 @@ struct ActiveWorkoutView: View {
         .onAppear { UIApplication.shared.isIdleTimerDisabled = !isPaused }
         .onChange(of: isPaused) { _, paused in
             UIApplication.shared.isIdleTimerDisabled = !paused
+            if !paused { isHoldPausedByTap = false }
         }
         .onDisappear { UIApplication.shared.isIdleTimerDisabled = false }
         .sheet(item: $formGuideItem) { item in
@@ -127,6 +132,8 @@ struct ActiveWorkoutView: View {
              .cardCompleting, .cardSkipping:
             // Keep the card visually face-up while it slides off — only the
             // next .cardFaceDown render flips back to the deck back.
+            return true
+        case .paused where isHoldPausedByTap:
             return true
         default: return false
         }
@@ -187,7 +194,12 @@ struct ActiveWorkoutView: View {
             // Right: pause
             Button {
                 haptic.play(.tap)
-                coordinator.send(.pause)
+                if isHoldPausedByTap {
+                    // Already paused mid-hold: bring up the full pause overlay.
+                    isHoldPausedByTap = false
+                } else {
+                    coordinator.send(.pause)
+                }
             } label: {
                 Image(systemName: "pause.fill")
                     .font(.system(size: 15))
@@ -428,9 +440,23 @@ struct ActiveWorkoutView: View {
             .transition(.opacity.combined(with: .offset(y: 8)))
             .animation(.easeOut(duration: 0.25), value: showPrescription)
 
-        case .holding(let card, let startTime, let durationSeconds):
-            HoldTimerView(startTime: startTime, durationSeconds: durationSeconds)
-                .transition(.opacity)
+        case .holding(_, let startTime, let durationSeconds):
+            Button(action: toggleHoldPause) {
+                HoldTimerView(startTime: startTime, durationSeconds: durationSeconds)
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint("Double-tap to pause the hold")
+            .transition(.opacity)
+
+        case .paused where isHoldPausedByTap:
+            if let hold = coordinator.state.pausedHold {
+                Button(action: toggleHoldPause) {
+                    HoldTimerView(startTime: nil, durationSeconds: hold.durationSeconds,
+                                  pausedElapsed: coordinator.session?.holdElapsed ?? 0)
+                }
+                .buttonStyle(.plain)
+                .accessibilityHint("Double-tap to resume the hold")
+            }
 
         case .holdStarting(let card):
             HoldTimerView(startTime: Date(), durationSeconds: holdSeconds(for: card))
@@ -506,6 +532,10 @@ struct ActiveWorkoutView: View {
                 holdingButton
                 skipButton
 
+            case .paused where isHoldPausedByTap:
+                primaryButton(label: "RESUME HOLD", action: toggleHoldPause)
+                skipButtonPlaceholder
+
             case .holdComplete:
                 primaryButton(label: "DONE") {
                     // Transitions to .cardCompleting; handleStateChange runs
@@ -537,6 +567,7 @@ struct ActiveWorkoutView: View {
         case .cardFaceDown:    return 0
         case .cardFaceUp:      return 1
         case .holding:         return 2
+        case .paused where isHoldPausedByTap: return 5
         case .holdComplete:    return 3
         default:               return 4
         }
@@ -587,6 +618,18 @@ struct ActiveWorkoutView: View {
                 .tracking(1.2)
                 .frame(maxWidth: .infinity)
                 .frame(height: 48)
+        }
+    }
+
+    /// Tapping the hold ring pauses the hold in place; tapping again resumes it.
+    private func toggleHoldPause() {
+        if isHoldPausedByTap {
+            haptic.play(.primary)
+            coordinator.send(.resume)
+        } else if case .holding = coordinator.state {
+            haptic.play(.tap)
+            coordinator.send(.pause)
+            isHoldPausedByTap = true
         }
     }
 
@@ -968,7 +1011,7 @@ private enum TooltipKind {
     var body: String {
         switch self {
         case .ace:
-            return "Aces trigger a timed hold. Hit START HOLD, hold the position until the timer runs out."
+            return "Aces trigger a timed hold. Hit START HOLD and hold until the timer runs out. Tap the timer to pause."
         case .faceCard:
             return "Jacks, Queens, and Kings count as 10 reps on Standard — 5 on Beginner, 20 on Advanced."
         case .joker:
@@ -1013,8 +1056,10 @@ private struct ShimmerOverlay: View {
 // MARK: - Hold timer
 
 private struct HoldTimerView: View {
-    let startTime: Date
+    /// Nil while the hold is paused; the ring then stays at `pausedElapsed`.
+    let startTime: Date?
     let durationSeconds: Int
+    var pausedElapsed: TimeInterval = 0
 
     @State private var lastAnnounced: Int = -1
 
@@ -1029,16 +1074,39 @@ private struct HoldTimerView: View {
     private let shimmerThresholds: Set<Int> = [45, 30, 15]
 
     var body: some View {
-        TimelineView(.periodic(from: .now, by: 1)) { context in
-            let elapsed = Int(context.date.timeIntervalSince(startTime))
-            let remaining = max(0, durationSeconds - elapsed)
-            let pct = durationSeconds > 0 ? Double(remaining) / Double(durationSeconds) : 0
-            holdRing(remaining: remaining, pct: pct)
-                .onChange(of: remaining) { _, secs in
-                    announceIfNeeded(secs)
-                    if shimmerThresholds.contains(secs) { triggerShimmer() }
+        if let startTime {
+            TimelineView(.periodic(from: .now, by: 1)) { context in
+                let elapsed = Int(context.date.timeIntervalSince(startTime))
+                let remaining = max(0, durationSeconds - elapsed)
+                holdRing(remaining: remaining, pct: fraction(remaining))
+                    .onChange(of: remaining) { _, secs in
+                        announceIfNeeded(secs)
+                        if shimmerThresholds.contains(secs) { triggerShimmer() }
+                    }
+            }
+        } else {
+            let remaining = max(0, durationSeconds - Int(pausedElapsed))
+            // The label hangs below the ring so the ring doesn't move on pause.
+            holdRing(remaining: remaining, pct: fraction(remaining))
+                .opacity(0.5)
+                .overlay(alignment: .bottom) {
+                    Image(systemName: "pause.fill")
+                        .font(.system(size: 13))
+                        .foregroundStyle(DS.Colors.gold)
+                        .offset(y: -18)
+                }
+                .overlay(alignment: .bottom) {
+                    DS.Typography.sub("HOLD PAUSED · TAP TO RESUME", size: 12)
+                        .foregroundStyle(DS.Colors.gold)
+                        .tracking(1.2)
+                        .fixedSize()
+                        .offset(y: 26)
                 }
         }
+    }
+
+    private func fraction(_ remaining: Int) -> Double {
+        durationSeconds > 0 ? Double(remaining) / Double(durationSeconds) : 0
     }
 
     private func triggerShimmer() {

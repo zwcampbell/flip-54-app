@@ -144,6 +144,7 @@ struct PrescriptionFunctionTests {
         #expect(bw.contains(.burpee))
         #expect(bw.contains(.mountainClimber))
         #expect(!bw.contains(.thruster))
+        #expect(!bw.contains(.jumpingSquat))
 
         let weighted = movementPool(for: .clubs, equipment: .weightsOnly)
         #expect(weighted.contains(.thruster))
