@@ -3,6 +3,7 @@ options:
   bundleIdPrefix: com.flip54
   deploymentTarget:
     iOS: "18.0"
+    watchOS: "11.0"
   xcodeVersion: "16"
   createIntermediateGroups: true
   groupSortPosition: top
@@ -16,6 +17,8 @@ settings:
 packages:
   Flip54Core:
     path: Packages/Flip54Core
+  Flip54DesignSystem:
+    path: Packages/Flip54DesignSystem
   Flip54Storage:
     path: Packages/Flip54Storage
   Flip54WorkoutEngine:
@@ -32,8 +35,10 @@ targets:
         buildPhase: resources
     dependencies:
       - package: Flip54Core
+      - package: Flip54DesignSystem
       - package: Flip54Storage
       - package: Flip54WorkoutEngine
+      - target: Flip54Watch
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.flip54.app
@@ -44,13 +49,22 @@ targets:
         SUPPORTS_MACCATALYST: NO
         SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
         SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: NO
+      # Release (archive) signs manually: the team has no registered devices,
+      # so automatic signing can't make profiles. Debug stays automatic.
+      configs:
+        Release:
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY: Apple Distribution
+          PROVISIONING_PROFILE_SPECIFIER: Flip 54 App Store
     info:
       path: Flip54/Info.plist
       properties:
         CFBundleName: Flip 54
         CFBundleDisplayName: Flip 54
-        CFBundleShortVersionString: "1.0"
-        CFBundleVersion: "9"
+        CFBundleShortVersionString: "1.1"
+        # Keep CFBundleShortVersionString and CFBundleVersion identical across
+        # Flip54, Flip54Watch and Flip54WatchWidgets, or App Store upload fails.
+        CFBundleVersion: "10"
         ITSAppUsesNonExemptEncryption: false
         UILaunchScreen:
           UIColorName: AppBackground
@@ -64,3 +78,104 @@ targets:
     entitlements:
       path: Flip54/Flip54.entitlements
       properties: {}
+
+  Flip54Watch:
+    type: application
+    platform: watchOS
+    deploymentTarget: "11.0"
+    sources:
+      - path: Flip54Watch
+      - path: Flip54/Resources/Fonts
+        buildPhase: resources
+    dependencies:
+      - package: Flip54Core
+      - package: Flip54DesignSystem
+      - package: Flip54Storage
+      - package: Flip54WorkoutEngine
+      - target: Flip54WatchWidgets
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.flip54.app.watchkitapp
+        INFOPLIST_FILE: Flip54Watch/Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        DEVELOPMENT_TEAM: LP5448PXCB
+        TARGETED_DEVICE_FAMILY: "4"
+        SKIP_INSTALL: YES
+      # Release (archive) signs manually: the team has no registered devices,
+      # so automatic signing can't make profiles. Debug stays automatic.
+      configs:
+        Release:
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY: Apple Distribution
+          PROVISIONING_PROFILE_SPECIFIER: Flip 54 Watch App Store
+    info:
+      path: Flip54Watch/Info.plist
+      properties:
+        CFBundleName: Flip 54
+        CFBundleDisplayName: Flip 54
+        CFBundleShortVersionString: "1.1"
+        CFBundleVersion: "10"
+        WKApplication: true
+        WKCompanionAppBundleIdentifier: com.flip54.app
+        WKRunsIndependentlyOfCompanionApp: false
+        WKBackgroundModes:
+          - workout-processing
+        NSHealthShareUsageDescription: Flip 54 reads your heart rate and active calories during a workout to show your effort.
+        NSHealthUpdateUsageDescription: Flip 54 saves your workouts to Apple Health so they count toward your Activity rings.
+        UIAppFonts:
+          - BarlowCondensed-ExtraBold.ttf
+          - Oswald-SemiBold.ttf
+          - IBMPlexMono-Medium.ttf
+    entitlements:
+      path: Flip54Watch/Flip54Watch.entitlements
+      properties:
+        com.apple.developer.healthkit: true
+        com.apple.developer.healthkit.access: []
+        com.apple.security.application-groups:
+          - group.com.flip54.app
+
+  Flip54WatchWidgets:
+    type: app-extension
+    platform: watchOS
+    deploymentTarget: "11.0"
+    sources:
+      - path: Flip54WatchWidgets
+      - path: Flip54/Resources/Fonts
+        buildPhase: resources
+    dependencies:
+      - package: Flip54Core
+      - package: Flip54DesignSystem
+      - sdk: WidgetKit.framework
+      - sdk: SwiftUI.framework
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.flip54.app.watchkitapp.widgets
+        INFOPLIST_FILE: Flip54WatchWidgets/Info.plist
+        DEVELOPMENT_TEAM: LP5448PXCB
+        TARGETED_DEVICE_FAMILY: "4"
+        SKIP_INSTALL: YES
+      # Release (archive) signs manually: the team has no registered devices,
+      # so automatic signing can't make profiles. Debug stays automatic.
+      configs:
+        Release:
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY: Apple Distribution
+          PROVISIONING_PROFILE_SPECIFIER: Flip 54 Watch Widgets App Store
+    info:
+      path: Flip54WatchWidgets/Info.plist
+      properties:
+        CFBundleName: Flip 54 Widgets
+        CFBundleDisplayName: Flip 54
+        CFBundleShortVersionString: "1.1"
+        CFBundleVersion: "10"
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+        UIAppFonts:
+          - BarlowCondensed-ExtraBold.ttf
+          - Oswald-SemiBold.ttf
+          - IBMPlexMono-Medium.ttf
+    entitlements:
+      path: Flip54WatchWidgets/Flip54WatchWidgets.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.flip54.app

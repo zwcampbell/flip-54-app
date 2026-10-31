@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "Flip54WorkoutEngine",
-    platforms: [.iOS(.v17), .macOS(.v14)],
+    platforms: [.iOS(.v17), .macOS(.v14), .watchOS(.v11)],
     products: [
         .library(name: "Flip54WorkoutEngine", targets: ["Flip54WorkoutEngine"]),
     ],

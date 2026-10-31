@@ -1,5 +1,6 @@
 import SwiftUI
 import Flip54Core
+import Flip54DesignSystem
 
 struct ExerciseFigureView: View {
     let exercise: Exercise

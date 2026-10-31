@@ -93,9 +93,10 @@ public final class WorkoutCoordinator {
             let held = holdSecs ?? 0
             return .holdComplete(card: card, secondsHeld: held, completedFully: false)
 
-        case (.holding(let card, let start, let dur), .holdTimerExpired):
-            let held = Int(Date().timeIntervalSince(start))
-            return .holdComplete(card: card, secondsHeld: min(held, dur), completedFully: true)
+        case (.holding(let card, _, let dur), .holdTimerExpired):
+            // The timer ran out, so the whole hold was done. Measuring the
+            // elapsed time instead truncates to one second short (0:29 of 0:30).
+            return .holdComplete(card: card, secondsHeld: dur, completedFully: true)
 
         case (.holdComplete(let card, _, _), .advanceComplete):
             return .cardCompleting(card: card)

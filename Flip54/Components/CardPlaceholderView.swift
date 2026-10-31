@@ -1,5 +1,6 @@
 import SwiftUI
 import Flip54Core
+import Flip54DesignSystem
 
 /// Prototype-quality card renderer. Milestone 5 replaces this with full art.
 struct CardPlaceholderView: View {

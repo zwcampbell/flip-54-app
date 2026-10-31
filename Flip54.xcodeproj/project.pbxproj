@@ -7,92 +7,192 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		02F95C7E15AF479B3B16C9F3 /* WatchStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8927E42BCF205CDE8ABBF426 /* WatchStyle.swift */; };
 		06BA75DF8FA0AF5D8311C1A7 /* CardImageProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52C6675A9690E75127037D0 /* CardImageProvider.swift */; };
+		0805A0AC4592872D6BE2407B /* Flip54Core in Frameworks */ = {isa = PBXBuildFile; productRef = 0CB54CF3A5DBA38ABD94D4C9 /* Flip54Core */; };
 		09079A13155A5EF7E320E05A /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3187C0598BD56969203B2016 /* OnboardingView.swift */; };
+		0C3898CC091D80C65FBEFE16 /* Flip54WatchWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A6EB60E7B0CA53FEF272F3 /* Flip54WatchWidgets.swift */; };
 		0C83819DD8F298213C30FF6C /* HapticEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90383C127A53DA7D5D458841 /* HapticEngine.swift */; };
+		1218FF06F0E32DF4B204D0B4 /* WorkoutRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6AA1E15CD7C4CE0D11DA68 /* WorkoutRecorder.swift */; };
 		13C8374D14C68238A9884023 /* Flip54App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C293BCC81644491CB0BD3F5 /* Flip54App.swift */; };
-		2134B6F99390180A3883DAA4 /* DS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 055BD321D3DEC4795309186E /* DS.swift */; };
+		1ACA7C6DB0E238576E6F4B72 /* BarlowCondensed-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 797C33D1DEAD007BF9C5C0DC /* BarlowCondensed-ExtraBold.ttf */; };
+		20CA843AF853CA98D5A235FE /* Flip54Storage in Frameworks */ = {isa = PBXBuildFile; productRef = 719CB71E05973CFA67A50FE7 /* Flip54Storage */; };
 		2818671E6C54485229ED9768 /* hold-end.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = D09C6413ABE6028FD1865207 /* hold-end.mp3 */; };
 		2860261768396674F4C586EF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C091E7583B5A73C429CADA03 /* Assets.xcassets */; };
+		293E90179CBAB6CF64B1117D /* IBMPlexMono-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = EFB9E51E47842D4731D9A52F /* IBMPlexMono-Medium.ttf */; };
+		2B6D30F477880C3AE3FC15C7 /* Flip54DesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = 8D113BBA999648A138815EC7 /* Flip54DesignSystem */; };
+		302E68573038D11DAAA3E025 /* StartScreens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DAAA37C2F05BA2A230834E9 /* StartScreens.swift */; };
 		30C7674ECC7B0BC4F40270C6 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B928E34F93C13CA23F613011 /* HistoryView.swift */; };
 		316F18EC99B3479FD2D05760 /* SoundPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F529C57C49C8623E926E6D9 /* SoundPlayer.swift */; };
 		32AECE4A2A64CAEF5516DB64 /* ActiveWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA90C35153A1139687DE3849 /* ActiveWorkoutView.swift */; };
 		3CCC2F542F8EBF35946C88E2 /* BarlowCondensed-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 797C33D1DEAD007BF9C5C0DC /* BarlowCondensed-ExtraBold.ttf */; };
 		4304FC6348DA78A4FC89FDA8 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = D1AF62437A47B9A3B38343F9 /* README.md */; };
 		462EB8EE5E5F6C960752E793 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D8D079C4FAD5217145A2CF2B /* PrivacyInfo.xcprivacy */; };
+		474167BE100933455DF08538 /* PausedAndSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AFAD7399373EE3B2BD9FBB8 /* PausedAndSummary.swift */; };
 		496CEFD122018717863BE103 /* deck-riffle.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 6BA794D5974CE861ECD526FA /* deck-riffle.mp3 */; };
 		4D68DCFEEA99D18478DC006D /* card-flip.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 6B254E17B5B82FAA1FD27B93 /* card-flip.mp3 */; };
+		519B0429FE206469DE1F7D4A /* Flip54WatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9B65DA4BA7FF08672E2D237 /* Flip54WatchApp.swift */; };
+		54CA5A24A460C073FF77571B /* CardsLeftHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EF9EAC10B084D9706F2EC6A /* CardsLeftHeader.swift */; };
 		55434A6514E6F3184EFD0867 /* MidasCardOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 721FCE0A4A92F61561184ABA /* MidasCardOverlay.swift */; };
+		5CE6D02D868F51793735688A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 27AED41B465829CCCE62F89A /* Assets.xcassets */; };
+		63DE98AD0AEFCE026854E364 /* HoldViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C318E0094BC08B2427A090B /* HoldViews.swift */; };
 		6479736F5C06DFC793DB77A5 /* ExerciseFigureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93EEF78A53282188026A6ED5 /* ExerciseFigureView.swift */; };
-		7202DB4D2A5A43358D35D896 /* FormGuideData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D07624E9408F6FEE5F7F1E4 /* FormGuideData.swift */; };
+		6C2EC7B7FDE51DE04C4C07D5 /* WatchAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9281C11C9DB60A7F3B49FD42 /* WatchAppDelegate.swift */; };
 		74FE86AAEE03A9CD31F607B2 /* MidasImpactView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DEB8D41E86483258DAAB20F /* MidasImpactView.swift */; };
+		773AB7959B181894F06A9F3F /* Flip54WorkoutEngine in Frameworks */ = {isa = PBXBuildFile; productRef = 83497BCF7EE77EC1AB78AD2E /* Flip54WorkoutEngine */; };
 		7E3FDDD6F934762A428B88EC /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A24DD0F3DDE3CD532E4F7B /* ProfileView.swift */; };
+		810BAE2C0916AF1B6E26EF92 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 31944EBDAD4D97F6E9720A24 /* SwiftUI.framework */; };
 		86786B8D37B71797D0525F8B /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B95F95B2A017F274DA35B4A2 /* SettingsView.swift */; };
+		8C0CFDF4516AD6E93C995065 /* Flip54Watch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = FC06F4FD4388F11758680472 /* Flip54Watch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		93312D2C95BF3B2B5D61315E /* StatComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21EFA91D9FE51A95099542C9 /* StatComponents.swift */; };
 		9A06BE069CB319704BD09C35 /* AccessibilityHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20C3BAE428A6C45455C0FBC /* AccessibilityHelpers.swift */; };
+		9BECB6C9C1D8851DDE5070E4 /* Oswald-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DE7C0B695322513B3A793379 /* Oswald-SemiBold.ttf */; };
+		9C3CEB9AD597960D92623396 /* WorkoutPanels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0071C77B7E2DBD6187C615 /* WorkoutPanels.swift */; };
 		9C973F526285EC2405E8DB23 /* Flip54Core in Frameworks */ = {isa = PBXBuildFile; productRef = B2272B8D6AB1191879B2C915 /* Flip54Core */; };
+		9F54D1A1C7D15DCFA8F6FCE4 /* BarlowCondensed-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 797C33D1DEAD007BF9C5C0DC /* BarlowCondensed-ExtraBold.ttf */; };
 		9F74E2E6B610D17F1B239643 /* CardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C22DB04AA5EF70E9C1363F2 /* CardView.swift */; };
+		A0813C6577C0CD852EE85816 /* IBMPlexMono-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = EFB9E51E47842D4731D9A52F /* IBMPlexMono-Medium.ttf */; };
+		A18091C2AAA518B538B11A6C /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C435F6CE09C28B125027F99 /* WidgetKit.framework */; };
 		A42E668F4DAA7EB48B233764 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76D5BCF1A3AA119192222201 /* ContentView.swift */; };
 		A54A77351D527C0E5C6D7EE6 /* CompletionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 778F6D7BDE8134694108A176 /* CompletionView.swift */; };
+		AD1E023062A9E6AAF318DD88 /* Oswald-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DE7C0B695322513B3A793379 /* Oswald-SemiBold.ttf */; };
 		ADBE3A11306EDE6C780DA331 /* IBMPlexMono-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = EFB9E51E47842D4731D9A52F /* IBMPlexMono-Medium.ttf */; };
+		AF188CF50A8B2AE924EE1CCF /* WatchCardBack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49DB23110BB5EB41EA14D7C1 /* WatchCardBack.swift */; };
 		AF4F12A4AD4ED6D752CB29F0 /* completion.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 03B32E61425323337974D8A3 /* completion.mp3 */; };
+		B09BDAD75002922D46EE5512 /* Flip54WorkoutEngine in Frameworks */ = {isa = PBXBuildFile; productRef = A4DBC8CCD63AA23E33EE78FE /* Flip54WorkoutEngine */; };
+		B4B572622F9F9E0239650AD0 /* SetupRows.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE445072C4D4C2DBAA6AEF56 /* SetupRows.swift */; };
+		BDC888F679BD64B43E5AE9E4 /* WatchActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9447966B6151C50BD9806C3 /* WatchActionButton.swift */; };
 		C57A83174BA8A91D0C3DEAD6 /* QuickReferenceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4A4F86440DF95F55280D448 /* QuickReferenceView.swift */; };
 		C6AF881D1F7AC594EBAF8951 /* PreWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41BB8F655ECC069322AD2C5E /* PreWorkoutView.swift */; };
-		C99A14834AE517189B6DBE24 /* Flip54WorkoutEngine in Frameworks */ = {isa = PBXBuildFile; productRef = A4DBC8CCD63AA23E33EE78FE /* Flip54WorkoutEngine */; };
+		C99A14834AE517189B6DBE24 /* Flip54Storage in Frameworks */ = {isa = PBXBuildFile; productRef = 5525B307D9C2B8A0070837FB /* Flip54Storage */; };
 		CD2EB938FA9F6191353E1382 /* hold-start.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = BBD4D49983FB48B423445AD0 /* hold-start.mp3 */; };
+		CF9B3DF20A3DE7DBD4F3AB35 /* WatchWorkoutModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C261F600490A34E5EB1F161C /* WatchWorkoutModel.swift */; };
 		D2BD426E977B3477700E6DB0 /* FormGuideView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F68260DD5A0BA2596CC39C /* FormGuideView.swift */; };
 		D3AFF4176855C0C48FE71951 /* CardPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34349F3E0E7F44A9A584119C /* CardPlaceholderView.swift */; };
+		D899A3459E0201C425CA7BE9 /* Flip54WatchWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D46CFBFF24F791D73A3D7D42 /* Flip54WatchWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		DB06BEC951E1F74E77D5651A /* Flip54DesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = D005A5C3565B10D8A514B86F /* Flip54DesignSystem */; };
 		E0E3EBD5A1E0D42B677E4902 /* card-skip.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1547DB0832E5B1333C988DA /* card-skip.mp3 */; };
-		E8D56DE252E2A0AEFDBF952E /* Flip54Storage in Frameworks */ = {isa = PBXBuildFile; productRef = 5525B307D9C2B8A0070837FB /* Flip54Storage */; };
+		E2223D014A5D16095E475976 /* PrescriptionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C275B523F0024412BD775A6 /* PrescriptionView.swift */; };
+		E2D38CB19D8C868235CBF372 /* Flip54Core in Frameworks */ = {isa = PBXBuildFile; productRef = 35BEB8442FBCB1EF81C6AC35 /* Flip54Core */; };
+		E8D56DE252E2A0AEFDBF952E /* Flip54DesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = 193391B25700758A72A2970E /* Flip54DesignSystem */; };
+		E991E5BF0B95DEC9649E5C78 /* WatchCardFace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C92799975E6968D849AB5D2 /* WatchCardFace.swift */; };
+		ED9921A97D9B18226A64E05D /* WorkoutScreens.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED29F0B4B0F1A4C020476D85 /* WorkoutScreens.swift */; };
 		F131DC7A16A5B25DFA7BF43C /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 28F0CE3652748EEEE3EC94AC /* Preview Assets.xcassets */; };
 		F1FA0AE786D6B09009CB8950 /* midas-impact.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 994DD6C364A16122294A0D03 /* midas-impact.mp3 */; };
 		FF967861E75F075648113A63 /* Oswald-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DE7C0B695322513B3A793379 /* Oswald-SemiBold.ttf */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		69A35C571E9159227C92F3C7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4EAE826EA2305368FF046B33 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B24E26879C662816FCAA61EF;
+			remoteInfo = Flip54Watch;
+		};
+		EBCC6D267187FC42483773E7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4EAE826EA2305368FF046B33 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C2050D4ECC054AA3AFF15CE5;
+			remoteInfo = Flip54WatchWidgets;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		658D6A78F5A18461E39E0381 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				8C0CFDF4516AD6E93C995065 /* Flip54Watch.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		713AD9DD5077466C9E499196 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				D899A3459E0201C425CA7BE9 /* Flip54WatchWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		03B32E61425323337974D8A3 /* completion.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = completion.mp3; sourceTree = "<group>"; };
-		055BD321D3DEC4795309186E /* DS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DS.swift; sourceTree = "<group>"; };
+		0C275B523F0024412BD775A6 /* PrescriptionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrescriptionView.swift; sourceTree = "<group>"; };
+		1EF1E8A8FAAECA121A943EDB /* Flip54Watch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Flip54Watch.entitlements; sourceTree = "<group>"; };
 		21EFA91D9FE51A95099542C9 /* StatComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatComponents.swift; sourceTree = "<group>"; };
+		27AED41B465829CCCE62F89A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		28F0CE3652748EEEE3EC94AC /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		29940533C1D4EF8AF42FE6A1 /* Flip54Storage */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Flip54Storage; path = Packages/Flip54Storage; sourceTree = SOURCE_ROOT; };
 		3187C0598BD56969203B2016 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		31944EBDAD4D97F6E9720A24 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		34349F3E0E7F44A9A584119C /* CardPlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardPlaceholderView.swift; sourceTree = "<group>"; };
 		345972F69B717C9372D7627E /* Flip54.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Flip54.entitlements; sourceTree = "<group>"; };
-		3D07624E9408F6FEE5F7F1E4 /* FormGuideData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormGuideData.swift; sourceTree = "<group>"; };
+		3C435F6CE09C28B125027F99 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		3C92799975E6968D849AB5D2 /* WatchCardFace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchCardFace.swift; sourceTree = "<group>"; };
 		41BB8F655ECC069322AD2C5E /* PreWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreWorkoutView.swift; sourceTree = "<group>"; };
 		47A24DD0F3DDE3CD532E4F7B /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		49DB23110BB5EB41EA14D7C1 /* WatchCardBack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchCardBack.swift; sourceTree = "<group>"; };
 		4C293BCC81644491CB0BD3F5 /* Flip54App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Flip54App.swift; sourceTree = "<group>"; };
+		4DAAA37C2F05BA2A230834E9 /* StartScreens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartScreens.swift; sourceTree = "<group>"; };
 		5C22DB04AA5EF70E9C1363F2 /* CardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardView.swift; sourceTree = "<group>"; };
+		5DB096447E110801DF52C2E0 /* Flip54DesignSystem */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Flip54DesignSystem; path = Packages/Flip54DesignSystem; sourceTree = SOURCE_ROOT; };
 		6B254E17B5B82FAA1FD27B93 /* card-flip.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "card-flip.mp3"; sourceTree = "<group>"; };
 		6BA794D5974CE861ECD526FA /* deck-riffle.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "deck-riffle.mp3"; sourceTree = "<group>"; };
 		6DEB8D41E86483258DAAB20F /* MidasImpactView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MidasImpactView.swift; sourceTree = "<group>"; };
+		6EF9EAC10B084D9706F2EC6A /* CardsLeftHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardsLeftHeader.swift; sourceTree = "<group>"; };
 		721FCE0A4A92F61561184ABA /* MidasCardOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MidasCardOverlay.swift; sourceTree = "<group>"; };
 		7555D96771AC4BF11EF0B262 /* Flip54.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Flip54.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		76D5BCF1A3AA119192222201 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		778F6D7BDE8134694108A176 /* CompletionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionView.swift; sourceTree = "<group>"; };
+		77B2D935BB0B5899B2ADEC4E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		797C33D1DEAD007BF9C5C0DC /* BarlowCondensed-ExtraBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "BarlowCondensed-ExtraBold.ttf"; sourceTree = "<group>"; };
+		7AFAD7399373EE3B2BD9FBB8 /* PausedAndSummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PausedAndSummary.swift; sourceTree = "<group>"; };
+		7C318E0094BC08B2427A090B /* HoldViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoldViews.swift; sourceTree = "<group>"; };
 		7D098F0AF7D594520638A834 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		7DEAD015B80D5F22F35F38CE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		8927E42BCF205CDE8ABBF426 /* WatchStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchStyle.swift; sourceTree = "<group>"; };
+		8E6AA1E15CD7C4CE0D11DA68 /* WorkoutRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutRecorder.swift; sourceTree = "<group>"; };
 		90383C127A53DA7D5D458841 /* HapticEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticEngine.swift; sourceTree = "<group>"; };
 		910BD7AC775D141B643FC071 /* Flip54Core */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Flip54Core; path = Packages/Flip54Core; sourceTree = SOURCE_ROOT; };
+		9281C11C9DB60A7F3B49FD42 /* WatchAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchAppDelegate.swift; sourceTree = "<group>"; };
 		93EEF78A53282188026A6ED5 /* ExerciseFigureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseFigureView.swift; sourceTree = "<group>"; };
 		994DD6C364A16122294A0D03 /* midas-impact.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "midas-impact.mp3"; sourceTree = "<group>"; };
 		9F529C57C49C8623E926E6D9 /* SoundPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundPlayer.swift; sourceTree = "<group>"; };
+		A588EF9EDDC7F62D31B31B61 /* Flip54WatchWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Flip54WatchWidgets.entitlements; sourceTree = "<group>"; };
 		B52C6675A9690E75127037D0 /* CardImageProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardImageProvider.swift; sourceTree = "<group>"; };
 		B928E34F93C13CA23F613011 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
 		B95F95B2A017F274DA35B4A2 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		BB0071C77B7E2DBD6187C615 /* WorkoutPanels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutPanels.swift; sourceTree = "<group>"; };
 		BBD4D49983FB48B423445AD0 /* hold-start.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "hold-start.mp3"; sourceTree = "<group>"; };
 		C091E7583B5A73C429CADA03 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		C261F600490A34E5EB1F161C /* WatchWorkoutModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchWorkoutModel.swift; sourceTree = "<group>"; };
 		D09C6413ABE6028FD1865207 /* hold-end.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "hold-end.mp3"; sourceTree = "<group>"; };
+		D0A6EB60E7B0CA53FEF272F3 /* Flip54WatchWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Flip54WatchWidgets.swift; sourceTree = "<group>"; };
 		D1AF62437A47B9A3B38343F9 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		D20C3BAE428A6C45455C0FBC /* AccessibilityHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityHelpers.swift; sourceTree = "<group>"; };
 		D2F68260DD5A0BA2596CC39C /* FormGuideView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormGuideView.swift; sourceTree = "<group>"; };
+		D46CFBFF24F791D73A3D7D42 /* Flip54WatchWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = Flip54WatchWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		D8D079C4FAD5217145A2CF2B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		D9B65DA4BA7FF08672E2D237 /* Flip54WatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Flip54WatchApp.swift; sourceTree = "<group>"; };
 		DA90C35153A1139687DE3849 /* ActiveWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveWorkoutView.swift; sourceTree = "<group>"; };
+		DE445072C4D4C2DBAA6AEF56 /* SetupRows.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupRows.swift; sourceTree = "<group>"; };
 		DE7C0B695322513B3A793379 /* Oswald-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Oswald-SemiBold.ttf"; sourceTree = "<group>"; };
 		E1547DB0832E5B1333C988DA /* card-skip.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "card-skip.mp3"; sourceTree = "<group>"; };
 		E8886DF6139B370297873E60 /* Flip54WorkoutEngine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Flip54WorkoutEngine; path = Packages/Flip54WorkoutEngine; sourceTree = SOURCE_ROOT; };
+		E9447966B6151C50BD9806C3 /* WatchActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchActionButton.swift; sourceTree = "<group>"; };
+		ED29F0B4B0F1A4C020476D85 /* WorkoutScreens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutScreens.swift; sourceTree = "<group>"; };
 		EFB9E51E47842D4731D9A52F /* IBMPlexMono-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "IBMPlexMono-Medium.ttf"; sourceTree = "<group>"; };
 		F4A4F86440DF95F55280D448 /* QuickReferenceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickReferenceView.swift; sourceTree = "<group>"; };
+		FC06F4FD4388F11758680472 /* Flip54Watch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Flip54Watch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -101,8 +201,31 @@
 			buildActionMask = 2147483647;
 			files = (
 				9C973F526285EC2405E8DB23 /* Flip54Core in Frameworks */,
-				E8D56DE252E2A0AEFDBF952E /* Flip54Storage in Frameworks */,
-				C99A14834AE517189B6DBE24 /* Flip54WorkoutEngine in Frameworks */,
+				E8D56DE252E2A0AEFDBF952E /* Flip54DesignSystem in Frameworks */,
+				C99A14834AE517189B6DBE24 /* Flip54Storage in Frameworks */,
+				B09BDAD75002922D46EE5512 /* Flip54WorkoutEngine in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		495A79A295D8ECD757FEA203 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E2D38CB19D8C868235CBF372 /* Flip54Core in Frameworks */,
+				2B6D30F477880C3AE3FC15C7 /* Flip54DesignSystem in Frameworks */,
+				A18091C2AAA518B538B11A6C /* WidgetKit.framework in Frameworks */,
+				810BAE2C0916AF1B6E26EF92 /* SwiftUI.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E9732EBABA859BDCFA600334 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0805A0AC4592872D6BE2407B /* Flip54Core in Frameworks */,
+				DB06BEC951E1F74E77D5651A /* Flip54DesignSystem in Frameworks */,
+				20CA843AF853CA98D5A235FE /* Flip54Storage in Frameworks */,
+				773AB7959B181894F06A9F3F /* Flip54WorkoutEngine in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -113,17 +236,12 @@
 			isa = PBXGroup;
 			children = (
 				22B7417889187BFFE5C495E6 /* Flip54 */,
+				728237423C4346AB6CE44B9C /* Flip54Watch */,
+				22736118E006AB1A33CFBF3C /* Flip54WatchWidgets */,
 				2CAB8EA9F97FDF332B962EAB /* Packages */,
+				98D3E50D060337705E5F59F0 /* Frameworks */,
 				D2C6DDFD854BC85B45460CA7 /* Products */,
 			);
-			sourceTree = "<group>";
-		};
-		10D7D836C3C67132EB468F29 /* Design */ = {
-			isa = PBXGroup;
-			children = (
-				055BD321D3DEC4795309186E /* DS.swift */,
-			);
-			path = Design;
 			sourceTree = "<group>";
 		};
 		1DF9BF6E36D2F96BAD6CF0D5 /* Completion */ = {
@@ -134,12 +252,21 @@
 			path = Completion;
 			sourceTree = "<group>";
 		};
+		22736118E006AB1A33CFBF3C /* Flip54WatchWidgets */ = {
+			isa = PBXGroup;
+			children = (
+				A588EF9EDDC7F62D31B31B61 /* Flip54WatchWidgets.entitlements */,
+				D0A6EB60E7B0CA53FEF272F3 /* Flip54WatchWidgets.swift */,
+				77B2D935BB0B5899B2ADEC4E /* Info.plist */,
+			);
+			path = Flip54WatchWidgets;
+			sourceTree = "<group>";
+		};
 		22B7417889187BFFE5C495E6 /* Flip54 */ = {
 			isa = PBXGroup;
 			children = (
 				7E0013DDE70BF83468B1ED15 /* App */,
 				D8A5D0C1E5E1D5FE85665229 /* Components */,
-				10D7D836C3C67132EB468F29 /* Design */,
 				6B42C4207A87FFA26E370DFC /* Features */,
 				34A15BBA07116FF7D9AA6A3F /* Preview Content */,
 				4BBE98E7BB3C5B043E710500 /* Resources */,
@@ -156,6 +283,7 @@
 			isa = PBXGroup;
 			children = (
 				910BD7AC775D141B643FC071 /* Flip54Core */,
+				5DB096447E110801DF52C2E0 /* Flip54DesignSystem */,
 				29940533C1D4EF8AF42FE6A1 /* Flip54Storage */,
 				E8886DF6139B370297873E60 /* Flip54WorkoutEngine */,
 			);
@@ -196,6 +324,22 @@
 			path = Settings;
 			sourceTree = "<group>";
 		};
+		6062EF420915DDFA8EFB9E5C /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				6EF9EAC10B084D9706F2EC6A /* CardsLeftHeader.swift */,
+				7C318E0094BC08B2427A090B /* HoldViews.swift */,
+				0C275B523F0024412BD775A6 /* PrescriptionView.swift */,
+				DE445072C4D4C2DBAA6AEF56 /* SetupRows.swift */,
+				E9447966B6151C50BD9806C3 /* WatchActionButton.swift */,
+				49DB23110BB5EB41EA14D7C1 /* WatchCardBack.swift */,
+				3C92799975E6968D849AB5D2 /* WatchCardFace.swift */,
+				8927E42BCF205CDE8ABBF426 /* WatchStyle.swift */,
+				BB0071C77B7E2DBD6187C615 /* WorkoutPanels.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
 		6B42C4207A87FFA26E370DFC /* Features */ = {
 			isa = PBXGroup;
 			children = (
@@ -208,6 +352,19 @@
 				4ED177D361A289E7FA68718A /* Settings */,
 			);
 			path = Features;
+			sourceTree = "<group>";
+		};
+		728237423C4346AB6CE44B9C /* Flip54Watch */ = {
+			isa = PBXGroup;
+			children = (
+				7F040E31FB1879286861B020 /* App */,
+				6062EF420915DDFA8EFB9E5C /* Components */,
+				CCF4B8D4040C62DCF4E7BD15 /* Workout */,
+				27AED41B465829CCCE62F89A /* Assets.xcassets */,
+				1EF1E8A8FAAECA121A943EDB /* Flip54Watch.entitlements */,
+				7DEAD015B80D5F22F35F38CE /* Info.plist */,
+			);
+			path = Flip54Watch;
 			sourceTree = "<group>";
 		};
 		746E6C1B8D44AFE2D47FA7DB /* Fonts */ = {
@@ -237,12 +394,20 @@
 			path = decks;
 			sourceTree = "<group>";
 		};
+		7F040E31FB1879286861B020 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				D9B65DA4BA7FF08672E2D237 /* Flip54WatchApp.swift */,
+				9281C11C9DB60A7F3B49FD42 /* WatchAppDelegate.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
 		92A7786261F71DA90F6FC206 /* ActiveWorkout */ = {
 			isa = PBXGroup;
 			children = (
 				DA90C35153A1139687DE3849 /* ActiveWorkoutView.swift */,
 				93EEF78A53282188026A6ED5 /* ExerciseFigureView.swift */,
-				3D07624E9408F6FEE5F7F1E4 /* FormGuideData.swift */,
 				D2F68260DD5A0BA2596CC39C /* FormGuideView.swift */,
 			);
 			path = ActiveWorkout;
@@ -254,6 +419,15 @@
 				B928E34F93C13CA23F613011 /* HistoryView.swift */,
 			);
 			path = History;
+			sourceTree = "<group>";
+		};
+		98D3E50D060337705E5F59F0 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				31944EBDAD4D97F6E9720A24 /* SwiftUI.framework */,
+				3C435F6CE09C28B125027F99 /* WidgetKit.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		B1192D8FB2D50F545FD60C43 /* Onboarding */ = {
@@ -273,10 +447,24 @@
 			path = PreWorkout;
 			sourceTree = "<group>";
 		};
+		CCF4B8D4040C62DCF4E7BD15 /* Workout */ = {
+			isa = PBXGroup;
+			children = (
+				7AFAD7399373EE3B2BD9FBB8 /* PausedAndSummary.swift */,
+				4DAAA37C2F05BA2A230834E9 /* StartScreens.swift */,
+				C261F600490A34E5EB1F161C /* WatchWorkoutModel.swift */,
+				8E6AA1E15CD7C4CE0D11DA68 /* WorkoutRecorder.swift */,
+				ED29F0B4B0F1A4C020476D85 /* WorkoutScreens.swift */,
+			);
+			path = Workout;
+			sourceTree = "<group>";
+		};
 		D2C6DDFD854BC85B45460CA7 /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				7555D96771AC4BF11EF0B262 /* Flip54.app */,
+				FC06F4FD4388F11758680472 /* Flip54Watch.app */,
+				D46CFBFF24F791D73A3D7D42 /* Flip54WatchWidgets.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -329,6 +517,52 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		B24E26879C662816FCAA61EF /* Flip54Watch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0A257BF4DECA1FCC29606BD1 /* Build configuration list for PBXNativeTarget "Flip54Watch" */;
+			buildPhases = (
+				76ECFD10A75FB93095C01771 /* Sources */,
+				D8BBB8FA2C7781BA885CA674 /* Resources */,
+				E9732EBABA859BDCFA600334 /* Frameworks */,
+				713AD9DD5077466C9E499196 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				8A47CE05174E8E1FAD34AD1B /* PBXTargetDependency */,
+			);
+			name = Flip54Watch;
+			packageProductDependencies = (
+				0CB54CF3A5DBA38ABD94D4C9 /* Flip54Core */,
+				D005A5C3565B10D8A514B86F /* Flip54DesignSystem */,
+				719CB71E05973CFA67A50FE7 /* Flip54Storage */,
+				83497BCF7EE77EC1AB78AD2E /* Flip54WorkoutEngine */,
+			);
+			productName = Flip54Watch;
+			productReference = FC06F4FD4388F11758680472 /* Flip54Watch.app */;
+			productType = "com.apple.product-type.application";
+		};
+		C2050D4ECC054AA3AFF15CE5 /* Flip54WatchWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E2FAEBD470F561B6AA0EA50B /* Build configuration list for PBXNativeTarget "Flip54WatchWidgets" */;
+			buildPhases = (
+				1A9560BAFFDBC82836770AF9 /* Sources */,
+				DDEAB458A4C832B9DF765CF8 /* Resources */,
+				495A79A295D8ECD757FEA203 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Flip54WatchWidgets;
+			packageProductDependencies = (
+				35BEB8442FBCB1EF81C6AC35 /* Flip54Core */,
+				8D113BBA999648A138815EC7 /* Flip54DesignSystem */,
+			);
+			productName = Flip54WatchWidgets;
+			productReference = D46CFBFF24F791D73A3D7D42 /* Flip54WatchWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		DD01DA23E26FA85D204512DA /* Flip54 */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0F1657A15236AF838D35B71D /* Build configuration list for PBXNativeTarget "Flip54" */;
@@ -336,14 +570,17 @@
 				63F1072EE7D530273F33078D /* Sources */,
 				0F3C202CFB9F9F9CACB6DF66 /* Resources */,
 				441CEAB5BE8D0B8C270ABEDE /* Frameworks */,
+				658D6A78F5A18461E39E0381 /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				2E31BD986F80D0EA248BF871 /* PBXTargetDependency */,
 			);
 			name = Flip54;
 			packageProductDependencies = (
 				B2272B8D6AB1191879B2C915 /* Flip54Core */,
+				193391B25700758A72A2970E /* Flip54DesignSystem */,
 				5525B307D9C2B8A0070837FB /* Flip54Storage */,
 				A4DBC8CCD63AA23E33EE78FE /* Flip54WorkoutEngine */,
 			);
@@ -360,6 +597,12 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1600;
 				TargetAttributes = {
+					B24E26879C662816FCAA61EF = {
+						DevelopmentTeam = LP5448PXCB;
+					};
+					C2050D4ECC054AA3AFF15CE5 = {
+						DevelopmentTeam = LP5448PXCB;
+					};
 					DD01DA23E26FA85D204512DA = {
 						DevelopmentTeam = LP5448PXCB;
 					};
@@ -376,6 +619,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				58887A0723BCC17A210D9E31 /* XCLocalSwiftPackageReference "Packages/Flip54Core" */,
+				EA36E03DA781F5D769006E7C /* XCLocalSwiftPackageReference "Packages/Flip54DesignSystem" */,
 				ECCFD53E439DEE38DBDF6DC7 /* XCLocalSwiftPackageReference "Packages/Flip54Storage" */,
 				649DAD746210D4EA00AC5FF8 /* XCLocalSwiftPackageReference "Packages/Flip54WorkoutEngine" */,
 			);
@@ -385,6 +629,8 @@
 			projectRoot = "";
 			targets = (
 				DD01DA23E26FA85D204512DA /* Flip54 */,
+				B24E26879C662816FCAA61EF /* Flip54Watch */,
+				C2050D4ECC054AA3AFF15CE5 /* Flip54WatchWidgets */,
 			);
 		};
 /* End PBXProject section */
@@ -411,9 +657,38 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D8BBB8FA2C7781BA885CA674 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5CE6D02D868F51793735688A /* Assets.xcassets in Resources */,
+				1ACA7C6DB0E238576E6F4B72 /* BarlowCondensed-ExtraBold.ttf in Resources */,
+				A0813C6577C0CD852EE85816 /* IBMPlexMono-Medium.ttf in Resources */,
+				AD1E023062A9E6AAF318DD88 /* Oswald-SemiBold.ttf in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DDEAB458A4C832B9DF765CF8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9F54D1A1C7D15DCFA8F6FCE4 /* BarlowCondensed-ExtraBold.ttf in Resources */,
+				293E90179CBAB6CF64B1117D /* IBMPlexMono-Medium.ttf in Resources */,
+				9BECB6C9C1D8851DDE5070E4 /* Oswald-SemiBold.ttf in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		1A9560BAFFDBC82836770AF9 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0C3898CC091D80C65FBEFE16 /* Flip54WatchWidgets.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		63F1072EE7D530273F33078D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -425,10 +700,8 @@
 				9F74E2E6B610D17F1B239643 /* CardView.swift in Sources */,
 				A54A77351D527C0E5C6D7EE6 /* CompletionView.swift in Sources */,
 				A42E668F4DAA7EB48B233764 /* ContentView.swift in Sources */,
-				2134B6F99390180A3883DAA4 /* DS.swift in Sources */,
 				6479736F5C06DFC793DB77A5 /* ExerciseFigureView.swift in Sources */,
 				13C8374D14C68238A9884023 /* Flip54App.swift in Sources */,
-				7202DB4D2A5A43358D35D896 /* FormGuideData.swift in Sources */,
 				D2BD426E977B3477700E6DB0 /* FormGuideView.swift in Sources */,
 				0C83819DD8F298213C30FF6C /* HapticEngine.swift in Sources */,
 				30C7674ECC7B0BC4F40270C6 /* HistoryView.swift in Sources */,
@@ -444,7 +717,43 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		76ECFD10A75FB93095C01771 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				54CA5A24A460C073FF77571B /* CardsLeftHeader.swift in Sources */,
+				519B0429FE206469DE1F7D4A /* Flip54WatchApp.swift in Sources */,
+				63DE98AD0AEFCE026854E364 /* HoldViews.swift in Sources */,
+				474167BE100933455DF08538 /* PausedAndSummary.swift in Sources */,
+				E2223D014A5D16095E475976 /* PrescriptionView.swift in Sources */,
+				B4B572622F9F9E0239650AD0 /* SetupRows.swift in Sources */,
+				302E68573038D11DAAA3E025 /* StartScreens.swift in Sources */,
+				BDC888F679BD64B43E5AE9E4 /* WatchActionButton.swift in Sources */,
+				6C2EC7B7FDE51DE04C4C07D5 /* WatchAppDelegate.swift in Sources */,
+				AF188CF50A8B2AE924EE1CCF /* WatchCardBack.swift in Sources */,
+				E991E5BF0B95DEC9649E5C78 /* WatchCardFace.swift in Sources */,
+				02F95C7E15AF479B3B16C9F3 /* WatchStyle.swift in Sources */,
+				CF9B3DF20A3DE7DBD4F3AB35 /* WatchWorkoutModel.swift in Sources */,
+				9C3CEB9AD597960D92623396 /* WorkoutPanels.swift in Sources */,
+				1218FF06F0E32DF4B204D0B4 /* WorkoutRecorder.swift in Sources */,
+				ED9921A97D9B18226A64E05D /* WorkoutScreens.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		2E31BD986F80D0EA248BF871 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B24E26879C662816FCAA61EF /* Flip54Watch */;
+			targetProxy = 69A35C571E9159227C92F3C7 /* PBXContainerItemProxy */;
+		};
+		8A47CE05174E8E1FAD34AD1B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C2050D4ECC054AA3AFF15CE5 /* Flip54WatchWidgets */;
+			targetProxy = EBCC6D267187FC42483773E7 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		1DF1A256304B83B5B0AE84C8 /* Release */ = {
@@ -452,7 +761,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Flip54/Flip54.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "Apple Distribution";
+				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = LP5448PXCB;
 				INFOPLIST_FILE = Flip54/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
@@ -461,6 +771,7 @@
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.flip54.app;
+				PROVISIONING_PROFILE_SPECIFIER = "Flip 54 App Store";
 				SDKROOT = iphoneos;
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -526,11 +837,30 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 6.0;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Debug;
+		};
+		615BA5A5085ECD573BA51D28 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Flip54WatchWidgets/Flip54WatchWidgets.entitlements;
+				DEVELOPMENT_TEAM = LP5448PXCB;
+				INFOPLIST_FILE = Flip54WatchWidgets/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.flip54.app.watchkitapp.widgets;
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
 			};
 			name = Debug;
 		};
@@ -555,6 +885,61 @@
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
+		};
+		CDB52022150F87FC68BE3A95 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Flip54WatchWidgets/Flip54WatchWidgets.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Distribution";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = LP5448PXCB;
+				INFOPLIST_FILE = Flip54WatchWidgets/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.flip54.app.watchkitapp.widgets;
+				PROVISIONING_PROFILE_SPECIFIER = "Flip 54 Watch Widgets App Store";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Release;
+		};
+		D913681F467DAA741F64D59D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Flip54Watch/Flip54Watch.entitlements;
+				DEVELOPMENT_TEAM = LP5448PXCB;
+				INFOPLIST_FILE = Flip54Watch/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.flip54.app.watchkitapp;
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Debug;
+		};
+		E5B4541D6250C5ED200EC861 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Flip54Watch/Flip54Watch.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Distribution";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = LP5448PXCB;
+				INFOPLIST_FILE = Flip54Watch/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.flip54.app.watchkitapp;
+				PROVISIONING_PROFILE_SPECIFIER = "Flip 54 Watch App Store";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Release;
 		};
 		EC76269BAF5A9ACC0FEE62A3 /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -606,22 +991,40 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 6.0;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		0A257BF4DECA1FCC29606BD1 /* Build configuration list for PBXNativeTarget "Flip54Watch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D913681F467DAA741F64D59D /* Debug */,
+				E5B4541D6250C5ED200EC861 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		0F1657A15236AF838D35B71D /* Build configuration list for PBXNativeTarget "Flip54" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				77F99DEADDE4A44FD619BA8A /* Debug */,
 				1DF1A256304B83B5B0AE84C8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E2FAEBD470F561B6AA0EA50B /* Build configuration list for PBXNativeTarget "Flip54WatchWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				615BA5A5085ECD573BA51D28 /* Debug */,
+				CDB52022150F87FC68BE3A95 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -646,6 +1049,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/Flip54WorkoutEngine;
 		};
+		EA36E03DA781F5D769006E7C /* XCLocalSwiftPackageReference "Packages/Flip54DesignSystem" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/Flip54DesignSystem;
+		};
 		ECCFD53E439DEE38DBDF6DC7 /* XCLocalSwiftPackageReference "Packages/Flip54Storage" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/Flip54Storage;
@@ -653,9 +1060,33 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		0CB54CF3A5DBA38ABD94D4C9 /* Flip54Core */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Flip54Core;
+		};
+		193391B25700758A72A2970E /* Flip54DesignSystem */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Flip54DesignSystem;
+		};
+		35BEB8442FBCB1EF81C6AC35 /* Flip54Core */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Flip54Core;
+		};
 		5525B307D9C2B8A0070837FB /* Flip54Storage */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Flip54Storage;
+		};
+		719CB71E05973CFA67A50FE7 /* Flip54Storage */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Flip54Storage;
+		};
+		83497BCF7EE77EC1AB78AD2E /* Flip54WorkoutEngine */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Flip54WorkoutEngine;
+		};
+		8D113BBA999648A138815EC7 /* Flip54DesignSystem */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Flip54DesignSystem;
 		};
 		A4DBC8CCD63AA23E33EE78FE /* Flip54WorkoutEngine */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -664,6 +1095,10 @@
 		B2272B8D6AB1191879B2C915 /* Flip54Core */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Flip54Core;
+		};
+		D005A5C3565B10D8A514B86F /* Flip54DesignSystem */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Flip54DesignSystem;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

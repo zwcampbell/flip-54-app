@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import Flip54Core
+import Flip54DesignSystem
 import Flip54Storage
 
 struct SettingsView: View {

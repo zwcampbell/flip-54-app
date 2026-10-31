@@ -1,5 +1,6 @@
 import SwiftUI
 import Flip54Core
+import Flip54DesignSystem
 
 // MARK: - Palette (mirrors MIDAS object in midas-cards.jsx)
 
