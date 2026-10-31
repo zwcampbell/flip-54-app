@@ -28,7 +28,7 @@ struct WatchRootView: View {
                 switch model.state {
                 case .idle:
                     StartScreen()
-                case .paused:
+                case .paused where !model.isHoldPausedByTap:
                     NavigationStack { PausedScreen() }
                 default:
                     WorkoutScreen()

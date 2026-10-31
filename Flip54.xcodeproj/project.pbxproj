@@ -61,6 +61,7 @@
 		AF4F12A4AD4ED6D752CB29F0 /* completion.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 03B32E61425323337974D8A3 /* completion.mp3 */; };
 		B09BDAD75002922D46EE5512 /* Flip54WorkoutEngine in Frameworks */ = {isa = PBXBuildFile; productRef = A4DBC8CCD63AA23E33EE78FE /* Flip54WorkoutEngine */; };
 		B4B572622F9F9E0239650AD0 /* SetupRows.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE445072C4D4C2DBAA6AEF56 /* SetupRows.swift */; };
+		BC2D89A7BE66C2E43E4D6D9E /* WatchConfetti.swift in Sources */ = {isa = PBXBuildFile; fileRef = 837E71D3D51E937ADC913918 /* WatchConfetti.swift */; };
 		BDC888F679BD64B43E5AE9E4 /* WatchActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9447966B6151C50BD9806C3 /* WatchActionButton.swift */; };
 		C57A83174BA8A91D0C3DEAD6 /* QuickReferenceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4A4F86440DF95F55280D448 /* QuickReferenceView.swift */; };
 		C6AF881D1F7AC594EBAF8951 /* PreWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41BB8F655ECC069322AD2C5E /* PreWorkoutView.swift */; };
@@ -159,6 +160,7 @@
 		7C318E0094BC08B2427A090B /* HoldViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoldViews.swift; sourceTree = "<group>"; };
 		7D098F0AF7D594520638A834 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		7DEAD015B80D5F22F35F38CE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		837E71D3D51E937ADC913918 /* WatchConfetti.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchConfetti.swift; sourceTree = "<group>"; };
 		8927E42BCF205CDE8ABBF426 /* WatchStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchStyle.swift; sourceTree = "<group>"; };
 		8E6AA1E15CD7C4CE0D11DA68 /* WorkoutRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutRecorder.swift; sourceTree = "<group>"; };
 		90383C127A53DA7D5D458841 /* HapticEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticEngine.swift; sourceTree = "<group>"; };
@@ -334,6 +336,7 @@
 				E9447966B6151C50BD9806C3 /* WatchActionButton.swift */,
 				49DB23110BB5EB41EA14D7C1 /* WatchCardBack.swift */,
 				3C92799975E6968D849AB5D2 /* WatchCardFace.swift */,
+				837E71D3D51E937ADC913918 /* WatchConfetti.swift */,
 				8927E42BCF205CDE8ABBF426 /* WatchStyle.swift */,
 				BB0071C77B7E2DBD6187C615 /* WorkoutPanels.swift */,
 			);
@@ -732,6 +735,7 @@
 				6C2EC7B7FDE51DE04C4C07D5 /* WatchAppDelegate.swift in Sources */,
 				AF188CF50A8B2AE924EE1CCF /* WatchCardBack.swift in Sources */,
 				E991E5BF0B95DEC9649E5C78 /* WatchCardFace.swift in Sources */,
+				BC2D89A7BE66C2E43E4D6D9E /* WatchConfetti.swift in Sources */,
 				02F95C7E15AF479B3B16C9F3 /* WatchStyle.swift in Sources */,
 				CF9B3DF20A3DE7DBD4F3AB35 /* WatchWorkoutModel.swift in Sources */,
 				9C3CEB9AD597960D92623396 /* WorkoutPanels.swift in Sources */,

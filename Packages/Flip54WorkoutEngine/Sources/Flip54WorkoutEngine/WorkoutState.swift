@@ -14,3 +14,12 @@ public indirect enum WorkoutState: Codable, Equatable, Sendable {
     case paused(previous: WorkoutState)
     case workoutComplete
 }
+
+extension WorkoutState {
+    /// The Ace hold a pause interrupted, if the workout was paused mid-hold.
+    public var pausedHold: (card: Card, durationSeconds: Int)? {
+        guard case .paused(let previous) = self,
+              case .holding(let card, _, let duration) = previous else { return nil }
+        return (card, duration)
+    }
+}

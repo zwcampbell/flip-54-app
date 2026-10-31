@@ -5,44 +5,78 @@ import Flip54DesignSystem
 import Flip54Storage
 import Flip54WorkoutEngine
 
-/// The running workout: Controls ← Card → Now Playing, swiped sideways.
+/// The running workout: Controls ← Card → Now Playing, swiped sideways, with
+/// Progress one page down: swipe up to see it, swipe down to come back.
 struct WorkoutScreen: View {
     @Environment(WatchWorkoutModel.self) private var model
     @State private var page = Page.card
-    @State private var showProgress = false
+    @State private var level = Level.main
 
     enum Page: Hashable { case controls, card, nowPlaying }
+    enum Level: Hashable { case main, progress }
 
     var body: some View {
         NavigationStack {
-            TabView(selection: $page) {
-                ControlsPage(onAction: { page = .card })
-                    .tag(Page.controls)
-                CardPage()
-                    .tag(Page.card)
-                NowPlayingView()
-                    .tag(Page.nowPlaying)
+            TabView(selection: $level) {
+                TabView(selection: $page) {
+                    ControlsPage(onAction: { page = .card })
+                        .tag(Page.controls)
+                    CardPage()
+                        .tag(Page.card)
+                    NowPlayingView()
+                        .tag(Page.nowPlaying)
+                }
+                .tabViewStyle(.page(indexDisplayMode: .never))
+                .overlay(alignment: .top) {
+                    WatchPageDots(count: 3, selected: [Page.controls, .card, .nowPlaying].firstIndex(of: page) ?? 1)
+                        .padding(.top, 2)
+                        .ignoresSafeArea()
+                }
+                .tag(Level.main)
+                ProgressPage()
+                    .tag(Level.progress)
             }
-            .tabViewStyle(.page(indexDisplayMode: .never))
+            .tabViewStyle(.verticalPage)
             .background(Color.black)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     if let session = model.session {
-                        Button { showProgress = true } label: {
+                        Button {
+                            withAnimation { level = level == .main ? .progress : .main }
+                        } label: {
                             CardsLeftHeader(remaining: session.cardsRemaining, total: session.deckSize)
                         }
                         .buttonStyle(.plain)
-                        .accessibilityHint("Shows workout progress")
+                        .accessibilityHint(level == .main ? "Shows workout progress" : "Back to the card")
                     }
                 }
+                ToolbarItem(placement: .topBarTrailing) {
+                    HeartRateBadge(bpm: model.recorder.heartRate)
+                }
             }
-            .overlay(alignment: .top) {
-                WatchPageDots(count: 3, selected: [Page.controls, .card, .nowPlaying].firstIndex(of: page) ?? 1)
-                    .padding(.top, 2)
-                    .ignoresSafeArea()
-            }
-            .sheet(isPresented: $showProgress) { ProgressSheet() }
         }
+    }
+}
+
+/// Live heart rate for the workout's top bar: red heart + bpm, "--" until
+/// the first sample arrives.
+struct HeartRateBadge: View {
+    let bpm: Double?
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 3) {
+            Image(systemName: "heart.fill")
+                .font(.system(size: 11))
+                .foregroundStyle(DS.Colors.red)
+            Text(bpm.map { "\(Int($0.rounded()))" } ?? "--")
+                .font(WatchType.sub(15))
+                .monospacedDigit()
+                .foregroundStyle(DS.Colors.textPrimary)
+                .contentTransition(.numericText())
+                .animation(.default, value: bpm)
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(bpm.map { "Heart rate \(Int($0.rounded())) beats per minute" } ?? "Heart rate not available yet")
     }
 }
 
@@ -128,6 +162,10 @@ struct CardPage: View {
         case .holding(let card, let start, let duration):
             HoldingView(card: card, start: start, duration: duration)
                 .transition(.opacity)
+        case .paused where model.isHoldPausedByTap:
+            if let hold = model.state.pausedHold {
+                HoldingView(card: hold.card, start: nil, duration: hold.durationSeconds)
+            }
         case .holdComplete(let card, let held, _):
             holdComplete(card: card, held: held)
                 .transition(.opacity)
@@ -204,8 +242,12 @@ struct CardPage: View {
             flip()
         case .cardFaceUp, .holdComplete:
             model.done()
+        case .holding:
+            model.toggleHoldPause()
+        case .paused where model.isHoldPausedByTap:
+            model.toggleHoldPause()
         default:
-            break  // Shuffling, holding or a card leaving: nothing to do yet.
+            break  // Shuffling or a card leaving: nothing to do yet.
         }
     }
 
@@ -215,6 +257,8 @@ struct CardPage: View {
         case .cardFaceDown: "Tap to flip"
         case .cardFaceUp(_, let prescription): prescription.isHold ? "Tap to start hold" : "Tap when done"
         case .holdComplete: "Tap to continue"
+        case .holding: "Tap to pause"
+        case .paused where model.isHoldPausedByTap: "Tap to resume"
         default: nil
         }
     }
@@ -267,28 +311,37 @@ private struct FlyOff: ViewModifier {
 }
 
 /// Ace hold in progress: countdown ring, exercise name, "Hold steady".
+/// With no `start` the hold is paused: the ring stops where it was and dims.
 private struct HoldingView: View {
     @Environment(WatchWorkoutModel.self) private var model
     let card: Card
-    let start: Date
+    let start: Date?
     let duration: Int
 
     var body: some View {
-        TimelineView(.periodic(from: start, by: 1)) { context in
-            let remaining = max(0, duration - Int(context.date.timeIntervalSince(start)))
-            VStack(spacing: 6) {
-                HoldTimerRing(remaining: remaining, total: duration, diameter: 118)
-                VStack(spacing: 2) {
-                    Text(exerciseName.uppercased())
-                        .font(WatchType.sub(13)).tracking(0.5)
-                        .foregroundStyle(DS.Colors.textPrimary)
-                    Text("HOLD STEADY")
-                        .font(WatchType.sub(10)).tracking(1)
-                        .foregroundStyle(DS.Colors.gold)
-                }
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
+        if let start {
+            TimelineView(.periodic(from: start, by: 1)) { context in
+                ring(remaining: max(0, duration - Int(context.date.timeIntervalSince(start))), paused: false)
             }
+        } else {
+            let held = Int(model.session?.holdElapsed ?? 0)
+            ring(remaining: max(0, duration - held), paused: true)
+        }
+    }
+
+    private func ring(remaining: Int, paused: Bool) -> some View {
+        VStack(spacing: 6) {
+            HoldTimerRing(remaining: remaining, total: duration, diameter: 118, paused: paused)
+            VStack(spacing: 2) {
+                Text(exerciseName.uppercased())
+                    .font(WatchType.sub(13)).tracking(0.5)
+                    .foregroundStyle(DS.Colors.textPrimary)
+                Text(paused ? "HOLD PAUSED" : "HOLD STEADY")
+                    .font(WatchType.sub(10)).tracking(1)
+                    .foregroundStyle(DS.Colors.gold)
+            }
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
         }
     }
 
@@ -366,8 +419,8 @@ struct ControlsPage: View {
 
 // MARK: - Sheets
 
-/// Swipe-up page in the design; opened by tapping the cards-left header.
-struct ProgressSheet: View {
+/// The page below the workout: swipe up (or tap the cards-left header) to see it.
+struct ProgressPage: View {
     @Environment(WatchWorkoutModel.self) private var model
 
     var body: some View {
