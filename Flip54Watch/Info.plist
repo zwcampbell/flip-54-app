@@ -19,7 +19,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>1.1</string>
 	<key>CFBundleVersion</key>
-	<string>10</string>
+	<string>11</string>
 	<key>NSHealthShareUsageDescription</key>
 	<string>Flip 54 reads your heart rate and active calories during a workout to show your effort.</string>
 	<key>NSHealthUpdateUsageDescription</key>

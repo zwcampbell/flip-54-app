@@ -64,7 +64,7 @@ targets:
         CFBundleShortVersionString: "1.1"
         # Keep CFBundleShortVersionString and CFBundleVersion identical across
         # Flip54, Flip54Watch and Flip54WatchWidgets, or App Store upload fails.
-        CFBundleVersion: "10"
+        CFBundleVersion: "11"
         ITSAppUsesNonExemptEncryption: false
         UILaunchScreen:
           UIColorName: AppBackground
@@ -114,7 +114,7 @@ targets:
         CFBundleName: Flip 54
         CFBundleDisplayName: Flip 54
         CFBundleShortVersionString: "1.1"
-        CFBundleVersion: "10"
+        CFBundleVersion: "11"
         WKApplication: true
         WKCompanionAppBundleIdentifier: com.flip54.app
         WKRunsIndependentlyOfCompanionApp: false
@@ -167,7 +167,7 @@ targets:
         CFBundleName: Flip 54 Widgets
         CFBundleDisplayName: Flip 54
         CFBundleShortVersionString: "1.1"
-        CFBundleVersion: "10"
+        CFBundleVersion: "11"
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
         UIAppFonts:
