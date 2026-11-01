@@ -34,8 +34,13 @@ protocol WorkoutRecorder: AnyObject {
     var saveState: HealthSaveState { get }
     /// Called when watchOS pauses or resumes the session itself (true = paused).
     var onExternalPauseChange: ((Bool) -> Void)? { get set }
+    /// Called with each message the iPhone sends over the mirrored session.
+    var onDataFromPhone: ((Data) -> Void)? { get set }
 
-    func start(at date: Date) async
+    /// Starts the Health session. With `mirrorToPhone`, the session is also
+    /// mirrored to the iPhone, which opens the channel `send(toPhone:)` uses.
+    func start(at date: Date, mirrorToPhone: Bool) async
+    func send(toPhone data: Data) async
     func pause()
     func resume()
     /// Ends the session and saves the workout to Health, or discards it.
@@ -54,6 +59,7 @@ final class HealthKitWorkoutRecorder: NSObject, WorkoutRecorder {
     private(set) var activeCalories: Double = 0
     private(set) var saveState: HealthSaveState = .idle
     @ObservationIgnored var onExternalPauseChange: ((Bool) -> Void)?
+    @ObservationIgnored var onDataFromPhone: ((Data) -> Void)?
 
     @ObservationIgnored private let store = HKHealthStore()
     @ObservationIgnored private var session: HKWorkoutSession?
@@ -65,7 +71,7 @@ final class HealthKitWorkoutRecorder: NSObject, WorkoutRecorder {
     private static let energyType = HKQuantityType(.activeEnergyBurned)
     private static let bpm = HKUnit.count().unitDivided(by: .minute())
 
-    func start(at date: Date) async {
+    func start(at date: Date, mirrorToPhone: Bool) async {
         resetStats()
         guard HKHealthStore.isHealthDataAvailable() else {
             saveState = .unavailable
@@ -86,11 +92,28 @@ final class HealthKitWorkoutRecorder: NSObject, WorkoutRecorder {
             session.startActivity(with: date)
             try await builder.beginCollection(at: date)
             log.info("Workout session started")
+            if mirrorToPhone {
+                do {
+                    try await session.startMirroringToCompanionDevice()
+                    log.info("Mirroring workout session to iPhone")
+                } catch {
+                    log.error("Couldn't mirror to iPhone: \(error.localizedDescription, privacy: .public)")
+                }
+            }
         } catch {
             // Never block the workout on Health: carry on without a session.
             log.error("Couldn't start workout session: \(error.localizedDescription, privacy: .public)")
             detach()
             saveState = .unavailable
+        }
+    }
+
+    func send(toPhone data: Data) async {
+        guard let session else { return }
+        do {
+            try await session.sendToRemoteWorkoutSession(data: data)
+        } catch {
+            log.error("Couldn't send to iPhone: \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -200,6 +223,16 @@ extension HealthKitWorkoutRecorder: HKWorkoutSessionDelegate {
     nonisolated func workoutSession(_ workoutSession: HKWorkoutSession, didFailWithError error: any Error) {
         log.error("Workout session failed: \(error.localizedDescription, privacy: .public)")
     }
+
+    nonisolated func workoutSession(_ workoutSession: HKWorkoutSession,
+                                    didReceiveDataFromRemoteWorkoutSession data: [Data]) {
+        Task { @MainActor in data.forEach { self.onDataFromPhone?($0) } }
+    }
+
+    nonisolated func workoutSession(_ workoutSession: HKWorkoutSession,
+                                    didDisconnectFromRemoteDeviceWithError error: (any Error)?) {
+        log.info("iPhone disconnected from the mirrored session: \(error?.localizedDescription ?? "no error", privacy: .public)")
+    }
 }
 
 extension HealthKitWorkoutRecorder: HKLiveWorkoutBuilderDelegate {
@@ -219,8 +252,10 @@ final class NoopWorkoutRecorder: WorkoutRecorder {
     var activeCalories: Double = 142
     var saveState: HealthSaveState = .saved
     var onExternalPauseChange: ((Bool) -> Void)?
+    var onDataFromPhone: ((Data) -> Void)?
 
-    func start(at date: Date) async {}
+    func start(at date: Date, mirrorToPhone: Bool) async {}
+    func send(toPhone data: Data) async {}
     func pause() {}
     func resume() {}
     func finish(at date: Date, save: Bool, totals: WorkoutTotals) async {}

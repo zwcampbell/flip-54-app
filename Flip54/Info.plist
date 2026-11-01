@@ -22,11 +22,19 @@
 	<string>12</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Flip 54 uses Apple Health to start your workout on your Apple Watch, which reads your heart rate.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Flip 54 saves workouts you track with your Apple Watch to Apple Health.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>BarlowCondensed-ExtraBold.ttf</string>
 		<string>Oswald-SemiBold.ttf</string>
 		<string>IBMPlexMono-Medium.ttf</string>
+	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>workout-processing</string>
 	</array>
 	<key>UILaunchScreen</key>
 	<dict>

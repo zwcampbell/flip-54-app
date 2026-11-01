@@ -66,6 +66,11 @@ targets:
         # Flip54, Flip54Watch and Flip54WatchWidgets, or App Store upload fails.
         CFBundleVersion: "12"
         ITSAppUsesNonExemptEncryption: false
+        NSHealthShareUsageDescription: Flip 54 uses Apple Health to start your workout on your Apple Watch, which reads your heart rate.
+        NSHealthUpdateUsageDescription: Flip 54 saves workouts you track with your Apple Watch to Apple Health.
+        # Lets the watch's mirrored workout session reach the iPhone app in the background.
+        UIBackgroundModes:
+          - workout-processing
         UILaunchScreen:
           UIColorName: AppBackground
           UIImageName: LaunchLogo
@@ -77,7 +82,11 @@ targets:
           - IBMPlexMono-Medium.ttf
     entitlements:
       path: Flip54/Flip54.entitlements
-      properties: {}
+      properties:
+        # Needed to launch the watch app into a workout and to receive its
+        # mirrored session.
+        com.apple.developer.healthkit: true
+        com.apple.developer.healthkit.access: []
 
   Flip54Watch:
     type: application

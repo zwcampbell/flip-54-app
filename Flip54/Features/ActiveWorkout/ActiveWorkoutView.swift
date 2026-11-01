@@ -41,9 +41,12 @@ struct ActiveWorkoutView: View {
     // End Early confirmation (ending is destructive, so it takes a second tap)
     @State private var showEndEarlyConfirm = false
 
+    /// Taps on a watch following this workout arrive here as commands.
+    @Environment(WatchWorkoutLink.self) private var watchLink
+
     // True while an Ace hold is paused by tapping its timer: the hold stays on
     // screen, frozen, instead of the full-screen pause overlay.
-    @State private var isHoldPausedByTap = false
+    private var isHoldPausedByTap: Bool { coordinator.isHoldPausedInPlace }
 
     // Midas deck gilding + fall animation
     private enum MidasPhase: Equatable { case idle, gilding, gilded, falling }
@@ -101,7 +104,9 @@ struct ActiveWorkoutView: View {
         .onAppear { UIApplication.shared.isIdleTimerDisabled = !isPaused }
         .onChange(of: isPaused) { _, paused in
             UIApplication.shared.isIdleTimerDisabled = !paused
-            if !paused { isHoldPausedByTap = false }
+        }
+        .onChange(of: watchLink.command) { _, received in
+            if let received { handleWatchCommand(received.command) }
         }
         .onDisappear { UIApplication.shared.isIdleTimerDisabled = false }
         .sheet(item: $formGuideItem) { item in
@@ -196,7 +201,7 @@ struct ActiveWorkoutView: View {
                 haptic.play(.tap)
                 if isHoldPausedByTap {
                     // Already paused mid-hold: bring up the full pause overlay.
-                    isHoldPausedByTap = false
+                    coordinator.showFullPause()
                 } else {
                     coordinator.send(.pause)
                 }
@@ -625,11 +630,52 @@ struct ActiveWorkoutView: View {
     private func toggleHoldPause() {
         if isHoldPausedByTap {
             haptic.play(.primary)
-            coordinator.send(.resume)
         } else if case .holding = coordinator.state {
             haptic.play(.tap)
-            coordinator.send(.pause)
-            isHoldPausedByTap = true
+        }
+        coordinator.toggleHoldPause()
+    }
+
+    /// Runs what was tapped on a watch following this workout, through the
+    /// same paths as the on-screen controls so the card animates the same way.
+    /// The watch already confirmed End.
+    private func handleWatchCommand(_ command: RemoteWorkoutCommand) {
+        switch (command, coordinator.state) {
+        case (.flip, .cardFaceDown):
+            handleFlipTap()
+        case (.done, .cardFaceUp(_, let prescription)):
+            if prescription.isHold {
+                coordinator.send(.startHold)
+            } else if isMidasDeck {
+                handleMidasCompletion()
+            } else {
+                midasTouchOrigin = CGPoint(x: CardPlaceholderView.cardWidth / 2,
+                                           y: CardPlaceholderView.cardHeight / 2)
+                handleDone()
+            }
+        case (.done, .holdComplete):
+            coordinator.send(.advanceComplete)
+        case (.skip, .holding(_, let start, let duration)):
+            // The watch's Skip during a hold ends it early and credits the seconds held.
+            let held = min(duration, Int(Date().timeIntervalSince(start)))
+            coordinator.send(.markDone(reps: nil, holdSeconds: held))
+        case (.skip, .cardFaceUp):
+            handleSkip()
+        case (.pause, _):
+            if isHoldPausedByTap {
+                coordinator.showFullPause()
+            } else {
+                coordinator.send(.pause)
+            }
+        case (.resume, _):
+            coordinator.send(.resume)
+        case (.toggleHoldPause, _):
+            toggleHoldPause()
+        case (.end, _):
+            let recorded = onEndEarly()
+            coordinator.endEarly(discardSession: recorded)
+        default:
+            break  // Out of date: the card moved on before the command arrived.
         }
     }
 

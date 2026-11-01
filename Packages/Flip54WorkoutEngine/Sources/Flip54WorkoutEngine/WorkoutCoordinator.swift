@@ -16,6 +16,9 @@ public final class WorkoutCoordinator {
     public private(set) var isTutorial: Bool = false
     /// True when the next session should use the 27-card half deck.
     public private(set) var useHalfDeck: Bool = false
+    /// True while an Ace hold is paused in place by tapping its timer, rather
+    /// than by the Pause button: the hold stays on screen, frozen.
+    public private(set) var isHoldPausedInPlace = false
     /// Exercises the user has opted out of; filtered from movement pools during prescription.
     private var disabledExercises: Set<Exercise> = []
 
@@ -56,6 +59,34 @@ public final class WorkoutCoordinator {
         }
         applyTransition(from: state, to: next, event: event)
         state = next
+        if !isPaused(next) { isHoldPausedInPlace = false }
+    }
+
+    /// Tapping the hold timer: pauses a running hold in place, or resumes a
+    /// hold paused that way.
+    public func toggleHoldPause() {
+        if isHoldPausedInPlace {
+            send(.resume)
+        } else if case .holding = state {
+            send(.pause)
+            isHoldPausedInPlace = true
+        }
+    }
+
+    /// Turns a hold paused in place into an ordinary pause, so the full
+    /// Paused screen shows (the Pause button pressed while a hold is paused).
+    public func showFullPause() {
+        isHoldPausedInPlace = false
+    }
+
+    /// Shows a workout run by another device (the iPhone, when the watch is
+    /// following it). Sets state directly: no side effects, nothing persisted.
+    public func mirror(state: WorkoutState, session: ActiveSession?, isHoldPausedInPlace: Bool) {
+        holdTimer.cancel()
+        isTutorial = false
+        self.session = session
+        self.state = state
+        self.isHoldPausedInPlace = isHoldPausedInPlace
     }
 
     // MARK: - Transition table
@@ -298,6 +329,7 @@ public final class WorkoutCoordinator {
         }
         session = nil
         isTutorial = false
+        isHoldPausedInPlace = false
         state = .idle
     }
 
