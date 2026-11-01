@@ -32,10 +32,6 @@
 		<string>Oswald-SemiBold.ttf</string>
 		<string>IBMPlexMono-Medium.ttf</string>
 	</array>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>workout-processing</string>
-	</array>
 	<key>UILaunchScreen</key>
 	<dict>
 		<key>UIColorName</key>

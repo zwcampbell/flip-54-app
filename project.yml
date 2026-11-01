@@ -68,9 +68,6 @@ targets:
         ITSAppUsesNonExemptEncryption: false
         NSHealthShareUsageDescription: Flip 54 uses Apple Health to start your workout on your Apple Watch, which reads your heart rate.
         NSHealthUpdateUsageDescription: Flip 54 saves workouts you track with your Apple Watch to Apple Health.
-        # Lets the watch's mirrored workout session reach the iPhone app in the background.
-        UIBackgroundModes:
-          - workout-processing
         UILaunchScreen:
           UIColorName: AppBackground
           UIImageName: LaunchLogo
