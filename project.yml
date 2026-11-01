@@ -64,7 +64,7 @@ targets:
         CFBundleShortVersionString: "1.1"
         # Keep CFBundleShortVersionString and CFBundleVersion identical across
         # Flip54, Flip54Watch and Flip54WatchWidgets, or App Store upload fails.
-        CFBundleVersion: "12"
+        CFBundleVersion: "13"
         ITSAppUsesNonExemptEncryption: false
         NSHealthShareUsageDescription: Flip 54 uses Apple Health to start your workout on your Apple Watch, which reads your heart rate.
         NSHealthUpdateUsageDescription: Flip 54 saves workouts you track with your Apple Watch to Apple Health.
@@ -123,7 +123,7 @@ targets:
         CFBundleName: Flip 54
         CFBundleDisplayName: Flip 54
         CFBundleShortVersionString: "1.1"
-        CFBundleVersion: "12"
+        CFBundleVersion: "13"
         WKApplication: true
         WKCompanionAppBundleIdentifier: com.flip54.app
         WKRunsIndependentlyOfCompanionApp: false
@@ -176,7 +176,7 @@ targets:
         CFBundleName: Flip 54 Widgets
         CFBundleDisplayName: Flip 54
         CFBundleShortVersionString: "1.1"
-        CFBundleVersion: "12"
+        CFBundleVersion: "13"
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
         UIAppFonts:

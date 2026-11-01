@@ -1,12 +1,18 @@
 #!/usr/bin/env python3
-"""Recreate the watch App Store provisioning profiles and install them.
+"""Make sure each App ID has the capabilities its target's entitlements need,
+then recreate its App Store provisioning profile and install it.
 
-Run this after changing a watch App ID's capabilities in the developer portal
-(for example assigning the group.com.flip54.app App Group), since a profile
-only carries the entitlements its App ID had when the profile was made.
+Run this after changing an App ID's capabilities (for example enabling
+HealthKit on the iPhone app, or assigning the group.com.flip54.app App Group
+to the watch app in the developer portal), since a profile only carries the
+entitlements its App ID had when the profile was made. Pass bundle IDs to
+regenerate only those; with none, all three are regenerated.
+
+App Group assignment can't be done through the API; do that in the portal.
 
 Needs pyjwt and requests (run with plain `python3`, not `python3 -I`).
 """
+import sys
 import base64
 import os
 import time
@@ -22,8 +28,17 @@ INSTALL_DIR = os.path.expanduser("~/Library/MobileDevice/Provisioning Profiles")
 DISTRIBUTION_CERT_NAME = "Apple Distribution: Zachary Campbell"
 
 PROFILES = {
+    "com.flip54.app": "Flip 54 App Store",
     "com.flip54.app.watchkitapp": "Flip 54 Watch App Store",
     "com.flip54.app.watchkitapp.widgets": "Flip 54 Watch Widgets App Store",
+}
+
+
+# Capabilities the API can switch on, per App ID. HealthKit on the iPhone app
+# lets it launch the watch app into a workout and receive its mirrored session.
+CAPABILITIES = {
+    "com.flip54.app": ["HEALTHKIT"],
+    "com.flip54.app.watchkitapp": ["HEALTHKIT"],
 }
 
 
@@ -48,10 +63,13 @@ def main():
     certs = requests.get(API + "/certificates?filter[certificateType]=DISTRIBUTION", headers=headers()).json()["data"]
     cert_id = next(c["id"] for c in certs if c["attributes"]["name"] == DISTRIBUTION_CERT_NAME)
 
-    for identifier, name in PROFILES.items():
+    wanted = sys.argv[1:] or list(PROFILES)
+    for identifier in wanted:
+        name = PROFILES[identifier]
         bundle = find(f"/bundleIds?filter[identifier]={identifier}&limit=200", "identifier", identifier)
         if bundle is None:
             raise SystemExit(f"App ID {identifier} is not registered")
+        enable_capabilities(bundle["id"], CAPABILITIES.get(identifier, []))
 
         old = find(f"/profiles?filter[name]={name}&limit=200", "name", name)
         if old is not None:
@@ -74,6 +92,21 @@ def main():
         with open(path, "wb") as f:
             f.write(base64.b64decode(attrs["profileContent"]))
         print(f"{name}: {attrs['profileState']}, installed {attrs['uuid']}")
+
+
+def enable_capabilities(bundle_id, capabilities):
+    r = requests.get(f"{API}/bundleIds/{bundle_id}/bundleIdCapabilities", headers=headers())
+    r.raise_for_status()
+    have = {c["attributes"]["capabilityType"] for c in r.json()["data"]}
+    for capability in capabilities:
+        if capability in have:
+            continue
+        requests.post(API + "/bundleIdCapabilities", headers=headers(), json={"data": {
+            "type": "bundleIdCapabilities",
+            "attributes": {"capabilityType": capability},
+            "relationships": {"bundleId": {"data": {"type": "bundleIds", "id": bundle_id}}},
+        }}).raise_for_status()
+        print(f"Enabled {capability}")
 
 
 if __name__ == "__main__":
