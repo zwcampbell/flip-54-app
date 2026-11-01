@@ -16,6 +16,7 @@ struct ContentView: View {
     @Query private var deckInventoryQuery: [DeckInventory]
 
     @State private var coordinator = WorkoutCoordinator()
+    @State private var watchLink = WatchWorkoutLink()
     @State private var completedData: CompletedWorkoutData?
     @State private var showResumeBanner = false
     @State private var selectedTab = 0
@@ -93,6 +94,13 @@ struct ContentView: View {
             // didn't persist.
             syncDeckUnlocks()
         }
+        .onChange(of: coordinator.state) { old, new in syncWatch(from: old, to: new) }
+        .onChange(of: coordinator.isHoldPausedInPlace) { _, _ in
+            if coordinator.state != .idle, !coordinator.isTutorial {
+                watchLink.update(coordinator.remoteSnapshot)
+            }
+        }
+        .environment(watchLink)
         .onChange(of: isActiveWorkout) { wasActive, isActive in
             // When leaving an active workout (e.g., End Early), surface the
             // resume banner if a session is still persisted.
@@ -101,6 +109,24 @@ struct ContentView: View {
             }
         }
         .injectReduceMotion()
+    }
+
+    // MARK: - Watch
+
+    /// Keeps a paired watch in step with the deck: starting a workout launches
+    /// the watch into it, each change is sent on, and ending tells it so.
+    /// Tutorials stay on the iPhone.
+    private func syncWatch(from old: WorkoutState, to new: WorkoutState) {
+        if new == .idle {
+            if old != .idle { watchLink.workoutEnded() }
+            return
+        }
+        guard !coordinator.isTutorial else { return }
+        if old == .idle {
+            watchLink.workoutStarted(coordinator.remoteSnapshot)
+        } else {
+            watchLink.update(coordinator.remoteSnapshot)
+        }
     }
 
     // MARK: - Onboarding completion
@@ -289,10 +315,14 @@ struct ContentView: View {
 
     private func checkForResume() {
         let store = ActiveSessionStore()
+        // Also clears the banner once nothing's left to resume (e.g. the
+        // workout it offered was started fresh and then ended).
         if let saved = store.load(),
            !saved.isComplete,
            Date().timeIntervalSince(saved.startedAt) < 86400 {
             showResumeBanner = true
+        } else {
+            showResumeBanner = false
         }
     }
 

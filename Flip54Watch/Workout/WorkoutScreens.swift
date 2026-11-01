@@ -222,6 +222,13 @@ struct CardPage: View {
             var swap = Transaction()
             swap.disablesAnimations = true
             withTransaction(swap) { model.flip() }
+            // Following the iPhone, the face arrives in its next snapshot:
+            // hold the card edge-on until it does (or give up after a second).
+            var waited = 0
+            while model.isFollowingPhone, case .cardFaceDown = model.state, waited < 50 {
+                try? await Task.sleep(for: .milliseconds(20))
+                waited += 1
+            }
             // Let the face render once at edge-on so it has a width to grow from.
             try? await Task.sleep(for: .milliseconds(20))
             withAnimation(.easeOut(duration: 0.2)) { flipSquash = 1 }

@@ -94,11 +94,18 @@ final class WatchWorkoutModel {
     let settings: WatchSettings
     /// Runs the Apple Health workout session alongside the deck.
     let recorder: WorkoutRecorder
+    /// Messages to and from the iPhone while following its workout.
+    private let phone = PhoneChannel()
     /// Set when a workout finishes or is ended with cards done; cleared by Done.
     private(set) var summary: WatchWorkoutSummary?
+    /// True while the watch follows a workout started on the iPhone: the
+    /// iPhone runs the deck and sends snapshots, and the watch's actions go
+    /// back to it as commands. The watch still records the Health workout.
+    private(set) var isFollowingPhone = false
+
     /// True while an Ace hold is paused by tapping its timer. The hold stays on
     /// the card page instead of the Paused screen.
-    private(set) var isHoldPausedByTap = false
+    var isHoldPausedByTap: Bool { coordinator.isHoldPausedInPlace }
 
     /// How long the card-exit and shuffle beats last before the engine advances.
     private static let advanceDelay: Duration = .milliseconds(300)
@@ -113,6 +120,12 @@ final class WatchWorkoutModel {
         coordinator.restoreIfNeeded()
         recorder.onExternalPauseChange = { [weak self] paused in
             self?.sessionPausedExternally(paused)
+        }
+        recorder.onDataFromPhone = { [weak self] data in
+            self?.received(data)
+        }
+        phone.onData = { [weak self] data in
+            self?.received(data)
         }
     }
 
@@ -144,25 +157,41 @@ final class WatchWorkoutModel {
         }
         #endif
         let startedAt = session?.startedAt ?? .now
-        Task { await recorder.start(at: startedAt) }
+        Task { await recorder.start(at: startedAt, mirrorToPhone: false) }
+        play(.start)
+    }
+
+    /// The iPhone started a workout and launched the watch app for it.
+    /// Starts the Health session, mirrored to the iPhone so the deck can flow
+    /// over it, and waits for the iPhone's first snapshot.
+    func startFollowingPhone() {
+        guard !isFollowingPhone else { return }
+        summary = nil
+        isFollowingPhone = true
+        coordinator.mirror(state: .idle, session: nil, isHoldPausedInPlace: false)
+        Task { await recorder.start(at: .now, mirrorToPhone: true) }
         play(.start)
     }
 
     func flip() {
-        coordinator.send(.flipCard)
         play(.click)
+        if isFollowingPhone { return sendToPhone(.flip) }
+        coordinator.send(.flipCard)
     }
 
     func done() {
         switch state {
         case .cardFaceUp(_, let prescription) where prescription.isHold:
             // No 3-2-1 countdown: go straight from the Ace to the running hold.
-            coordinator.send(.startHold)
             play(.start)
+            if isFollowingPhone { return sendToPhone(.done) }
+            coordinator.send(.startHold)
         case .cardFaceUp:
-            coordinator.send(.markDone(reps: nil, holdSeconds: nil))
             play(.success)
+            if isFollowingPhone { return sendToPhone(.done) }
+            coordinator.send(.markDone(reps: nil, holdSeconds: nil))
         case .holdComplete:
+            if isFollowingPhone { return sendToPhone(.done) }
             coordinator.send(.advanceComplete)
         default:
             break
@@ -172,30 +201,40 @@ final class WatchWorkoutModel {
     /// Skip puts the card back at the bottom of the deck, except during a hold,
     /// where it ends the hold early and credits the seconds held.
     func skip() {
+        play(.directionDown)
+        if isFollowingPhone { return sendToPhone(.skip) }
         if case .holding(_, let start, let duration) = state {
             let held = min(duration, Int(Date().timeIntervalSince(start)))
             coordinator.send(.markDone(reps: nil, holdSeconds: held))
         } else {
             coordinator.send(.skip)
         }
-        play(.directionDown)
     }
 
     /// Tapping the hold timer pauses the hold (and the workout) in place, and
     /// tapping again resumes it.
     func toggleHoldPause() {
+        if isFollowingPhone {
+            play(isHoldPausedByTap ? .start : .stop)
+            return sendToPhone(.toggleHoldPause)
+        }
         if isHoldPausedByTap {
             resume()
         } else if case .holding = state {
-            pause()
-            isHoldPausedByTap = true
+            coordinator.toggleHoldPause()
+            recorder.pause()
+            play(.stop)
         }
     }
 
     func pause() {
+        if isFollowingPhone {
+            play(.stop)
+            return sendToPhone(.pause)
+        }
         // Pause while a hold is tap-paused: move it to the full Paused screen.
         if isHoldPausedByTap {
-            isHoldPausedByTap = false
+            coordinator.showFullPause()
             return
         }
         coordinator.send(.pause)
@@ -204,16 +243,21 @@ final class WatchWorkoutModel {
     }
 
     func resume() {
-        isHoldPausedByTap = false
+        play(.start)
+        if isFollowingPhone { return sendToPhone(.resume) }
         coordinator.send(.resume)
         recorder.resume()
-        play(.start)
     }
 
     /// Ends the workout now. Shows a summary when at least one card was done,
     /// and saves to Health only then; an untouched deck is discarded.
     func end() {
-        isHoldPausedByTap = false
+        if isFollowingPhone {
+            sendToPhone(.end)
+            stopFollowing(showSummary: true)
+            play(.stop)
+            return
+        }
         if let session {
             let hasProgress = session.cardsCompleted > 0
             if hasProgress {
@@ -228,10 +272,13 @@ final class WatchWorkoutModel {
     /// watchOS paused or resumed the Health session itself (e.g. from the
     /// system workout controls): keep the deck in step.
     private func sessionPausedExternally(_ paused: Bool) {
+        if isFollowingPhone {
+            if paused != isPaused { sendToPhone(paused ? .pause : .resume) }
+            return
+        }
         if paused, !isPaused {
             coordinator.send(.pause)
         } else if !paused, isPaused {
-            isHoldPausedByTap = false
             coordinator.send(.resume)
         }
     }
@@ -256,11 +303,74 @@ final class WatchWorkoutModel {
         }
     }
 
+    // MARK: - Following the iPhone
+
+    private func sendToPhone(_ command: RemoteWorkoutCommand) {
+        guard let data = try? RemoteWorkoutMessage.command(command).encoded() else { return }
+        // WatchConnectivity when the iPhone app can hear it; otherwise the
+        // mirrored Health session, which keeps working with the phone locked.
+        if phone.isReachable {
+            phone.send(data)
+        } else {
+            Task { await recorder.send(toPhone: data) }
+        }
+    }
+
+    private func received(_ data: Data) {
+        guard isFollowingPhone, let message = try? RemoteWorkoutMessage.decode(data) else { return }
+        switch message {
+        case .snapshot(let snapshot):
+            let wasPaused = isPaused
+            coordinator.mirror(state: snapshot.state, session: snapshot.session,
+                               isHoldPausedInPlace: snapshot.isHoldPausedInPlace)
+            // Keep the Health session's pauses in step with the deck's.
+            if isPaused != wasPaused {
+                isPaused ? recorder.pause() : recorder.resume()
+            }
+        case .ended:
+            stopFollowing(showSummary: true)
+        case .command:
+            break  // Commands only go watch → iPhone.
+        }
+    }
+
+    /// Stops following the iPhone: shows a summary when cards were done,
+    /// saves or discards the Health workout, and clears the mirrored deck
+    /// (the watch's own saved workout, if any, is left alone).
+    private func stopFollowing(showSummary: Bool) {
+        guard isFollowingPhone else { return }
+        isFollowingPhone = false
+        if let session {
+            let complete: Bool = if case .workoutComplete = state { true } else { false }
+            let hasProgress = session.cardsCompleted > 0
+            if showSummary, hasProgress {
+                summary = WatchWorkoutSummary(session: session, endedEarly: !complete)
+            }
+            finishRecording(session, save: hasProgress)
+        } else {
+            Task { await recorder.finish(at: .now, save: false, totals: WorkoutTotals(reps: 0, cards: 0, deckSize: 0)) }
+        }
+        coordinator.mirror(state: .idle, session: nil, isHoldPausedInPlace: false)
+    }
+
     // MARK: - Engine follow-ups
 
     /// Call on every state change. Advances through the states the engine
     /// expects the UI to time (shuffle, card leaving) and plays haptics.
+    /// When following the iPhone, the iPhone times those steps itself.
     func stateChanged(to new: WorkoutState) {
+        if isFollowingPhone {
+            switch new {
+            case .holdComplete(_, _, let completedFully):
+                if completedFully { play(.success) }
+            case .workoutComplete:
+                stopFollowing(showSummary: true)
+                play(.success)
+            default:
+                break
+            }
+            return
+        }
         switch new {
         case .shuffling:
             advance(.shuffleComplete, after: Self.shuffleDelay)

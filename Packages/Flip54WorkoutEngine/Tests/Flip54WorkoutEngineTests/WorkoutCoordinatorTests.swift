@@ -264,6 +264,63 @@ struct WorkoutCoordinatorTests {
         #expect(abs(Date().timeIntervalSince(start) - elapsed) < 0.2)
     }
 
+    @Test("toggleHoldPause pauses a hold in place and resumes it")
+    func toggleHoldPause() {
+        let coord = makeCoordinator()
+        coord.send(.shuffle)
+        coord.send(.shuffleComplete)
+        coord._seedDrawPile([.standard(suit: .clubs, rank: .ace)])
+        coord.send(.flipCard)
+        coord.send(.startHold)
+        coord.send(.startHold)
+        defer { coord.endEarly() }
+        coord.toggleHoldPause()
+        #expect(coord.isHoldPausedInPlace)
+        #expect(coord.state.pausedHold != nil)
+        coord.toggleHoldPause()
+        #expect(!coord.isHoldPausedInPlace)
+        guard case .holding = coord.state else {
+            Issue.record("expected .holding, got \(coord.state)")
+            return
+        }
+        // A tap-paused hold switched to a full pause clears the flag, and
+        // resuming from the Paused screen still returns to the hold.
+        coord.toggleHoldPause()
+        coord.showFullPause()
+        #expect(!coord.isHoldPausedInPlace)
+        coord.send(.resume)
+        guard case .holding = coord.state else {
+            Issue.record("expected .holding, got \(coord.state)")
+            return
+        }
+    }
+
+    @Test("a snapshot survives the trip to the watch and mirrors without side effects")
+    func remoteSnapshotRoundTrip() throws {
+        let phone = makeCoordinator()
+        phone.send(.shuffle)
+        phone.send(.shuffleComplete)
+        phone.send(.flipCard)
+        defer { phone.endEarly() }
+        let data = try RemoteWorkoutMessage.snapshot(phone.remoteSnapshot).encoded()
+        guard case .snapshot(let snap) = try RemoteWorkoutMessage.decode(data) else {
+            Issue.record("expected a snapshot")
+            return
+        }
+        #expect(snap == phone.remoteSnapshot)
+
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("flip54_coord_test_\(UUID().uuidString).json")
+        let store = ActiveSessionStore(url: url)
+        let watch = WorkoutCoordinator(store: store)
+        watch.mirror(state: snap.state, session: snap.session, isHoldPausedInPlace: snap.isHoldPausedInPlace)
+        #expect(watch.state == phone.state)
+        #expect(watch.session == phone.session)
+        #expect(store.load() == nil)  // mirroring never writes the watch's own store
+        let command = try RemoteWorkoutMessage.decode(RemoteWorkoutMessage.command(.toggleHoldPause).encoded())
+        #expect(command == .command(.toggleHoldPause))
+    }
+
     @Test("real workout Ace hold keeps its prescribed length")
     func realHoldIsUnchanged() {
         let url = FileManager.default.temporaryDirectory

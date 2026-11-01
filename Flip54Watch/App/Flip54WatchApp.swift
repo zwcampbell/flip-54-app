@@ -26,6 +26,8 @@ struct WatchRootView: View {
                 SummaryScreen(summary: summary)
             } else {
                 switch model.state {
+                case .idle where model.isFollowingPhone:
+                    FollowingPhoneScreen()
                 case .idle:
                     StartScreen()
                 case .paused where !model.isHoldPausedByTap:
@@ -38,6 +40,23 @@ struct WatchRootView: View {
         // The watch background is pure black, not DS.Colors.bg, so the OLED stays dark.
         .background(Color.black)
         .onChange(of: model.state) { _, new in model.stateChanged(to: new) }
+    }
+}
+
+/// Shown for the moment between the iPhone launching the watch app and its
+/// first snapshot of the deck arriving.
+struct FollowingPhoneScreen: View {
+    var body: some View {
+        VStack(spacing: 10) {
+            Image(systemName: "iphone")
+                .font(.system(size: 30))
+                .foregroundStyle(DS.Colors.gold)
+            Text("STARTING ON IPHONE")
+                .font(WatchType.sub(13)).tracking(1)
+                .foregroundStyle(DS.Colors.textSecondary)
+            ProgressView()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
