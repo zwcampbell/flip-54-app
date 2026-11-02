@@ -219,6 +219,12 @@ final class WatchWorkoutModel {
                 .standard(suit: .hearts, rank: .seven),
             ])
         }
+        // `-marketingDeck YES` keeps the full deck but puts the 7 of hearts and
+        // an Ace on top, for App Store screenshots with real card counts.
+        if UserDefaults.standard.bool(forKey: "marketingDeck"), let session {
+            let top: [Card] = [.standard(suit: .diamonds, rank: .ace), .standard(suit: .hearts, rank: .seven)]
+            coordinator._seedDrawPile(session.drawPile.filter { !top.contains($0) } + top)
+        }
         #endif
         let startedAt = session?.startedAt ?? .now
         Task { await recorder.start(at: startedAt, mirrorToPhone: false) }
