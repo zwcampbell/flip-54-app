@@ -1,6 +1,7 @@
 import Foundation
 import WatchConnectivity
 import os
+import Flip54WorkoutEngine
 
 private let log = Logger(subsystem: "com.flip54.app.watchkitapp", category: "PhoneChannel")
 
@@ -31,6 +32,23 @@ final class PhoneChannel: NSObject {
         WCSession.default.sendMessageData(data, replyHandler: nil) { error in
             log.error("Couldn't message the iPhone: \(error.localizedDescription, privacy: .public)")
         }
+    }
+
+    /// Sends a finished watch workout to the iPhone's History: straight away
+    /// when the iPhone app can hear it, and also queued, which WatchConnectivity
+    /// keeps until the iPhone app can take it, even across relaunches. The
+    /// iPhone saves each workout once, however many copies arrive.
+    func sendFinished(_ workout: FinishedWatchWorkout) {
+        guard WCSession.isSupported(), let data = try? workout.encoded() else { return }
+        guard WCSession.default.activationState == .activated else {
+            log.error("Not sending the finished workout: WatchConnectivity isn't active")
+            return
+        }
+        if isReachable, let message = try? RemoteWorkoutMessage.finished(workout).encoded() {
+            send(message)
+        }
+        WCSession.default.transferUserInfo([FinishedWatchWorkout.userInfoKey: data])
+        log.info("Queued a finished workout for the iPhone: \(workout.session.cardsCompleted, privacy: .public) cards")
     }
 
     private func received(_ data: Data) {

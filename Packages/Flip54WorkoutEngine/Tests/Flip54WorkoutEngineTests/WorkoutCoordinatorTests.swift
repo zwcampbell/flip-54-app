@@ -321,6 +321,21 @@ struct WorkoutCoordinatorTests {
         #expect(command == .command(.toggleHoldPause))
     }
 
+    @Test("a finished watch workout survives the trip to the iPhone intact")
+    func finishedWatchWorkoutRoundTrip() throws {
+        let coord = makeCoordinator()
+        coord.send(.shuffle)
+        coord.send(.shuffleComplete)
+        coord.send(.flipCard)
+        coord.send(.markDone(reps: nil, holdSeconds: nil))
+        defer { coord.endEarly() }
+        let session = try #require(coord.session)
+        let record = FinishedWatchWorkout(session: session, completedAt: Date(timeIntervalSince1970: 1_800_000_000))
+        let decoded = try FinishedWatchWorkout.decode(record.encoded())
+        #expect(decoded == record)
+        #expect(decoded.session.cardsCompleted == 1)
+    }
+
     @Test("real workout Ace hold keeps its prescribed length")
     func realHoldIsUnchanged() {
         let url = FileManager.default.temporaryDirectory

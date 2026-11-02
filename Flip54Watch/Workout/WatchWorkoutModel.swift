@@ -262,6 +262,7 @@ final class WatchWorkoutModel {
             let hasProgress = session.cardsCompleted > 0
             if hasProgress {
                 summary = WatchWorkoutSummary(session: session, endedEarly: true)
+                phone.sendFinished(FinishedWatchWorkout(session: session, completedAt: .now))
             }
             finishRecording(session, save: hasProgress)
         }
@@ -329,8 +330,8 @@ final class WatchWorkoutModel {
             }
         case .ended:
             stopFollowing(showSummary: true)
-        case .command:
-            break  // Commands only go watch → iPhone.
+        case .command, .finished:
+            break  // These only go watch → iPhone.
         }
     }
 
@@ -384,6 +385,7 @@ final class WatchWorkoutModel {
             if let session {
                 summary = WatchWorkoutSummary(session: session, endedEarly: false)
                 finishRecording(session, save: true)
+                phone.sendFinished(FinishedWatchWorkout(session: session, completedAt: .now))
             }
             play(.success)
         default:
