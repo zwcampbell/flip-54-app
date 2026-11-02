@@ -375,7 +375,7 @@ struct ControlsPage: View {
     var body: some View {
         Grid(horizontalSpacing: 6, verticalSpacing: 8) {
             GridRow {
-                ControlTile(title: "End", systemImage: "xmark", tone: .destructive) { confirmEnd = true }
+                ControlTile(title: Copy.endEarly, systemImage: "xmark", tone: .destructive) { confirmEnd = true }
                 ControlTile(title: "Pause", systemImage: "pause.fill", tone: .gold) { model.pause() }
             }
             GridRow {
@@ -392,11 +392,11 @@ struct ControlsPage: View {
         }
         .padding(.horizontal, WatchLayout.edge)
         .background(Color.black)
-        .confirmationDialog("End workout?", isPresented: $confirmEnd) {
-            Button("End workout", role: .destructive) { model.end() }
-            Button("Keep going", role: .cancel) {}
+        .confirmationDialog(Copy.endEarlyQuestion, isPresented: $confirmEnd) {
+            Button(Copy.endWorkout, role: .destructive) { model.end() }
+            Button(Copy.keepGoing, role: .cancel) {}
         } message: {
-            Text(endMessage)
+            Text(Copy.endEarlyMessage(cardsCompleted: model.session?.cardsCompleted ?? 0))
         }
         .sheet(isPresented: $showGuide) {
             if let currentExercise { GuideSheet(exercise: currentExercise) }
@@ -418,13 +418,6 @@ struct ControlsPage: View {
             return prescription(for: card, equipment: session.equipment, difficulty: session.difficulty).exercise
         default: return nil
         }
-    }
-
-    private var endMessage: String {
-        let done = model.session?.cardsCompleted ?? 0
-        return done > 0
-            ? "You've done \(done) \(done == 1 ? "card" : "cards"). You'll see a summary."
-            : "Nothing's been done yet."
     }
 }
 
@@ -465,7 +458,7 @@ struct ProgressPage: View {
                         stat("\(Int(model.recorder.activeCalories.rounded()))", "CAL")
                     }
                     .accessibilityElement(children: .combine)
-                    WatchInfoRow("Deck", value: "\(session.difficulty.displayName) · \(session.deckSize < 54 ? "Half" : "Full")")
+                    WatchInfoRow("Deck", value: "\(session.difficulty.displayName) · \(Copy.deckSizeName(halfDeck: session.deckSize < 54))")
                 }
                 .padding(.horizontal, WatchLayout.edge)
             }

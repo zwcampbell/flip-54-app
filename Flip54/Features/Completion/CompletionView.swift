@@ -103,7 +103,7 @@ struct CompletionView: View {
             .foregroundStyle(DS.Colors.textPrimary)
             .lineSpacing(-4)
 
-            Text("\(data.cardCount) cards. Every single one.")
+            Text(Copy.deckCleared(cards: data.cardCount))
                 .font(.system(size: 15))
                 .foregroundStyle(DS.Colors.textSecondary)
         }
@@ -127,7 +127,7 @@ struct CompletionView: View {
         VStack(spacing: 0) {
             // Top row: totalReps, cards, time
             HStack {
-                StatCell(value: "\(data.totalReps)", label: "Total Reps")
+                StatCell(value: "\(data.totalReps)", label: Copy.totalReps)
                 Divider().background(DS.Colors.border).frame(height: 44)
                 StatCell(value: "\(data.cardCount)", label: "Cards")
                 Divider().background(DS.Colors.border).frame(height: 44)
