@@ -13,6 +13,10 @@ private let log = Logger(subsystem: "com.flip54.app.watchkitapp", category: "Pho
 final class PhoneChannel: NSObject {
     /// Called with each message the iPhone sends.
     var onData: ((Data) -> Void)?
+    /// Called with the iPhone's workout setup and deck unlocks.
+    var onSettings: ((SyncedSettings) -> Void)?
+    /// Settings waiting for WatchConnectivity to finish activating.
+    private var pendingSettings: SyncedSettings?
 
     override init() {
         super.init()
@@ -51,14 +55,53 @@ final class PhoneChannel: NSObject {
         log.info("Queued a finished workout for the iPhone: \(workout.session.cardsCompleted, privacy: .public) cards")
     }
 
+    /// Shares the watch's setup with the iPhone. Only the latest matters, so
+    /// it goes as the application context, which replaces any unsent one.
+    func sendSettings(_ settings: SyncedSettings) {
+        guard WCSession.isSupported() else { return }
+        guard WCSession.default.activationState == .activated else {
+            pendingSettings = settings
+            return
+        }
+        do {
+            try WCSession.default.updateApplicationContext([SyncedSettings.contextKey: settings.encoded()])
+        } catch {
+            log.error("Couldn't share settings with the iPhone: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
     private func received(_ data: Data) {
         onData?(data)
+    }
+
+    private func receivedContext(_ context: [String: Any]) {
+        guard let data = context[SyncedSettings.contextKey] as? Data,
+              let settings = try? SyncedSettings.decode(data) else { return }
+        onSettings?(settings)
+    }
+
+    private func activated(latestContext: [String: Any]) {
+        receivedContext(latestContext)
+        if let pendingSettings {
+            self.pendingSettings = nil
+            sendSettings(pendingSettings)
+        }
     }
 }
 
 extension PhoneChannel: WCSessionDelegate {
     nonisolated func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState,
-                             error: (any Error)?) {}
+                             error: (any Error)?) {
+        guard activationState == .activated else { return }
+        // The iPhone's latest settings, which may have arrived while the app was closed.
+        let data = session.receivedApplicationContext[SyncedSettings.contextKey] as? Data
+        Task { @MainActor in self.activated(latestContext: data.map { [SyncedSettings.contextKey: $0] } ?? [:]) }
+    }
+
+    nonisolated func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String: Any]) {
+        let data = applicationContext[SyncedSettings.contextKey] as? Data
+        Task { @MainActor in self.receivedContext(data.map { [SyncedSettings.contextKey: $0] } ?? [:]) }
+    }
 
     nonisolated func session(_ session: WCSession, didReceiveMessageData messageData: Data) {
         Task { @MainActor in self.received(messageData) }

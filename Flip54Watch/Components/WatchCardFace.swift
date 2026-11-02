@@ -7,6 +7,8 @@ import Flip54DesignSystem
 struct WatchCardFace: View {
     let card: Card
     var width: CGFloat = 66
+    /// A Midas card turned to gold leaf as it's finished.
+    var gilded = false
 
     private var scale: CGFloat { width / 66 }
     private var height: CGFloat { width / WatchLayout.cardAspect }
@@ -14,7 +16,7 @@ struct WatchCardFace: View {
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 8 * scale, style: .continuous)
-                .fill(DS.Colors.cardFace)
+                .fill(gilded ? AnyShapeStyle(MidasPalette.leaf) : AnyShapeStyle(DS.Colors.cardFace))
                 .shadow(color: DS.Shadow.card, radius: 8 * scale, y: 4 * scale)
                 .shadow(color: card.isJoker ? DS.Colors.gold.opacity(0.28) : .clear, radius: 14 * scale)
 
@@ -30,7 +32,7 @@ struct WatchCardFace: View {
             corner.rotationEffect(.degrees(180))
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
         }
-        .foregroundStyle(card.inkColor)
+        .foregroundStyle(gilded ? MidasPalette.goldDeep : card.inkColor)
         .frame(width: width, height: height)
         .accessibilityElement()
         .accessibilityLabel(card.accessibilityName)
