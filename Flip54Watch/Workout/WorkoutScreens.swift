@@ -424,16 +424,19 @@ struct ControlsPage: View {
 // MARK: - Sheets
 
 /// The page below the workout: swipe up (or tap the cards-left header) to see it.
+/// Everything fits on one screen; a scroll view here fought the page swipe
+/// and left the last row cut off at the bottom.
 struct ProgressPage: View {
     @Environment(WatchWorkoutModel.self) private var model
 
     var body: some View {
         if let session = model.session {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: 7) {
                     HStack(alignment: .lastTextBaseline, spacing: 6) {
                         Text("\(session.totalRepsCompleted)")
-                            .font(WatchType.display(64))
+                            .font(WatchType.display(50))
+                            .minimumScaleFactor(0.7)
+                            .lineLimit(1)
                             .foregroundStyle(DS.Colors.textPrimary)
                         Text("REPS")
                             .font(WatchType.sub(13)).tracking(1.5)
@@ -461,8 +464,8 @@ struct ProgressPage: View {
                     WatchInfoRow("Deck", value: "\(session.difficulty.displayName) · \(Copy.deckSizeName(halfDeck: session.deckSize < 54))")
                 }
                 .padding(.horizontal, WatchLayout.edge)
-            }
-            .background(Color.black)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                .background(Color.black)
         }
     }
 
