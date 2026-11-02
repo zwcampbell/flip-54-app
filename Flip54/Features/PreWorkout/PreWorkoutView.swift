@@ -492,7 +492,7 @@ struct DeckStyle: Identifiable, Hashable {
 enum DeckCatalog {
     static let all: [DeckStyle] = [
         DeckStyle(id: "standard", displayName: "Standard", unlockThreshold: 0),
-        DeckStyle(id: "midas",    displayName: "Midas",    unlockThreshold: 10),
+        DeckStyle(id: "midas",    displayName: "Midas",    unlockThreshold: 3),
         DeckStyle(id: "masonic",  displayName: "Masonic",  unlockThreshold: nil),
     ]
 

@@ -644,7 +644,7 @@ private struct PickDeckPage: View {
     // with the real catalog.
     private let decks: [Deck] = [
         Deck(name: "Standard", bg: Color(hex: "#1A1A22"), accent: Color(hex: "#9D9DAA"), unlocked: true,  lockText: nil),
-        Deck(name: "Midas",    bg: Color(hex: "#1A1508"), accent: DS.Colors.gold,        unlocked: false, lockText: "10 workouts"),
+        Deck(name: "Midas",    bg: Color(hex: "#1A1508"), accent: DS.Colors.gold,        unlocked: false, lockText: "3 workouts"),
         Deck(name: "Masonic",  bg: Color(hex: "#141414"), accent: Color(hex: "#9D9DAA"), unlocked: false, lockText: "Coming soon"),
     ]
 

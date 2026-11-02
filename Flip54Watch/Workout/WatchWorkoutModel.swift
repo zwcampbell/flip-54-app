@@ -72,7 +72,7 @@ final class WatchSettings {
         var remote = remote
         #if DEBUG
         // `-unlockMidas YES` at launch treats Midas as unlocked, so its cards
-        // can be seen in the simulator without logging ten workouts.
+        // can be seen in the simulator without logging three workouts.
         if defaults.bool(forKey: "unlockMidas") { remote.unlockedDeckIds.insert("midas") }
         #endif
         let merged = synced.merged(withRemote: remote, remoteIsPhone: true)

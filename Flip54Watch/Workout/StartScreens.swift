@@ -178,7 +178,7 @@ func cardStyleName(_ deckId: String) -> String {
     deckId == "midas" ? "Midas" : "Standard"
 }
 
-/// Standard, or Midas once it's unlocked on the iPhone (10 workouts, which
+/// Standard, or Midas once it's unlocked on the iPhone (3 workouts, which
 /// now includes workouts done on the watch). The choice syncs to the iPhone.
 struct CardStyleScreen: View {
     @Environment(WatchWorkoutModel.self) private var model
