@@ -129,7 +129,7 @@ struct CardPage: View {
         switch model.state {
         case .shuffling:
             VStack(spacing: 8) {
-                WatchDeckFan().frame(height: 80)
+                WatchDeckFan(isMidas: isMidasDeck).frame(height: 80)
                 Text("SHUFFLING")
                     .font(WatchType.sub(11)).tracking(1)
                     .foregroundStyle(DS.Colors.textSecondary)
@@ -137,7 +137,7 @@ struct CardPage: View {
             .transition(.opacity)
         case .cardFaceDown:
             VStack(spacing: 8) {
-                WatchCardBack()
+                WatchCardBack(isMidas: isMidasDeck)
                     .scaleEffect(flipSquash < 1 ? Self.backToFaceScale : 1)
                     .scaleEffect(x: flipSquash, y: 1)
                 if let session = model.session {
@@ -180,9 +180,13 @@ struct CardPage: View {
         if card.isAce && completed {
             holdComplete(card: card, held: 0, showsDetail: false)
         } else {
-            PrescriptionView(card: card, prescription: currentPrescription(card))
+            // The Midas touch: a finished Midas card leaves as gold leaf.
+            PrescriptionView(card: card, prescription: currentPrescription(card),
+                             gilded: completed && isMidasDeck)
         }
     }
+
+    private var isMidasDeck: Bool { model.session?.deckId == "midas" }
 
     private func holdComplete(card: Card, held: Int, showsDetail: Bool = true) -> some View {
         VStack(spacing: 8) {

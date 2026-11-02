@@ -14,11 +14,13 @@ struct PrescriptionView: View {
     var showsTarget = true
     /// Horizontal scale of the card, for the flip's squash (1 = flat on).
     var cardSquash: CGFloat = 1
+    /// A finished Midas card, turned to gold leaf as it leaves.
+    var gilded = false
 
     var body: some View {
         VStack(spacing: 10) {
             HStack(spacing: 13) {
-                WatchCardFace(card: card)
+                WatchCardFace(card: card, gilded: gilded)
                     .scaleEffect(x: cardSquash, y: 1)
                 if showsTarget {
                     target

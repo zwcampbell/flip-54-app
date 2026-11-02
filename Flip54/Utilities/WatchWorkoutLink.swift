@@ -27,6 +27,10 @@ struct ReceivedWatchCommand: Equatable {
 ///
 /// Workouts started on the watch run there on their own; when one finishes,
 /// the watch queues it over WatchConnectivity and it's saved to History here.
+///
+/// The workout setup (difficulty, deck, equipment, card style) is shared both
+/// ways as each side's application context, newest change winning, and the
+/// deck unlocks earned in History go to the watch with it.
 @MainActor
 @Observable
 final class WatchWorkoutLink: NSObject {
@@ -38,9 +42,19 @@ final class WatchWorkoutLink: NSObject {
     @ObservationIgnored private var latest: RemoteWorkoutSnapshot?
     @ObservationIgnored private var commandCount = 0
     @ObservationIgnored private let container: ModelContainer?
+    /// The setup as last shared with (or taken from) the watch.
+    @ObservationIgnored private var shared: SyncedSettings? {
+        didSet {
+            if let shared, let data = try? shared.encoded() { UserDefaults.standard.set(data, forKey: Self.sharedKey) }
+        }
+    }
+    private static let sharedKey = "phone.sharedWatchSettings"
 
     init(container: ModelContainer? = nil) {
         self.container = container
+        if let data = UserDefaults.standard.data(forKey: Self.sharedKey) {
+            shared = try? SyncedSettings.decode(data)
+        }
         super.init()
         if WCSession.isSupported() {
             WCSession.default.delegate = self
@@ -157,6 +171,58 @@ final class WatchWorkoutLink: NSObject {
         }
     }
 
+    // MARK: - Settings
+
+    /// The iPhone's setup or unlocks changed (or the app just opened): share
+    /// them with the watch. `current.changedAt` is ignored; a new choice is
+    /// stamped now, and an unchanged one keeps its time so it can't override
+    /// a newer change made on the watch.
+    func phoneSettingsChanged(_ current: SyncedSettings) {
+        var next = current
+        if let shared, current.sameChoices(as: shared) {
+            next.changedAt = shared.changedAt
+        } else {
+            // The first time, the iPhone's long-standing setup should beat the
+            // watch's (which predates sync), but not any change made since.
+            next.changedAt = shared == nil ? Date(timeIntervalSince1970: 0) : .now
+        }
+        guard next != shared else { return }
+        shared = next
+        sendSettings()
+    }
+
+    private func sendSettings() {
+        guard let shared, WCSession.isSupported(), WCSession.default.activationState == .activated,
+              WCSession.default.isPaired, WCSession.default.isWatchAppInstalled else { return }
+        do {
+            try WCSession.default.updateApplicationContext([SyncedSettings.contextKey: shared.encoded()])
+        } catch {
+            log.error("Couldn't share settings with the watch: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
+    /// The watch sent its setup: take any newer choices into Settings.
+    private func receivedSettings(_ remote: SyncedSettings) {
+        let base = shared ?? SyncedSettings()
+        let merged = base.merged(withRemote: remote, remoteIsPhone: false)
+        guard !merged.sameChoices(as: base) || merged.changedAt != base.changedAt else { return }
+        shared = merged
+        guard let context = container?.mainContext,
+              let settings = try? context.fetch(FetchDescriptor<UserSettings>()).first else { return }
+        settings.difficultyRaw = merged.difficulty.rawValue
+        settings.useHalfDeck = merged.useHalfDeck
+        settings.hasWeights = merged.hasWeights
+        settings.hasPullUpBar = merged.hasPullUpBar
+        settings.equippedDeckId = merged.deckId
+        settings.disabledExercisesRaw = merged.disabledExercises.map(\.rawValue).sorted().joined(separator: ",")
+        do {
+            try context.save()
+            log.info("Took the watch's settings")
+        } catch {
+            log.error("Couldn't save the watch's settings: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
     // MARK: - Workouts finished on the watch
 
     private func save(_ workout: FinishedWatchWorkout) {
@@ -206,7 +272,25 @@ extension WatchWorkoutLink: HKWorkoutSessionDelegate {
 
 extension WatchWorkoutLink: WCSessionDelegate {
     nonisolated func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState,
-                             error: (any Error)?) {}
+                             error: (any Error)?) {
+        guard activationState == .activated else { return }
+        let data = session.receivedApplicationContext[SyncedSettings.contextKey] as? Data
+        Task { @MainActor in
+            if let data, let remote = try? SyncedSettings.decode(data) { self.receivedSettings(remote) }
+            self.sendSettings()
+        }
+    }
+
+    nonisolated func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String: Any]) {
+        guard let data = applicationContext[SyncedSettings.contextKey] as? Data,
+              let remote = try? SyncedSettings.decode(data) else { return }
+        Task { @MainActor in self.receivedSettings(remote) }
+    }
+
+    /// The watch app was just installed or the watch was paired: send the setup.
+    nonisolated func sessionWatchStateDidChange(_ session: WCSession) {
+        Task { @MainActor in self.sendSettings() }
+    }
 
     nonisolated func session(_ session: WCSession, didReceiveUserInfo userInfo: [String: Any] = [:]) {
         guard let data = userInfo[FinishedWatchWorkout.userInfoKey] as? Data,

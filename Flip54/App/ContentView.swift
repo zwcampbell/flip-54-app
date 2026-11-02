@@ -102,6 +102,10 @@ struct ContentView: View {
         }
         // A workout from the watch can land in History while the app is open.
         .onChange(of: historyQuery.count) { _, _ in syncDeckUnlocks() }
+        // Keep the watch's setup and deck unlocks in step with the iPhone's.
+        .onChange(of: watchSettings, initial: true) { _, current in
+            if let current { watchLink.phoneSettingsChanged(current) }
+        }
         .onChange(of: isActiveWorkout) { wasActive, isActive in
             // When leaving an active workout (e.g., End Early), surface the
             // resume banner if a session is still persisted.
@@ -113,6 +117,21 @@ struct ContentView: View {
     }
 
     // MARK: - Watch
+
+    /// The setup and unlocks the watch should have, or nil before Settings exist.
+    private var watchSettings: SyncedSettings? {
+        guard let settings = settingsQuery.first else { return nil }
+        let unlocked = Set(deckInventoryQuery.filter(\.isUnlocked).map(\.deckId)).union(["standard"])
+        var toUnlock: [String: Int] = [:]
+        for style in DeckCatalog.all {
+            guard let threshold = style.unlockThreshold, threshold > 0, !unlocked.contains(style.id) else { continue }
+            toUnlock[style.id] = max(0, threshold - historyQuery.count)
+        }
+        return SyncedSettings(difficulty: settings.difficulty, useHalfDeck: settings.useHalfDeck,
+                              hasWeights: settings.hasWeights, hasPullUpBar: settings.hasPullUpBar,
+                              deckId: settings.equippedDeckId, disabledExercises: settings.disabledExercises,
+                              unlockedDeckIds: unlocked, workoutsToUnlock: toUnlock)
+    }
 
     /// Keeps a paired watch in step with the deck: starting a workout launches
     /// the watch into it, each change is sent on, and ending tells it so.

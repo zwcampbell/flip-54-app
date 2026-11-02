@@ -10,7 +10,7 @@ struct StartScreen: View {
         let settings = model.settings
         NavigationStack {
             VStack(spacing: 4) {
-                WatchDeckFan()
+                WatchDeckFan(isMidas: settings.deckId == "midas")
                     .frame(height: 78)
                 NavigationLink {
                     SetupScreen()
@@ -75,7 +75,7 @@ struct SetupScreen: View {
                     SetupRowLabel(label: "Equipment", value: settings.equipmentName)
                 }
                 NavigationLink { CardStyleScreen() } label: {
-                    SetupRowLabel(label: "Card style", value: "Standard")
+                    SetupRowLabel(label: "Card style", value: cardStyleName(settings.deckId))
                 }
             }
             .buttonStyle(.plain)
@@ -174,14 +174,31 @@ struct EquipmentScreen: View {
     }
 }
 
-/// Only the standard deck is available on the watch for now; Midas unlocks
-/// with workout history, which the watch doesn't have until history sync.
+func cardStyleName(_ deckId: String) -> String {
+    deckId == "midas" ? "Midas" : "Standard"
+}
+
+/// Standard, or Midas once it's unlocked on the iPhone (10 workouts, which
+/// now includes workouts done on the watch). The choice syncs to the iPhone.
 struct CardStyleScreen: View {
+    @Environment(WatchWorkoutModel.self) private var model
+    @Environment(\.dismiss) private var dismiss
+
     var body: some View {
+        let settings = model.settings
         ScrollView {
             VStack(spacing: 4) {
-                WatchOptionRow(title: "Standard", subtitle: "Selected", isSelected: true) {}
-                WatchOptionRow(title: "Midas", subtitle: "Unlock on iPhone", isSelected: false, isEnabled: false) {}
+                WatchOptionRow(title: "Standard", subtitle: "The classic deck",
+                               isSelected: settings.deckId == "standard") {
+                    settings.deckId = "standard"
+                    dismiss()
+                }
+                WatchOptionRow(title: "Midas", subtitle: midasSubtitle,
+                               isSelected: settings.deckId == "midas",
+                               isEnabled: settings.isUnlocked("midas")) {
+                    settings.deckId = "midas"
+                    dismiss()
+                }
                 WatchOptionRow(title: "Masonic", subtitle: "Coming soon", isSelected: false, isEnabled: false) {}
             }
             .padding(.horizontal, WatchLayout.edge)
@@ -190,5 +207,14 @@ struct CardStyleScreen: View {
         .navigationTitle {
             Text("CARD STYLE").font(WatchType.sub(14)).foregroundStyle(DS.Colors.gold)
         }
+    }
+
+    private var midasSubtitle: String {
+        let settings = model.settings
+        if settings.isUnlocked("midas") { return "Gold leaf, earned" }
+        if let left = settings.workoutsToUnlock("midas"), left > 0 {
+            return "\(left) more \(left == 1 ? "workout" : "workouts")"
+        }
+        return "Unlock on iPhone"
     }
 }

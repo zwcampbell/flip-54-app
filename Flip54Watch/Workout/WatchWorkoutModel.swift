@@ -5,19 +5,48 @@ import Flip54Core
 import Flip54Storage
 import Flip54WorkoutEngine
 
-/// Workout setup chosen on the watch. Kept in the watch's own UserDefaults
-/// until phone ↔ watch settings sync lands.
+/// Workout setup, shared with the iPhone: a change on either device shows up
+/// on the other (the newer change wins), and the iPhone's deck unlocks come
+/// along with it. Kept in the watch's UserDefaults between launches.
 @MainActor
 @Observable
 final class WatchSettings {
-    var difficulty: Difficulty { didSet { defaults.set(difficulty.rawValue, forKey: Key.difficulty) } }
-    var useHalfDeck: Bool { didSet { defaults.set(useHalfDeck, forKey: Key.halfDeck) } }
-    var hasWeights: Bool { didSet { defaults.set(hasWeights, forKey: Key.weights) } }
-    var hasPullUpBar: Bool { didSet { defaults.set(hasPullUpBar, forKey: Key.pullUpBar) } }
+    /// Everything, as sent to and from the iPhone.
+    private(set) var synced: SyncedSettings { didSet { save() } }
+    /// Called after a change made on the watch, to send it to the iPhone.
+    @ObservationIgnored var onLocalChange: ((SyncedSettings) -> Void)?
+
+    var difficulty: Difficulty {
+        get { synced.difficulty }
+        set { change { $0.difficulty = newValue } }
+    }
+    var useHalfDeck: Bool {
+        get { synced.useHalfDeck }
+        set { change { $0.useHalfDeck = newValue } }
+    }
+    var hasWeights: Bool {
+        get { synced.hasWeights }
+        set { change { $0.hasWeights = newValue } }
+    }
+    var hasPullUpBar: Bool {
+        get { synced.hasPullUpBar }
+        set { change { $0.hasPullUpBar = newValue } }
+    }
+    /// Card style: "standard" or an unlocked deck such as "midas".
+    var deckId: String {
+        get { synced.deckId }
+        set { change { $0.deckId = newValue } }
+    }
+    var disabledExercises: Set<Exercise> { synced.disabledExercises }
+
+    func isUnlocked(_ deckId: String) -> Bool { synced.unlockedDeckIds.contains(deckId) }
+    func workoutsToUnlock(_ deckId: String) -> Int? { synced.workoutsToUnlock[deckId] }
 
     private let defaults: UserDefaults
 
     private enum Key {
+        static let settings = "watch.settings"
+        // Before sync, each choice had its own key.
         static let difficulty = "watch.difficulty"
         static let halfDeck = "watch.useHalfDeck"
         static let weights = "watch.hasWeights"
@@ -26,10 +55,41 @@ final class WatchSettings {
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
-        difficulty = Difficulty(rawValue: defaults.string(forKey: Key.difficulty) ?? "") ?? .standard
-        useHalfDeck = defaults.bool(forKey: Key.halfDeck)
-        hasWeights = defaults.bool(forKey: Key.weights)
-        hasPullUpBar = defaults.bool(forKey: Key.pullUpBar)
+        if let data = defaults.data(forKey: Key.settings), let saved = try? SyncedSettings.decode(data) {
+            synced = saved
+        } else {
+            synced = SyncedSettings(
+                difficulty: Difficulty(rawValue: defaults.string(forKey: Key.difficulty) ?? "") ?? .standard,
+                useHalfDeck: defaults.bool(forKey: Key.halfDeck),
+                hasWeights: defaults.bool(forKey: Key.weights),
+                hasPullUpBar: defaults.bool(forKey: Key.pullUpBar)
+            )
+        }
+    }
+
+    /// Takes in what the iPhone sent.
+    func apply(fromPhone remote: SyncedSettings) {
+        var remote = remote
+        #if DEBUG
+        // `-unlockMidas YES` at launch treats Midas as unlocked, so its cards
+        // can be seen in the simulator without logging ten workouts.
+        if defaults.bool(forKey: "unlockMidas") { remote.unlockedDeckIds.insert("midas") }
+        #endif
+        let merged = synced.merged(withRemote: remote, remoteIsPhone: true)
+        if merged != synced { synced = merged }
+    }
+
+    private func change(_ update: (inout SyncedSettings) -> Void) {
+        var next = synced
+        update(&next)
+        guard !next.sameChoices(as: synced) else { return }
+        next.changedAt = .now
+        synced = next
+        onLocalChange?(next)
+    }
+
+    private func save() {
+        if let data = try? synced.encoded() { defaults.set(data, forKey: Key.settings) }
     }
 
     var equipment: Equipment {
@@ -127,6 +187,13 @@ final class WatchWorkoutModel {
         phone.onData = { [weak self] data in
             self?.received(data)
         }
+        phone.onSettings = { [weak self] remote in
+            self?.settings.apply(fromPhone: remote)
+        }
+        settings.onLocalChange = { [weak self] changed in
+            self?.phone.sendSettings(changed)
+        }
+        phone.sendSettings(settings.synced)
     }
 
     var state: WorkoutState { coordinator.state }
@@ -139,8 +206,9 @@ final class WatchWorkoutModel {
         coordinator.configure(
             equipment: settings.equipment,
             difficulty: settings.difficulty,
-            deckId: "standard",
-            useHalfDeck: settings.useHalfDeck
+            deckId: settings.deckId,
+            useHalfDeck: settings.useHalfDeck,
+            disabledExercises: settings.disabledExercises
         )
         coordinator.send(.shuffle)
         #if DEBUG

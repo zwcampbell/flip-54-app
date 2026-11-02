@@ -12,6 +12,17 @@ enum WatchType {
     static func body(_ size: CGFloat) -> Font { .system(size: size, weight: .semibold) }
 }
 
+/// The Midas deck's gold leaf, matching the iPhone's Midas cards.
+enum MidasPalette {
+    static let goldHi   = Color(hex: "#F7DC8E")
+    static let gold     = Color(hex: "#D4A24C")
+    static let goldLo   = Color(hex: "#8B5E14")
+    static let goldDeep = Color(hex: "#3D2A0A")
+
+    static let leaf = LinearGradient(colors: [goldHi, gold, goldLo],
+                                     startPoint: .topLeading, endPoint: .bottomTrailing)
+}
+
 enum WatchLayout {
     /// Inset of full-width buttons and rows from the screen edge.
     static let edge: CGFloat = 7
