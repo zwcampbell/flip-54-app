@@ -11,6 +11,8 @@ public enum RemoteWorkoutMessage: Codable, Equatable, Sendable {
     case ended
     /// Watch → iPhone: something the wearer did on the watch.
     case command(RemoteWorkoutCommand)
+    /// Watch → iPhone: a workout run on the watch alone has finished.
+    case finished(FinishedWatchWorkout)
 
     public func encoded() throws -> Data { try JSONEncoder().encode(self) }
 
@@ -49,5 +51,29 @@ public enum RemoteWorkoutCommand: String, Codable, Sendable {
 extension WorkoutCoordinator {
     public var remoteSnapshot: RemoteWorkoutSnapshot {
         RemoteWorkoutSnapshot(state: state, session: session, isHoldPausedInPlace: isHoldPausedInPlace)
+    }
+}
+
+/// A workout started and finished on the watch, sent to the iPhone so it
+/// lands in History. `id` becomes the History entry's id, so a record
+/// delivered twice is saved once.
+public struct FinishedWatchWorkout: Codable, Equatable, Sendable {
+    /// The WatchConnectivity user-info key the record travels under.
+    public static let userInfoKey = "flip54.finishedWatchWorkout"
+
+    public let id: UUID
+    public let session: ActiveSession
+    public let completedAt: Date
+
+    public init(id: UUID = UUID(), session: ActiveSession, completedAt: Date) {
+        self.id = id
+        self.session = session
+        self.completedAt = completedAt
+    }
+
+    public func encoded() throws -> Data { try JSONEncoder().encode(self) }
+
+    public static func decode(_ data: Data) throws -> FinishedWatchWorkout {
+        try JSONDecoder().decode(FinishedWatchWorkout.self, from: data)
     }
 }

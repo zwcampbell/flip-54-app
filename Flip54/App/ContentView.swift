@@ -16,7 +16,7 @@ struct ContentView: View {
     @Query private var deckInventoryQuery: [DeckInventory]
 
     @State private var coordinator = WorkoutCoordinator()
-    @State private var watchLink = WatchWorkoutLink()
+    @Environment(WatchWorkoutLink.self) private var watchLink
     @State private var completedData: CompletedWorkoutData?
     @State private var showResumeBanner = false
     @State private var selectedTab = 0
@@ -100,7 +100,8 @@ struct ContentView: View {
                 watchLink.update(coordinator.remoteSnapshot)
             }
         }
-        .environment(watchLink)
+        // A workout from the watch can land in History while the app is open.
+        .onChange(of: historyQuery.count) { _, _ in syncDeckUnlocks() }
         .onChange(of: isActiveWorkout) { wasActive, isActive in
             // When leaving an active workout (e.g., End Early), surface the
             // resume banner if a session is still persisted.
@@ -247,20 +248,7 @@ struct ContentView: View {
     }
 
     private func saveHistory(_ data: CompletedWorkoutData) {
-        let history = WorkoutHistory(
-            completedAt: data.completedAt,
-            duration: data.duration,
-            deckId: data.deckId,
-            difficulty: data.difficulty,
-            totalReps: data.totalReps,
-            holdSecondsCompleted: data.holdSecondsCompleted,
-            cardCount: data.cardCount,
-            skipCount: data.skipCount,
-            repsBySuit: data.repsBySuit,
-            jumpingJacks: data.jumpingJacks,
-            exerciseReps: data.exerciseReps
-        )
-        modelContext.insert(history)
+        modelContext.insert(WorkoutHistory(data))
         os_signpost(.begin, log: saveLog, name: "modelContext.save", "workout-history")
         try? modelContext.save()
         os_signpost(.end, log: saveLog, name: "modelContext.save", "workout-history")
@@ -348,37 +336,5 @@ struct ContentView: View {
         ]
         UITabBar.appearance().standardAppearance = appearance
         UITabBar.appearance().scrollEdgeAppearance = appearance
-    }
-}
-
-// MARK: - Completed workout data snapshot
-
-struct CompletedWorkoutData {
-    let completedAt: Date
-    let duration: TimeInterval
-    let deckId: String
-    let difficulty: Difficulty
-    let totalReps: Int
-    let holdSecondsCompleted: Int
-    let cardCount: Int
-    let skipCount: Int
-    let repsBySuit: [Suit: Int]
-    let jumpingJacks: Int
-    let exerciseReps: [Exercise: Int]
-
-    init(session: ActiveSession, completedAt: Date) {
-        self.completedAt = completedAt
-        let elapsed = completedAt.timeIntervalSince(session.startedAt) - session.totalPausedDuration
-        self.duration = max(0, elapsed)
-        self.deckId = session.deckId
-        self.difficulty = session.difficulty
-        self.totalReps = session.totalRepsCompleted
-        self.holdSecondsCompleted = session.holdSecondsCompleted
-        self.cardCount = session.cardsCompleted
-        self.skipCount = session.skipCount
-        self.repsBySuit = session.repsBySuit
-        let suitReps = session.repsBySuit.values.reduce(0, +)
-        self.jumpingJacks = session.totalRepsCompleted - suitReps
-        self.exerciseReps = session.exerciseReps
     }
 }

@@ -2,7 +2,9 @@ import Foundation
 import HealthKit
 import Observation
 import WatchConnectivity
+import SwiftData
 import os
+import Flip54Storage
 import Flip54WorkoutEngine
 
 private let log = Logger(subsystem: "com.flip54.app", category: "WatchWorkoutLink")
@@ -22,6 +24,9 @@ struct ReceivedWatchCommand: Equatable {
 /// runs the deck and sends each change down it; the watch sends back what
 /// the wearer tapped, which lands in `command`. The watch records the
 /// Apple Health workout; the iPhone saves History.
+///
+/// Workouts started on the watch run there on their own; when one finishes,
+/// the watch queues it over WatchConnectivity and it's saved to History here.
 @MainActor
 @Observable
 final class WatchWorkoutLink: NSObject {
@@ -32,8 +37,10 @@ final class WatchWorkoutLink: NSObject {
     @ObservationIgnored private var mirrored: HKWorkoutSession?
     @ObservationIgnored private var latest: RemoteWorkoutSnapshot?
     @ObservationIgnored private var commandCount = 0
+    @ObservationIgnored private let container: ModelContainer?
 
-    override init() {
+    init(container: ModelContainer? = nil) {
+        self.container = container
         super.init()
         if WCSession.isSupported() {
             WCSession.default.delegate = self
@@ -139,9 +146,32 @@ final class WatchWorkoutLink: NSObject {
     }
 
     private func received(_ data: Data) {
-        guard case .command(let command) = try? RemoteWorkoutMessage.decode(data) else { return }
-        commandCount += 1
-        self.command = ReceivedWatchCommand(id: commandCount, command: command)
+        switch try? RemoteWorkoutMessage.decode(data) {
+        case .command(let command):
+            commandCount += 1
+            self.command = ReceivedWatchCommand(id: commandCount, command: command)
+        case .finished(let workout):
+            save(workout)
+        default:
+            break
+        }
+    }
+
+    // MARK: - Workouts finished on the watch
+
+    private func save(_ workout: FinishedWatchWorkout) {
+        guard let context = container?.mainContext else { return }
+        let id = workout.id
+        let existing = (try? context.fetchCount(FetchDescriptor<WorkoutHistory>(predicate: #Predicate { $0.id == id }))) ?? 0
+        guard existing == 0 else { return }
+        let data = CompletedWorkoutData(session: workout.session, completedAt: workout.completedAt)
+        context.insert(WorkoutHistory(data, id: id))
+        do {
+            try context.save()
+            log.info("Saved a watch workout to History: \(data.cardCount, privacy: .public) cards")
+        } catch {
+            log.error("Couldn't save a watch workout: \(error.localizedDescription, privacy: .public)")
+        }
     }
 
     private func sessionEnded() {
@@ -177,6 +207,12 @@ extension WatchWorkoutLink: HKWorkoutSessionDelegate {
 extension WatchWorkoutLink: WCSessionDelegate {
     nonisolated func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState,
                              error: (any Error)?) {}
+
+    nonisolated func session(_ session: WCSession, didReceiveUserInfo userInfo: [String: Any] = [:]) {
+        guard let data = userInfo[FinishedWatchWorkout.userInfoKey] as? Data,
+              let workout = try? FinishedWatchWorkout.decode(data) else { return }
+        Task { @MainActor in self.save(workout) }
+    }
 
     nonisolated func session(_ session: WCSession, didReceiveMessageData messageData: Data) {
         Task { @MainActor in self.received(messageData) }
