@@ -423,17 +423,11 @@ struct PreWorkoutView: View {
     }
 
     private var difficultySummary: String {
-        let level = settings.difficulty.displayName.uppercased()
-        let size  = settings.useHalfDeck ? "HALF DECK" : "FULL DECK"
-        return "\(level) + \(size)"
+        Copy.difficultySummary(settings.difficulty, halfDeck: settings.useHalfDeck)
     }
 
     private var equipmentSummary: String {
-        var parts: [String] = []
-        if settings.hasWeights    { parts.append("Weights") }
-        if settings.hasPullUpBar  { parts.append("Pull-up bar") }
-        if parts.isEmpty          { parts.append("Bodyweight") }
-        return parts.joined(separator: " + ")
+        Copy.equipmentSummary(hasWeights: settings.hasWeights, hasPullUpBar: settings.hasPullUpBar)
     }
 
     // MARK: - Bottom bar
@@ -539,10 +533,9 @@ private struct DeckPickerPopover: View {
     /// Locked-state subtitle: progress toward the threshold, or "Coming
     /// soon" for a deck with no unlock path yet.
     private func unlockHint(_ style: DeckStyle) -> String? {
-        guard let threshold = style.unlockThreshold else { return "Coming soon" }
+        guard let threshold = style.unlockThreshold else { return Copy.unlockHint(workoutsLeft: nil) }
         guard threshold > 0, !isUnlocked(style) else { return nil }
-        let remaining = max(0, threshold - history.count)
-        return remaining == 1 ? "1 more workout" : "\(remaining) more workouts"
+        return Copy.unlockHint(workoutsLeft: max(0, threshold - history.count))
     }
 
     private func deckRow(_ style: DeckStyle) -> some View {
@@ -565,7 +558,7 @@ private struct DeckPickerPopover: View {
                             .foregroundStyle(DS.Colors.textTertiary)
                             .tracking(1.2)
                     } else if isSelected {
-                        DS.Typography.sub("EQUIPPED", size: 10)
+                        DS.Typography.sub(Copy.equipped.uppercased(), size: 10)
                             .foregroundStyle(DS.Colors.gold)
                             .tracking(1.2)
                     }

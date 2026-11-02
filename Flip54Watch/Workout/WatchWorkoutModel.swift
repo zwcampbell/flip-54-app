@@ -2,6 +2,7 @@ import Foundation
 import Observation
 import WatchKit
 import Flip54Core
+import Flip54DesignSystem
 import Flip54Storage
 import Flip54WorkoutEngine
 
@@ -96,16 +97,11 @@ final class WatchSettings {
         Equipment(hasWeights: hasWeights, hasPullUpBar: hasPullUpBar, hasYogaMat: false)
     }
 
-    var deckName: String { useHalfDeck ? "Half" : "Full" }
+    var deckName: String { Copy.deckSizeName(halfDeck: useHalfDeck) }
     var deckSize: Int { useHalfDeck ? 27 : 54 }
 
     var equipmentName: String {
-        switch (hasWeights, hasPullUpBar) {
-        case (false, false): "Body-weight"
-        case (true, false):  "Weights"
-        case (false, true):  "Pull-up bar"
-        case (true, true):   "Weights + bar"
-        }
+        Copy.equipmentSummary(hasWeights: hasWeights, hasPullUpBar: hasPullUpBar)
     }
 }
 

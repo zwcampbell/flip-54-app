@@ -17,7 +17,7 @@ struct StartScreen: View {
                 } label: {
                     VStack(spacing: 3) {
                         HStack(spacing: 3) {
-                            Text("\(settings.difficulty.displayName.uppercased()) · \(multiplier(settings.difficulty))")
+                            Text(Copy.difficultySummary(settings.difficulty, halfDeck: settings.useHalfDeck))
                                 .font(WatchType.sub(15))
                                 .tracking(0.75)
                                 .foregroundStyle(DS.Colors.textPrimary)
@@ -25,8 +25,9 @@ struct StartScreen: View {
                                 .font(.system(size: 10, weight: .bold))
                                 .foregroundStyle(DS.Colors.textSecondary)
                         }
-                        Text("\(settings.deckName) deck · \(settings.equipmentName)")
-                            .font(WatchType.body(11))
+                        Text(settings.equipmentName.uppercased())
+                            .font(WatchType.sub(11))
+                            .tracking(1)
                             .foregroundStyle(DS.Colors.textSecondary)
                     }
                     .lineLimit(1)
@@ -54,7 +55,7 @@ struct StartScreen: View {
 }
 
 func multiplier(_ difficulty: Difficulty) -> String {
-    String(format: "%.1f×", difficulty.multiplier)
+    Copy.multiplier(difficulty)
 }
 
 struct SetupScreen: View {
@@ -69,7 +70,7 @@ struct SetupScreen: View {
                                   detail: multiplier(settings.difficulty))
                 }
                 NavigationLink { DeckSizeScreen() } label: {
-                    SetupRowLabel(label: "Deck", value: settings.deckName, detail: "\(settings.deckSize)")
+                    SetupRowLabel(label: "Deck", value: settings.deckName)
                 }
                 NavigationLink { EquipmentScreen() } label: {
                     SetupRowLabel(label: "Equipment", value: settings.equipmentName)
@@ -92,18 +93,11 @@ struct DifficultyScreen: View {
     @Environment(WatchWorkoutModel.self) private var model
     @Environment(\.dismiss) private var dismiss
 
-    private static let blurbs: [Difficulty: String] = [
-        .beginner: "Build the habit.",
-        .standard: "As prescribed.",
-        .advanced: "Push it.",
-    ]
-
     var body: some View {
         ScrollView {
             VStack(spacing: 4) {
                 ForEach(Difficulty.allCases, id: \.self) { level in
-                    WatchOptionRow(title: level.displayName, subtitle: Self.blurbs[level] ?? "",
-                                   trailing: multiplier(level),
+                    WatchOptionRow(title: level.displayName, subtitle: Copy.description(level),
                                    isSelected: model.settings.difficulty == level) {
                         model.settings.difficulty = level
                         dismiss()
@@ -126,8 +120,8 @@ struct DeckSizeScreen: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 4) {
-                option(half: false, name: "Full", count: 54, blurb: "Every card, both jokers")
-                option(half: true, name: "Half", count: 27, blurb: "Aces, faces, 10s, 9s, two 8s, 1 joker")
+                option(half: false, detail: Copy.fullDeckDetail)
+                option(half: true, detail: Copy.halfDeckDetail)
             }
             .padding(.horizontal, WatchLayout.edge)
         }
@@ -137,9 +131,9 @@ struct DeckSizeScreen: View {
         }
     }
 
-    private func option(half: Bool, name: String, count: Int, blurb: String) -> some View {
-        WatchOptionRow(title: name, subtitle: blurb, trailing: "\(count)",
-                       isSelected: model.settings.useHalfDeck == half) {
+    private func option(half: Bool, detail: String) -> some View {
+        WatchOptionRow(title: Copy.deckSizeName(halfDeck: half), subtitle: detail,
+                       isSelected: model.settings.useHalfDeck == half, uppercasesTitle: false) {
             model.settings.useHalfDeck = half
             dismiss()
         }
@@ -153,17 +147,17 @@ struct EquipmentScreen: View {
         @Bindable var settings = model.settings
         ScrollView {
             VStack(spacing: 4) {
-                EquipmentToggleRow(title: "Weights", subtitle: "Dumbbells or kettlebells",
+                EquipmentToggleRow(title: Copy.weights, subtitle: Copy.weightsDetail,
                                    systemImage: "dumbbell.fill", isOn: $settings.hasWeights)
-                EquipmentToggleRow(title: "Pull-up bar", subtitle: "Fixed or doorframe bar",
+                EquipmentToggleRow(title: Copy.pullUpBar, subtitle: Copy.pullUpBarDetail,
                                    systemImage: "figure.climbing", isOn: $settings.hasPullUpBar)
-                Text(settings.hasWeights || settings.hasPullUpBar
-                     ? "Body-weight moves stay in the mix."
-                     : "Body-weight only. No problem, we’ve got you.")
-                    .font(WatchType.body(10))
-                    .foregroundStyle(DS.Colors.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.top, 6)
+                if !settings.hasWeights && !settings.hasPullUpBar {
+                    Text(Copy.bodyweightOnly)
+                        .font(WatchType.body(10))
+                        .foregroundStyle(DS.Colors.textSecondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.top, 6)
+                }
             }
             .padding(.horizontal, WatchLayout.edge)
         }
@@ -188,18 +182,10 @@ struct CardStyleScreen: View {
         let settings = model.settings
         ScrollView {
             VStack(spacing: 4) {
-                WatchOptionRow(title: "Standard", subtitle: "The classic deck",
-                               isSelected: settings.deckId == "standard") {
-                    settings.deckId = "standard"
-                    dismiss()
-                }
-                WatchOptionRow(title: "Midas", subtitle: midasSubtitle,
-                               isSelected: settings.deckId == "midas",
-                               isEnabled: settings.isUnlocked("midas")) {
-                    settings.deckId = "midas"
-                    dismiss()
-                }
-                WatchOptionRow(title: "Masonic", subtitle: "Coming soon", isSelected: false, isEnabled: false) {}
+                style("standard", name: "Standard")
+                style("midas", name: "Midas")
+                WatchOptionRow(title: "Masonic", subtitle: Copy.unlockHint(workoutsLeft: nil), isSelected: false,
+                               isEnabled: false, uppercasesTitle: false, capsSubtitle: true) {}
             }
             .padding(.horizontal, WatchLayout.edge)
         }
@@ -209,12 +195,20 @@ struct CardStyleScreen: View {
         }
     }
 
-    private var midasSubtitle: String {
+    /// A deck row as in the iPhone's deck picker: "Equipped" under the
+    /// chosen deck, the workouts still needed under a locked one.
+    private func style(_ id: String, name: String) -> some View {
         let settings = model.settings
-        if settings.isUnlocked("midas") { return "Gold leaf, earned" }
-        if let left = settings.workoutsToUnlock("midas"), left > 0 {
-            return "\(left) more \(left == 1 ? "workout" : "workouts")"
+        let unlocked = id == "standard" || settings.isUnlocked(id)
+        let isSelected = settings.deckId == id
+        let subtitle = unlocked
+            ? (isSelected ? Copy.equipped : "")
+            // Before the iPhone has synced, the watch doesn't know the count yet.
+            : settings.workoutsToUnlock(id).map { Copy.unlockHint(workoutsLeft: $0) } ?? "Unlock on iPhone"
+        return WatchOptionRow(title: name, subtitle: subtitle, isSelected: isSelected, isEnabled: unlocked,
+                              uppercasesTitle: false, capsSubtitle: true) {
+            settings.deckId = id
+            dismiss()
         }
-        return "Unlock on iPhone"
     }
 }

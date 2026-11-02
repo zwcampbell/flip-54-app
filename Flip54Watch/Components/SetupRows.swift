@@ -83,8 +83,9 @@ struct SetupRowLabel: View {
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 2.5) {
-                Text(label)
-                    .font(WatchType.body(9.5))
+                Text(label.uppercased())
+                    .font(WatchType.sub(9))
+                    .tracking(1.2)
                     .foregroundStyle(DS.Colors.textSecondary)
                 HStack(alignment: .firstTextBaseline, spacing: 5) {
                     Text(value.uppercased())
@@ -115,12 +116,16 @@ struct SetupRowLabel: View {
 
 /// A selectable option (Difficulty, Deck, Card style). The chosen one gets a
 /// gold border and gold title. `leading` holds an optional illustration.
+/// Casing follows the matching iPhone screen: `uppercasesTitle` for caps
+/// titles (Difficulty), `capsSubtitle` for small caps hints (Card style).
 struct WatchOptionRow<Leading: View>: View {
     let title: String
     let subtitle: String
     var trailing: String?
     let isSelected: Bool
     var isEnabled = true
+    var uppercasesTitle = true
+    var capsSubtitle = false
     @ViewBuilder var leading: () -> Leading
     let action: () -> Void
 
@@ -129,17 +134,26 @@ struct WatchOptionRow<Leading: View>: View {
             HStack(spacing: 9) {
                 leading()
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(title.uppercased())
-                        .font(WatchType.sub(13.5))
-                        .tracking(0.75)
+                    Text(uppercasesTitle ? title.uppercased() : title)
+                        .font(uppercasesTitle ? WatchType.sub(13.5) : WatchType.display(16))
+                        .tracking(uppercasesTitle ? 0.75 : 0.25)
                         .foregroundStyle(isSelected ? DS.Colors.gold : DS.Colors.textPrimary)
-                    Text(subtitle)
-                        .font(WatchType.body(9.5))
-                        .foregroundStyle(DS.Colors.textSecondary)
-                        .lineLimit(2)
-                        .fixedSize(horizontal: false, vertical: true)
+                    if !subtitle.isEmpty {
+                        if capsSubtitle {
+                            Text(subtitle.uppercased())
+                                .font(WatchType.sub(9))
+                                .tracking(1)
+                                .foregroundStyle(isSelected ? DS.Colors.gold : DS.Colors.textSecondary)
+                        } else {
+                            Text(subtitle)
+                                .font(WatchType.body(9.5))
+                                .foregroundStyle(DS.Colors.textSecondary)
+                                .lineLimit(3)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
                 }
-                Spacer(minLength: 4)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 if let trailing {
                     Text(trailing)
                         .font(WatchType.mono(14))
@@ -170,9 +184,11 @@ struct WatchOptionRow<Leading: View>: View {
 
 extension WatchOptionRow where Leading == EmptyView {
     init(title: String, subtitle: String, trailing: String? = nil, isSelected: Bool,
-         isEnabled: Bool = true, action: @escaping () -> Void) {
+         isEnabled: Bool = true, uppercasesTitle: Bool = true, capsSubtitle: Bool = false,
+         action: @escaping () -> Void) {
         self.init(title: title, subtitle: subtitle, trailing: trailing, isSelected: isSelected,
-                  isEnabled: isEnabled, leading: { EmptyView() }, action: action)
+                  isEnabled: isEnabled, uppercasesTitle: uppercasesTitle, capsSubtitle: capsSubtitle,
+                  leading: { EmptyView() }, action: action)
     }
 }
 
@@ -191,9 +207,8 @@ struct EquipmentToggleRow: View {
                     .foregroundStyle(DS.Colors.gold)
                     .frame(width: 20)
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(title.uppercased())
-                        .font(WatchType.sub(13))
-                        .tracking(0.5)
+                    Text(title)
+                        .font(WatchType.body(13))
                         .foregroundStyle(DS.Colors.textPrimary)
                     Text(subtitle)
                         .font(WatchType.body(9))
@@ -212,9 +227,9 @@ struct EquipmentToggleRow: View {
     ScrollView {
         VStack(spacing: 4) {
             WatchScreenHeader(title: "Setup", onBack: {})
-            SetupRow(label: "Difficulty", value: "Standard", detail: "1.0×") {}
-            SetupRow(label: "Deck", value: "Full", detail: "54") {}
-            SetupRow(label: "Equipment", value: "Body-weight") {}
+            SetupRow(label: "Difficulty", value: "Standard", detail: "×1.0") {}
+            SetupRow(label: "Deck", value: "Full Deck") {}
+            SetupRow(label: "Equipment", value: "Bodyweight") {}
             SetupRow(label: "Card style", value: "Standard") {}
         }
         .padding(.horizontal, WatchLayout.edge)
@@ -226,10 +241,11 @@ struct EquipmentToggleRow: View {
     ScrollView {
         VStack(spacing: 4) {
             WatchScreenHeader(title: "Difficulty", onBack: {})
-            WatchOptionRow(title: "Beginner", subtitle: "Build the habit.", trailing: "0.5×", isSelected: false) {}
-            WatchOptionRow(title: "Standard", subtitle: "As prescribed.", trailing: "1.0×", isSelected: true) {}
-            WatchOptionRow(title: "Advanced", subtitle: "Push it.", trailing: "2.0×", isSelected: false) {}
-            WatchOptionRow(title: "Midas", subtitle: "3 more workouts", isSelected: false, isEnabled: false) {}
+            WatchOptionRow(title: "Beginner", subtitle: Copy.description(.beginner), isSelected: false) {}
+            WatchOptionRow(title: "Standard", subtitle: Copy.description(.standard), isSelected: true) {}
+            WatchOptionRow(title: "Advanced", subtitle: Copy.description(.advanced), isSelected: false) {}
+            WatchOptionRow(title: "Midas", subtitle: Copy.unlockHint(workoutsLeft: 1), isSelected: false,
+                           isEnabled: false, uppercasesTitle: false, capsSubtitle: true) {}
         }
         .padding(.horizontal, WatchLayout.edge)
     }
@@ -241,11 +257,11 @@ struct EquipmentToggleRow: View {
     @Previewable @State var bar = false
     ScrollView {
         VStack(spacing: 4) {
-            EquipmentToggleRow(title: "Weights", subtitle: "Dumbbells or kettlebells",
+            EquipmentToggleRow(title: Copy.weights, subtitle: Copy.weightsDetail,
                                systemImage: "dumbbell.fill", isOn: $weights)
-            EquipmentToggleRow(title: "Pull-up bar", subtitle: "Fixed or doorframe bar",
+            EquipmentToggleRow(title: Copy.pullUpBar, subtitle: Copy.pullUpBarDetail,
                                systemImage: "figure.climbing", isOn: $bar)
-            WatchInfoRow("Deck", value: "Standard · Full")
+            WatchInfoRow("Deck", value: "Standard · Full Deck")
             WatchInfoRow(label: "History") {
                 Label("Saved", systemImage: "checkmark").foregroundStyle(DS.Colors.success)
             }

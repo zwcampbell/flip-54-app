@@ -20,7 +20,7 @@ struct PausedScreen: View {
             }
             Spacer(minLength: 0)
             HStack(spacing: 6) {
-                WatchActionButton(title: "End", kind: .destructive) { confirmEnd = true }
+                WatchActionButton(title: Copy.endEarly, kind: .destructive) { confirmEnd = true }
                 WatchActionButton(title: "Resume", systemImage: "play.fill") { model.resume() }
                     .handGestureShortcut(.primaryAction)
             }
@@ -36,9 +36,11 @@ struct PausedScreen: View {
                     .foregroundStyle(DS.Colors.gold)
             }
         }
-        .confirmationDialog("End workout?", isPresented: $confirmEnd) {
-            Button("End workout", role: .destructive) { model.end() }
-            Button("Keep going", role: .cancel) {}
+        .confirmationDialog(Copy.endEarlyQuestion, isPresented: $confirmEnd) {
+            Button(Copy.endWorkout, role: .destructive) { model.end() }
+            Button(Copy.keepGoing, role: .cancel) {}
+        } message: {
+            Text(Copy.endEarlyMessage(cardsCompleted: model.session?.cardsCompleted ?? 0))
         }
     }
 }
@@ -59,8 +61,13 @@ struct SummaryScreen: View {
                     .lineSpacing(-4)
                     .foregroundStyle(DS.Colors.textPrimary)
                     .padding(.top, 4)
+                if !summary.endedEarly {
+                    Text(Copy.deckCleared(cards: summary.cardsCompleted))
+                        .font(WatchType.body(11))
+                        .foregroundStyle(DS.Colors.textSecondary)
+                }
                 HStack(spacing: 4) {
-                    SummaryStat(value: "\(summary.reps)", label: "Reps")
+                    SummaryStat(value: "\(summary.reps)", label: Copy.totalReps)
                     SummaryStat(value: "\(summary.cardsCompleted)", label: "Cards")
                     SummaryStat(value: watchClock(Int(summary.duration)), label: "Time")
                 }
@@ -68,7 +75,7 @@ struct SummaryScreen: View {
                     WatchInfoRow(label: "Avg per card") {
                         Text(watchClock(Int(summary.averagePerCard))).font(WatchType.mono(12))
                     }
-                    WatchInfoRow("Deck", value: summary.halfDeck ? "Half" : "Full")
+                    WatchInfoRow("Deck", value: Copy.deckSizeName(halfDeck: summary.halfDeck))
                     WatchInfoRow(label: "Difficulty") {
                         Text(multiplier(summary.difficulty)).font(WatchType.mono(12))
                     }

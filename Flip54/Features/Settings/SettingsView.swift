@@ -62,15 +62,15 @@ struct SettingsView: View {
             VStack(spacing: 0) {
                 equipmentRow(
                     icon: "dumbbell.fill",
-                    title: "Weights",
-                    subtitle: "Adds curls, goblet squats, thrusters, and more",
+                    title: Copy.weights,
+                    subtitle: Copy.weightsDetail,
                     isOn: $settings.hasWeights
                 )
                 divider
                 equipmentRow(
                     icon: "figure.strengthtraining.traditional",
-                    title: "Pull-up Bar",
-                    subtitle: "Adds pull-ups to upper body workouts and dead-hang holds",
+                    title: Copy.pullUpBar,
+                    subtitle: Copy.pullUpBarDetail,
                     isOn: $settings.hasPullUpBar
                 )
             }
@@ -114,8 +114,8 @@ struct SettingsView: View {
             VStack(spacing: 0) {
                 equipmentRow(
                     icon: "rectangle.stack.fill",
-                    title: "Half Deck",
-                    subtitle: "27 cards · A/K/Q/J/10/9 every suit + 1 joker",
+                    title: Copy.deckSizeName(halfDeck: true),
+                    subtitle: Copy.halfDeckDetail,
                     isOn: $settings.useHalfDeck
                 )
             }
@@ -448,12 +448,5 @@ extension Difficulty: CaseIterable {
         }
     }
 
-    var description: String {
-        let m = String(format: "×%.1f", multiplier)
-        switch self {
-        case .beginner:  return "\(m) reps — great for starting out"
-        case .standard:  return "\(m) reps — the full deck challenge"
-        case .advanced:  return "\(m) reps — for seasoned athletes"
-        }
-    }
+    var description: String { Copy.description(self) }
 }

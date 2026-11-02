@@ -707,7 +707,7 @@ struct ActiveWorkoutView: View {
                         haptic.play(.warning)
                         showEndEarlyConfirm = true
                     } label: {
-                        DS.Typography.display("END EARLY", size: 26)
+                        DS.Typography.display(Copy.endEarly.uppercased(), size: 26)
                             .foregroundStyle(DS.Colors.red)
                             .frame(maxWidth: .infinity)
                             .frame(height: 64)
@@ -721,18 +721,14 @@ struct ActiveWorkoutView: View {
         }
         .transition(.opacity)
         .animation(.easeInOut(duration: 0.2), value: isPaused)
-        .alert("End workout early?", isPresented: $showEndEarlyConfirm) {
-            Button("End Workout", role: .destructive) {
+        .alert(Copy.endEarlyQuestion, isPresented: $showEndEarlyConfirm) {
+            Button(Copy.endWorkout, role: .destructive) {
                 let recorded = onEndEarly()
                 coordinator.endEarly(discardSession: recorded)
             }
-            Button("Keep Going", role: .cancel) {}
+            Button(Copy.keepGoing, role: .cancel) {}
         } message: {
-            if !coordinator.isTutorial && cardsCompleted > 0 {
-                Text("Your \(cardsCompleted) completed \(cardsCompleted == 1 ? "card" : "cards") will be saved to History.")
-            } else {
-                Text("Nothing has been completed yet, so this workout won't be saved to History.")
-            }
+            Text(Copy.endEarlyMessage(cardsCompleted: coordinator.isTutorial ? 0 : cardsCompleted))
         }
     }
 
