@@ -20,6 +20,8 @@ struct ContentView: View {
     @State private var completedData: CompletedWorkoutData?
     @State private var showResumeBanner = false
     @State private var selectedTab = 0
+    /// Runs a watch-followed workout while the app is in the background.
+    @State private var watchRelay: WatchWorkoutRelay?
 
     // Convenience: always-valid settings (creates default on first run)
     private var settings: UserSettings {
@@ -86,6 +88,15 @@ struct ContentView: View {
         .animation(.easeInOut(duration: 0.35), value: showOnboarding)
         .animation(.easeInOut(duration: 0.22), value: showCompletion)
         .animation(.easeInOut(duration: 0.22), value: isActiveWorkout)
+        .onChange(of: ObjectIdentifier(coordinator), initial: true) { _, _ in
+            if watchRelay == nil {
+                let relay = WatchWorkoutRelay(link: watchLink)
+                relay.onEndEarly = captureEarlyHistory
+                relay.onWorkoutComplete = captureCompletion
+                watchRelay = relay
+            }
+            watchRelay?.attach(coordinator)
+        }
         .onAppear {
             migrateDisabledExercisesIfNeeded()
             checkForResume()
@@ -240,7 +251,9 @@ struct ContentView: View {
     // MARK: - Completion
 
     private func captureCompletion() {
-        guard let session = coordinator.session else { return }
+        // Once per workout: the background relay and the workout screen can
+        // both report the same finish.
+        guard completedData == nil, let session = coordinator.session else { return }
         let data = CompletedWorkoutData(session: session, completedAt: Date())
         completedData = data
         if coordinator.isTutorial {

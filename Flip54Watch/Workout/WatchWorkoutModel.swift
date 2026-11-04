@@ -381,7 +381,11 @@ final class WatchWorkoutModel {
         // WatchConnectivity when the iPhone app can hear it; otherwise the
         // mirrored Health session, which keeps working with the phone locked.
         if phone.isReachable {
-            phone.send(data)
+            // A tap must not be lost: if WatchConnectivity can't deliver it,
+            // send it over the mirrored Health session instead.
+            phone.send(data) { [weak self] in
+                Task { @MainActor [weak self] in await self?.recorder.send(toPhone: data) }
+            }
         } else {
             Task { await recorder.send(toPhone: data) }
         }
