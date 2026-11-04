@@ -42,6 +42,8 @@ final class WatchWorkoutLink: NSObject {
     @ObservationIgnored private var mirrored: HKWorkoutSession?
     @ObservationIgnored private var latest: RemoteWorkoutSnapshot?
     @ObservationIgnored private var commandCount = 0
+    /// Recent tagged commands, so one sent over both links runs once.
+    @ObservationIgnored private var seenCommandIDs: [UUID] = []
     /// Takes the watch's commands while the app is in the background, where
     /// the workout screen's `onChange` on `command` doesn't run.
     @ObservationIgnored var backgroundCommandHandler: (@MainActor (RemoteWorkoutCommand) -> Void)?
@@ -171,18 +173,29 @@ final class WatchWorkoutLink: NSObject {
 
     private func received(_ data: Data) {
         switch try? RemoteWorkoutMessage.decode(data) {
+        case .taggedCommand(let id, let command):
+            guard !seenCommandIDs.contains(id) else { return }
+            seenCommandIDs.append(id)
+            if seenCommandIDs.count > 50 { seenCommandIDs.removeFirst() }
+            deliver(command)
         case .command(let command):
-            if let backgroundCommandHandler, UIApplication.shared.applicationState != .active {
-                backgroundCommandHandler(command)
-                return
-            }
-            commandCount += 1
-            self.command = ReceivedWatchCommand(id: commandCount, command: command)
+            deliver(command)
         case .finished(let workout):
             save(workout)
         default:
             break
         }
+    }
+
+    /// Runs a watch command: through the workout screen in the foreground,
+    /// or the background relay when the app isn't active.
+    private func deliver(_ command: RemoteWorkoutCommand) {
+        if let backgroundCommandHandler, UIApplication.shared.applicationState != .active {
+            backgroundCommandHandler(command)
+            return
+        }
+        commandCount += 1
+        self.command = ReceivedWatchCommand(id: commandCount, command: command)
     }
 
     // MARK: - Settings

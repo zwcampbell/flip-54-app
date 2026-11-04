@@ -11,6 +11,9 @@ public enum RemoteWorkoutMessage: Codable, Equatable, Sendable {
     case ended
     /// Watch → iPhone: something the wearer did on the watch.
     case command(RemoteWorkoutCommand)
+    /// Watch → iPhone: a command sent over both links at once so it gets
+    /// through if either is down. The iPhone runs each `id` once.
+    case taggedCommand(id: UUID, command: RemoteWorkoutCommand)
     /// Watch → iPhone: a workout run on the watch alone has finished.
     case finished(FinishedWatchWorkout)
 

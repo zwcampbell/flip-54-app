@@ -319,6 +319,10 @@ struct WorkoutCoordinatorTests {
         #expect(store.load() == nil)  // mirroring never writes the watch's own store
         let command = try RemoteWorkoutMessage.decode(RemoteWorkoutMessage.command(.toggleHoldPause).encoded())
         #expect(command == .command(.toggleHoldPause))
+
+        let id = UUID()
+        let tagged = try RemoteWorkoutMessage.decode(RemoteWorkoutMessage.taggedCommand(id: id, command: .done).encoded())
+        #expect(tagged == .taggedCommand(id: id, command: .done))
     }
 
     @Test("a finished watch workout survives the trip to the iPhone intact")
