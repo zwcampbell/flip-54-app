@@ -32,12 +32,12 @@ final class PhoneChannel: NSObject {
             && WCSession.default.isReachable
     }
 
-    /// Sends `data` to the iPhone app. `onFailure` runs (off the main actor)
-    /// if it couldn't be delivered, e.g. the iPhone app was suspended.
-    func send(_ data: Data, onFailure: (@Sendable () -> Void)? = nil) {
+    /// Sends `data` to the iPhone app. Tried even when `isReachable` is
+    /// false, since that can lag behind the real link; a failure is logged.
+    func send(_ data: Data) {
+        guard WCSession.isSupported(), WCSession.default.activationState == .activated else { return }
         WCSession.default.sendMessageData(data, replyHandler: nil) { error in
             log.error("Couldn't message the iPhone: \(error.localizedDescription, privacy: .public)")
-            onFailure?()
         }
     }
 

@@ -261,6 +261,8 @@ final class WatchWorkoutModel {
             if isFollowingPhone { return sendToPhone(.done) }
             coordinator.send(.markDone(reps: nil, holdSeconds: nil))
         case .holdComplete:
+            // Felt on the wrist, so the tap registers even before the iPhone answers.
+            play(.click)
             if isFollowingPhone { return sendToPhone(.done) }
             coordinator.send(.advanceComplete)
         default:
@@ -377,18 +379,14 @@ final class WatchWorkoutModel {
     // MARK: - Following the iPhone
 
     private func sendToPhone(_ command: RemoteWorkoutCommand) {
-        guard let data = try? RemoteWorkoutMessage.command(command).encoded() else { return }
-        // WatchConnectivity when the iPhone app can hear it; otherwise the
-        // mirrored Health session, which keeps working with the phone locked.
-        if phone.isReachable {
-            // A tap must not be lost: if WatchConnectivity can't deliver it,
-            // send it over the mirrored Health session instead.
-            phone.send(data) { [weak self] in
-                Task { @MainActor [weak self] in await self?.recorder.send(toPhone: data) }
-            }
-        } else {
-            Task { await recorder.send(toPhone: data) }
-        }
+        let message = RemoteWorkoutMessage.taggedCommand(id: UUID(), command: command)
+        guard let data = try? message.encoded() else { return }
+        // Over both links: WatchConnectivity, and the mirrored Health session
+        // (which keeps working with the phone locked). Either can be down
+        // without the other knowing, and a lost tap leaves the watch stuck,
+        // so send on both; the iPhone runs each command once.
+        phone.send(data)
+        Task { await recorder.send(toPhone: data) }
     }
 
     private func received(_ data: Data) {
@@ -404,7 +402,7 @@ final class WatchWorkoutModel {
             }
         case .ended:
             stopFollowing(showSummary: true)
-        case .command, .finished:
+        case .command, .taggedCommand, .finished:
             break  // These only go watch → iPhone.
         }
     }
