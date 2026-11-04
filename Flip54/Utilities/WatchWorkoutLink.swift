@@ -1,6 +1,7 @@
 import Foundation
 import HealthKit
 import Observation
+import UIKit
 import WatchConnectivity
 import SwiftData
 import os
@@ -41,6 +42,9 @@ final class WatchWorkoutLink: NSObject {
     @ObservationIgnored private var mirrored: HKWorkoutSession?
     @ObservationIgnored private var latest: RemoteWorkoutSnapshot?
     @ObservationIgnored private var commandCount = 0
+    /// Takes the watch's commands while the app is in the background, where
+    /// the workout screen's `onChange` on `command` doesn't run.
+    @ObservationIgnored var backgroundCommandHandler: (@MainActor (RemoteWorkoutCommand) -> Void)?
     @ObservationIgnored private let container: ModelContainer?
     /// The setup as last shared with (or taken from) the watch.
     @ObservationIgnored private var shared: SyncedSettings? {
@@ -140,11 +144,17 @@ final class WatchWorkoutLink: NSObject {
         guard let data = try? message.encoded() else { return }
         let session = WCSession.default
         if WCSession.isSupported(), session.activationState == .activated, session.isReachable {
-            session.sendMessageData(data, replyHandler: nil) { error in
+            session.sendMessageData(data, replyHandler: nil) { [weak self] error in
                 log.error("Couldn't message the watch: \(error.localizedDescription, privacy: .public)")
+                // Try the mirrored session instead, so the update isn't lost.
+                Task { @MainActor [weak self] in self?.sendMirrored(data) }
             }
             return
         }
+        sendMirrored(data)
+    }
+
+    private func sendMirrored(_ data: Data) {
         guard let mirrored else { return }
         Task {
             do {
@@ -162,6 +172,10 @@ final class WatchWorkoutLink: NSObject {
     private func received(_ data: Data) {
         switch try? RemoteWorkoutMessage.decode(data) {
         case .command(let command):
+            if let backgroundCommandHandler, UIApplication.shared.applicationState != .active {
+                backgroundCommandHandler(command)
+                return
+            }
             commandCount += 1
             self.command = ReceivedWatchCommand(id: commandCount, command: command)
         case .finished(let workout):
@@ -316,4 +330,141 @@ extension WatchWorkoutLink: WCSessionDelegate {
 private struct UncheckedSendable<Value>: @unchecked Sendable {
     let value: Value
     init(_ value: Value) { self.value = value }
+}
+
+// MARK: - Background relay
+
+
+/// Keeps a workout the watch is following moving while the iPhone app is
+/// in the background (screen locked, phone in a pocket).
+///
+/// Normally the workout screen runs the watch's commands and the timed steps
+/// between states (a card flying off, the hold countdown starting), and the
+/// root view sends each change to the watch. All of that hangs off SwiftUI
+/// `onChange`, which doesn't run while the app is in the background, so the
+/// watch's taps went nowhere and the deck sat on its current card until the
+/// iPhone was opened again.
+///
+/// While the app isn't active this does the same work without the view: it
+/// takes the watch's commands, advances the timed steps, and sends each new
+/// state to the watch. In the foreground it stays out of the way. The steps
+/// it advances are guarded, so if the view runs one as well it's a no-op.
+@MainActor
+final class WatchWorkoutRelay {
+    private let link: WatchWorkoutLink
+    private weak var coordinator: WorkoutCoordinator?
+    private var lastState: WorkoutState = .idle
+
+    /// Records a workout ended early in History; true when an entry was written.
+    var onEndEarly: @MainActor () -> Bool = { false }
+    /// Records a finished workout and shows the completion screen.
+    var onWorkoutComplete: @MainActor () -> Void = {}
+
+    /// Matches the workout screen's card fly-off and return-to-deck timings.
+    private static let completeDelay: Duration = .milliseconds(350)
+    private static let skipDelay: Duration = .milliseconds(600)
+
+    init(link: WatchWorkoutLink) {
+        self.link = link
+        link.backgroundCommandHandler = { [weak self] command in
+            self?.handle(command)
+        }
+    }
+
+    private var isInBackground: Bool {
+        UIApplication.shared.applicationState != .active
+    }
+
+    /// Follows `coordinator` from now on (it's replaced after each workout).
+    func attach(_ coordinator: WorkoutCoordinator) {
+        guard coordinator !== self.coordinator else { return }
+        self.coordinator = coordinator
+        lastState = coordinator.state
+        observe(coordinator)
+    }
+
+    private func observe(_ coordinator: WorkoutCoordinator) {
+        withObservationTracking {
+            _ = coordinator.state
+            _ = coordinator.isHoldPausedInPlace
+        } onChange: { [weak self] in
+            Task { @MainActor [weak self] in
+                // A replaced coordinator stops being followed.
+                guard let self, self.coordinator === coordinator else { return }
+                self.changed(coordinator)
+                self.observe(coordinator)
+            }
+        }
+    }
+
+    private func changed(_ coordinator: WorkoutCoordinator) {
+        let old = lastState
+        let new = coordinator.state
+        lastState = new
+        guard isInBackground, !coordinator.isTutorial else { return }
+
+        // Keep the watch in step (the root view does this in the foreground).
+        if new == .idle {
+            if old != .idle { link.workoutEnded() }
+            return
+        }
+        link.update(coordinator.remoteSnapshot)
+
+        guard new != old else { return }
+        switch new {
+        case .holdStarting:
+            coordinator.send(.startHold)
+        case .cardCompleting:
+            advance(coordinator, from: new, after: Self.completeDelay)
+        case .cardSkipping:
+            advance(coordinator, from: new, after: Self.skipDelay)
+        case .workoutComplete:
+            onWorkoutComplete()
+        default:
+            break
+        }
+    }
+
+    private func advance(_ coordinator: WorkoutCoordinator, from expected: WorkoutState, after delay: Duration) {
+        Task { @MainActor in
+            try? await Task.sleep(for: delay)
+            // Skip it if the view (back in the foreground) already moved on.
+            guard coordinator.state == expected else { return }
+            coordinator.send(.advanceComplete)
+        }
+    }
+
+    /// A command from the watch that arrived while the app was in the
+    /// background. Mirrors the workout screen's handling, without the animation.
+    private func handle(_ command: RemoteWorkoutCommand) {
+        guard let coordinator else { return }
+        switch (command, coordinator.state) {
+        case (.flip, .cardFaceDown):
+            coordinator.send(.flipCard)
+        case (.done, .cardFaceUp(_, let prescription)):
+            coordinator.send(prescription.isHold ? .startHold : .markDone(reps: nil, holdSeconds: nil))
+        case (.done, .holdComplete):
+            coordinator.send(.advanceComplete)
+        case (.skip, .holding(_, let start, let duration)):
+            let held = min(duration, Int(Date().timeIntervalSince(start)))
+            coordinator.send(.markDone(reps: nil, holdSeconds: held))
+        case (.skip, .cardFaceUp):
+            coordinator.send(.skip)
+        case (.pause, _):
+            if coordinator.isHoldPausedInPlace {
+                coordinator.showFullPause()
+            } else {
+                coordinator.send(.pause)
+            }
+        case (.resume, _):
+            coordinator.send(.resume)
+        case (.toggleHoldPause, _):
+            coordinator.toggleHoldPause()
+        case (.end, _):
+            let recorded = onEndEarly()
+            coordinator.endEarly(discardSession: recorded)
+        default:
+            break  // Out of date: the card moved on before the command arrived.
+        }
+    }
 }
