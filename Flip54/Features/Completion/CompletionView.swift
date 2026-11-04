@@ -27,6 +27,18 @@ struct CompletionView: View {
         ZStack {
             DS.Colors.bg.ignoresSafeArea()
 
+            // Header glow — lives behind the ScrollView so it bleeds under the
+            // status bar instead of stopping at the top safe-area inset.
+            RadialGradient(
+                colors: [DS.Colors.goldSoft, DS.Colors.bg.opacity(0)],
+                center: .top,
+                startRadius: 0,
+                endRadius: 360
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .ignoresSafeArea()
+            .allowsHitTesting(false)
+
             // Confetti
             ForEach(particles) { p in
                 confettiPiece(p)
@@ -111,14 +123,6 @@ struct CompletionView: View {
         .padding(.bottom, 28)
         .padding(.horizontal, 24)
         .frame(maxWidth: .infinity)
-        .background(
-            RadialGradient(
-                colors: [DS.Colors.goldSoft, DS.Colors.bg.opacity(0)],
-                center: .top,
-                startRadius: 0,
-                endRadius: 300
-            )
-        )
     }
 
     // MARK: - Stats card
